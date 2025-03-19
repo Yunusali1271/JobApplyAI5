@@ -7,11 +7,7 @@ import { logoutUser } from "@/lib/firebase/firebaseUtils";
 import { 
   FaBriefcase, 
   FaFile, 
-  FaFileAlt, 
-  FaUserTie, 
-  FaUserFriends, 
-  FaSearch, 
-  FaBookmark, 
+  FaFileAlt,
   FaCog, 
   FaGlobe,
   FaQuestionCircle 
@@ -40,15 +36,6 @@ export default function Sidebar() {
         { name: "Job Hub", icon: <FaBriefcase />, path: "/job-hub" },
         { name: "Resumes", icon: <FaFile />, path: "/resumes" },
         { name: "Cover Letters", icon: <FaFileAlt />, path: "/cover-letters" },
-        { name: "Job Interviews", icon: <FaUserTie />, path: "/job-interviews" },
-        { name: "Interview Buddy", icon: <FaUserFriends />, path: "/interview-buddy" },
-      ]
-    },
-    {
-      group: "Jobs",
-      items: [
-        { name: "Search", icon: <FaSearch />, path: "/job-search" },
-        { name: "Saved Jobs", icon: <FaBookmark />, path: "/saved-jobs" },
       ]
     },
     {
