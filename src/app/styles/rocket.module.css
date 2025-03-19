@@ -1,0 +1,15 @@
+@keyframes rocketFloat {
+  0%, 100% {
+    transform: translateY(0px) rotate(45deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(45deg);
+  }
+}
+
+.rocketAnimation {
+  display: inline-block;
+  animation: rocketFloat 2s ease-in-out infinite;
+  margin-left: 8px;
+  font-size: 1.5em;
+} 

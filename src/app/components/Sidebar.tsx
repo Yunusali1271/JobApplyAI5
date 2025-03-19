@@ -48,7 +48,7 @@ export default function Sidebar() {
 
   return (
     <div className="w-56 bg-gray-800 text-white min-h-screen flex flex-col">
-      <div className="p-4 font-bold text-xl">CoverAI</div>
+      <div className="p-4 font-bold text-xl">JobApplyAI</div>
 
       <div className="flex-1 overflow-y-auto">
         {navItems.map((group) => (

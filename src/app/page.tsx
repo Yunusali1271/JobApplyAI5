@@ -7,12 +7,13 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/hooks/useAuth";
 import ApplicationModal from "@/components/ApplicationModal";
 import { FaUser } from "react-icons/fa";
+import styles from './styles/rocket.module.css';
 
 export default function Home() {
   const { user } = useAuth();
   const router = useRouter();
   const [pricingPlan, setPricingPlan] = useState({
-    price: "£2.99",
+    price: "£4.99",
     period: "per month",
     activeTab: "monthly"
   });
@@ -29,19 +30,19 @@ export default function Home() {
   const handlePricingTabChange = (plan) => {
     if (plan === "monthly") {
       setPricingPlan({
-        price: "£2.99",
+        price: "£4.99",
         period: "per month",
         activeTab: "monthly"
       });
     } else if (plan === "quarterly") {
       setPricingPlan({
-        price: "£2.75",
+        price: "£3.99",
         period: "per month",
         activeTab: "quarterly"
       });
     } else if (plan === "yearly") {
       setPricingPlan({
-        price: "£2.25",
+        price: "£2.99",
         period: "per month",
         activeTab: "yearly"
       });
@@ -77,9 +78,9 @@ export default function Home() {
       {/* Navigation */}
       <nav className="flex items-center justify-between px-6 py-4 max-w-7xl mx-auto">
         <div className="flex items-center">
-          <span className="text-2xl font-bold">coverai</span>
+          <span className="text-2xl font-bold">jobapplyai</span>
         </div>
-        <div className="flex items-center gap-8">
+        <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-8">
           <button onClick={(e) => {
             e.preventDefault();
             scrollToSection('pricing');
@@ -107,7 +108,7 @@ export default function Home() {
                 onClick={openModal}
                 className="bg-[#7046EC] text-white px-4 py-2 rounded-lg hover:bg-[#5e3bc4] transition-colors"
               >
-                New Application Kit
+                Create Hire Me Pack
               </button>
             </>
           ) : (
@@ -329,13 +330,17 @@ export default function Home() {
       {/* Example Output Section */}
       <div id="about" className="bg-[#f5f5f7] py-20 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-semibold mb-4">
-              Job-specific examples
-            </h2>
-            <p className="text-xl text-gray-600">
-              See how our AI creates personalized documents tailored to each job
-            </p>
+          <div className="text-center mb-24">
+            <div className="mb-16">
+              <h2 className="text-5xl font-semibold">
+                Better Resume.
+                <br />
+                <span className="mt-2 inline-block">Faster Search. More Offers.</span>
+              </h2>
+              <p className="text-xl text-gray-600 mt-6">
+                Automated Job Winning Resumes and Cover Letters to land your next position sooner
+              </p>
+            </div>
           </div>
           <div className="flex justify-center items-start gap-20">
             {/* Cover Letter */}
@@ -346,7 +351,7 @@ export default function Home() {
                   <div className="space-y-3">
                     <p className="text-gray-800 text-sm font-medium">Dear HR Manager,</p>
                     <p className="text-gray-800 leading-tight text-xs">
-                      Innovation isn&apos;t just about building something new—it&apos;s about rethinking what&apos;s possible. I see that CoverAI is 
+                      Innovation isn&apos;t just about building something new—it&apos;s about rethinking what&apos;s possible. I see that JobApplyAI is 
                       looking for someone who challenges conventions and redefines industries. That&apos;s not just a job description; it&apos;s a 
                       mission. And it&apos;s the kind of mission that has driven my career.
                     </p>
@@ -361,7 +366,7 @@ export default function Home() {
                       —where art meets technology.
                     </p>
                     <p className="text-gray-800 leading-tight text-xs">
-                      At CoverAI, you have the opportunity to shape the future of AI-driven career tools, to not just automate resumes 
+                      At JobApplyAI, you have the opportunity to shape the future of AI-driven career tools, to not just automate resumes 
                       but to reinvent how people present their skills to the world. I&apos;d love to be part of that journey.
                     </p>
                     <p className="text-gray-800 text-xs">Let&apos;s talk.</p>
@@ -397,7 +402,8 @@ export default function Home() {
       <div id="features" className="max-w-7xl mx-auto px-6 py-16 relative">
         <div className="text-center mb-12">
           <h2 className="text-4xl font-semibold mb-4">
-            You are <span className="text-[#7046EC]">78% more likely</span> to get hired if you use CoverAI
+            Need to level up your career even <span className="text-[#7046EC]">faster</span>
+            <span className={styles.rocketAnimation} role="img" aria-label="rocket">🚀</span>?
           </h2>
           <p className="text-xl text-gray-600">
             Our AI-powered tools help you create the perfect application
@@ -524,7 +530,9 @@ export default function Home() {
             />
           </svg>
         </div>
-        <h2 className="text-4xl font-semibold mb-8">We help job seekers flourish</h2>
+        <h2 className="text-4xl font-semibold mb-8">
+          You are <span className="text-[#7046EC]">78%</span> more likely to get hired using JobApplyAI
+        </h2>
         <button 
           onClick={openModal}
           className="inline-block bg-[#7046EC] text-white px-10 py-4 rounded-full text-lg font-medium hover:bg-[#5e3bc4] transition-colors"
@@ -543,7 +551,7 @@ export default function Home() {
             Join 200,000 empowered job seekers
           </h2>
           <p className="text-gray-600 text-xl">
-            CoverAI has helped secure over 200,000 job interviews. From entry-level positions to executive roles, we&apos;ve got you covered.
+            JobApplyAI has helped secure over 200,000 job interviews. From entry-level positions to executive roles, we&apos;ve got you covered.
           </p>
         </div>
 
@@ -558,7 +566,7 @@ export default function Home() {
               </div>
             </div>
             <p className="text-gray-600">
-              Got my dream job at Google thanks to CoverAI! The personalized cover letter really made my application stand out. This tool is a game-changer! 🚀
+              Got my dream job at Google thanks to JobApplyAI! The personalized cover letter really made my application stand out. This tool is a game-changer! 🚀
             </p>
           </div>
 
@@ -571,7 +579,7 @@ export default function Home() {
               </div>
             </div>
             <p className="text-gray-600">
-              I was struggling with writer&apos;s block until I found CoverAI. Now I can generate tailored cover letters in minutes. Applied to 50+ jobs in a week! 💪
+              I was struggling with writer&apos;s block until I found JobApplyAI. Now I can generate tailored cover letters in minutes. Applied to 50+ jobs in a week! 💪
             </p>
           </div>
 
@@ -584,7 +592,7 @@ export default function Home() {
               </div>
             </div>
             <p className="text-gray-600">
-              The AI understands exactly what recruiters want to see. My interview success rate has increased by 300% since using CoverAI! 📈
+              The AI understands exactly what recruiters want to see. My interview success rate has increased by 300% since using JobApplyAI! 📈
             </p>
           </div>
 
@@ -598,7 +606,7 @@ export default function Home() {
               </div>
             </div>
             <p className="text-gray-600">
-              Switching careers was daunting, but CoverAI helped me highlight my transferable skills perfectly. Just landed a role in tech with no prior experience! 🎯
+              Switching careers was daunting, but JobApplyAI helped me highlight my transferable skills perfectly. Just landed a role in tech with no prior experience! 🎯
             </p>
           </div>
 
@@ -611,7 +619,7 @@ export default function Home() {
               </div>
             </div>
             <p className="text-gray-600">
-              As a recent graduate, I was lost on how to write compelling cover letters. CoverAI made it so easy! Already got 3 interview calls this week 🎓
+              As a recent graduate, I was lost on how to write compelling cover letters. JobApplyAI made it so easy! Already got 3 interview calls this week 🎓
             </p>
           </div>
 
@@ -624,7 +632,7 @@ export default function Home() {
               </div>
             </div>
             <p className="text-gray-600">
-              Compared this with other AI tools - CoverAI is 10x better! The customization options and industry-specific knowledge are unmatched ⭐
+              Compared this with other AI tools - JobApplyAI is 10x better! The customization options and industry-specific knowledge are unmatched ⭐
             </p>
           </div>
         </div>
@@ -689,7 +697,7 @@ export default function Home() {
             <div className="relative z-10">
               <div className="text-center mb-6">
                 <div className="flex items-center justify-center">
-                  <span className="text-gray-400 line-through text-sm mr-2">£5.99</span>
+                  <span className="text-gray-400 line-through text-sm mr-2">£9.99</span>
                   <span className="text-4xl font-bold">{pricingPlan.price}</span>
                 </div>
                 <p className="text-sm text-gray-500 mt-1">{pricingPlan.period}</p>
@@ -697,7 +705,7 @@ export default function Home() {
               </div>
 
               <p className="text-center text-gray-600 mb-6">
-                Step up your job search to the next level, cutting edge services for your job search.
+                Upgrade to unlock JobApplyAI premium features and turbocharge your job search.
               </p>
 
               <div className="space-y-3 mb-6">
@@ -753,7 +761,7 @@ export default function Home() {
                     ))}
                   </div>
                 </div>
-                <p className="text-sm text-gray-500 mt-1">Loved by 549,850 users</p>
+                <p className="text-sm text-gray-500 mt-1">Loved by 262,568 users</p>
               </div>
             </div>
           </div>
@@ -767,10 +775,10 @@ export default function Home() {
             <svg className="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
             </svg>
-            <span className="text-gray-500">coverai</span>
+            <span className="text-gray-500">jobapplyai</span>
           </div>
           <div className="text-sm text-gray-500">
-            © 2023 CoverAI. All rights reserved.
+            © 2023 JobApplyAI. All rights reserved.
           </div>
           <div className="flex gap-4">
             <Link href="/privacy" className="text-sm text-gray-500 hover:text-gray-700">Privacy</Link>

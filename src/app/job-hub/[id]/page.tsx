@@ -83,7 +83,7 @@ export default function ApplicationKitDetail() {
   const handleDelete = async () => {
     if (!user) return;
     
-    if (window.confirm("Are you sure you want to delete this application kit?")) {
+    if (window.confirm("Are you sure you want to delete this Hire Me Pack?")) {
       try {
         await deleteApplicationKit(user.uid, id);
         router.push("/job-hub");
@@ -105,8 +105,8 @@ export default function ApplicationKitDetail() {
         <Sidebar />
         <div className="flex-1 p-8 bg-gray-50">
           <div className="max-w-6xl mx-auto">
-            <h1 className="text-2xl font-bold mb-4">Application Kit</h1>
-            <p>Please sign in to view this application kit.</p>
+            <h1 className="text-2xl font-bold mb-4">Hire Me Pack</h1>
+            <p>Please sign in to view this Hire Me Pack.</p>
           </div>
         </div>
       </div>
@@ -120,12 +120,12 @@ export default function ApplicationKitDetail() {
         <div className="max-w-6xl mx-auto">
           {loading ? (
             <div className="text-center py-10">
-              <p>Loading application kit...</p>
+              <p>Loading Hire Me Pack...</p>
             </div>
           ) : !kit ? (
             <div className="text-center py-10">
-              <h1 className="text-2xl font-bold mb-4">Application Kit Not Found</h1>
-              <p>This application kit may have been deleted or does not exist.</p>
+              <h1 className="text-2xl font-bold mb-4">Hire Me Pack Not Found</h1>
+              <p>This Hire Me Pack may have been deleted or does not exist.</p>
               <button
                 onClick={() => router.push("/job-hub")}
                 className="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded"

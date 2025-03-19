@@ -768,7 +768,7 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
       <div className="min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
-          <p className="mt-4 text-gray-600">Loading your application kit...</p>
+          <p className="mt-4 text-gray-600">Loading your Hire Me Pack...</p>
         </div>
       </div>
     );
@@ -797,15 +797,15 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
   return (
     <div className="min-h-screen bg-gray-50 py-10">
       <div className="max-w-5xl mx-auto px-4">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">Here is your Application Kit!</h1>
-          <p className="text-gray-600">Everything you need for your job application.</p>
+        <div className="text-center max-w-3xl mx-auto">
+          <h1 className="text-3xl font-bold mb-2">Here is your Hire-Me Pack!</h1>
+          <p className="text-gray-600">Everything you need for your job application</p>
         </div>
         
         <div className="bg-white rounded-2xl shadow-lg p-8 mb-10">
           <div className="flex justify-between items-center mb-8">
             <div className="h-4 w-64 bg-gray-200 rounded-full"></div>
-            <span className="text-gray-500 text-sm uppercase tracking-wider">APPLICATION KIT</span>
+            <span className="text-gray-500 text-sm uppercase tracking-wider">HIRE ME PACK</span>
           </div>
           
           <div className="grid grid-cols-3 gap-6">
@@ -1055,88 +1055,81 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
         </div>
         
         {/* Review Section */}
-        <div className="flex flex-col items-center">
-          <div className="flex mb-4">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <svg key={star} className="w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-              </svg>
-            ))}
-          </div>
-          <div className="max-w-lg text-center mb-6">
-            <p className="text-gray-700 mb-2">
-              After months of rejections, I tried AIApply and received a job offer within 2 weeks.
-              The mock interviews prepared me perfectly for the real thing!
-            </p>
-            <div className="flex items-center justify-center">
-              <div className="w-8 h-8 bg-gray-200 rounded-full mr-2"></div>
-              <span className="font-medium">Sarah K.</span>
+        <div className="flex flex-col items-center mt-12 mb-8">
+          <div className="flex mb-2">⭐⭐⭐⭐⭐</div>
+          <p className="text-center text-gray-700 max-w-2xl mb-4">
+            "JobApplyAI transformed my job search completely! The tailored resume and cover letter helped me land interviews at top tech companies. The follow-up email was the perfect finishing touch - I got my dream job within 3 weeks!"
+          </p>
+          <div className="flex items-center">
+            <div className="w-8 h-8 bg-[#7046EC] rounded-full flex items-center justify-center text-white font-semibold mr-2">
+              M
             </div>
+            <span className="font-medium">Michael T.</span>
           </div>
-          
-          {/* Resume Preview Modal */}
-          {showResumePreview && (
-            <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
-              <div className="bg-white rounded-lg w-full max-w-4xl h-[90vh] flex flex-col">
-                <div className="flex items-center justify-between p-4 border-b">
-                  <h3 className="text-xl font-semibold">Resume Preview</h3>
-                  <button 
-                    onClick={() => setShowResumePreview(false)}
-                    className="text-gray-500 hover:text-gray-700"
-                    aria-label="Close preview"
-                  >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                  </button>
-                </div>
-                <div className="flex-1 overflow-auto p-8 bg-gray-100 flex justify-center">
+        </div>
+        
+        {/* Resume Preview Modal */}
+        {showResumePreview && (
+          <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg w-full max-w-4xl h-[90vh] flex flex-col">
+              <div className="flex items-center justify-between p-4 border-b">
+                <h3 className="text-xl font-semibold">Resume Preview</h3>
+                <button 
+                  onClick={() => setShowResumePreview(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                  aria-label="Close preview"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                </button>
+              </div>
+              <div className="flex-1 overflow-auto p-8 bg-gray-100 flex justify-center">
+                <div 
+                  className="w-[210mm] h-[297mm] bg-white shadow-lg p-[20mm] overflow-hidden flex-shrink-0"
+                  style={{ 
+                    fontFamily: 'Arial, sans-serif',
+                  }}
+                >
                   <div 
-                    className="w-[210mm] h-[297mm] bg-white shadow-lg p-[20mm] overflow-hidden flex-shrink-0"
+                    ref={resumePreviewRef}
+                    className="pdf-content"
                     style={{ 
-                      fontFamily: 'Arial, sans-serif',
+                      fontSize: '12px',
+                      lineHeight: '1.5',
+                      color: '#000',
+                      fontFamily: 'Arial, sans-serif'
                     }}
                   >
-                    <div 
-                      ref={resumePreviewRef}
-                      className="pdf-content"
-                      style={{ 
-                        fontSize: '12px',
-                        lineHeight: '1.5',
-                        color: '#000',
-                        fontFamily: 'Arial, sans-serif'
-                      }}
-                    >
-                      {/* Content will be populated by useEffect */}
-                    </div>
+                    {/* Content will be populated by useEffect */}
                   </div>
-                </div>
-                <div className="p-4 border-t flex justify-between">
-                  <div className="text-sm text-gray-500">
-                    PDF preview showing exact A4 layout and formatting
-                  </div>
-                  <button 
-                    onClick={() => setShowResumePreview(false)}
-                    className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors"
-                  >
-                    Close
-                  </button>
                 </div>
               </div>
+              <div className="p-4 border-t flex justify-between">
+                <div className="text-sm text-gray-500">
+                  PDF preview showing exact A4 layout and formatting
+                </div>
+                <button 
+                  onClick={() => setShowResumePreview(false)}
+                  className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
             </div>
-          )}
-          
-          <div className="flex justify-center mt-8">
-            <button 
-              onClick={navigateToJobHub}
-              className="px-6 py-3 bg-purple-500 text-white rounded-full text-base font-medium hover:bg-purple-600 transition-colors flex items-center"
-            >
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-              </svg>
-              Create Another Application
-            </button>
           </div>
+        )}
+        
+        <div className="flex justify-center mt-8">
+          <button 
+            onClick={navigateToJobHub}
+            className="px-6 py-3 bg-purple-500 text-white rounded-full text-base font-medium hover:bg-purple-600 transition-colors flex items-center"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+            </svg>
+            Create Another Application
+          </button>
         </div>
       </div>
     </div>

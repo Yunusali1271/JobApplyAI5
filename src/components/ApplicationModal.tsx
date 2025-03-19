@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from "@/lib/hooks/useAuth";
 import { saveApplicationKit } from "@/lib/firebase/applicationKitUtils";
 import { useRouter } from "next/navigation";
@@ -15,9 +15,47 @@ export default function ApplicationModal({ isOpen, onClose }: ApplicationModalPr
   const [cvText, setCvText] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [jobDescription, setJobDescription] = useState('');
-  const [company, setCompany] = useState('');
-  const [jobTitle, setJobTitle] = useState('');
+  const [extractedJobDetails, setExtractedJobDetails] = useState({ jobTitle: '', company: '' });
+  const [isExtractingDetails, setIsExtractingDetails] = useState(false);
   
+  useEffect(() => {
+    const extractJobDetails = async () => {
+      if (!jobDescription.trim()) {
+        setExtractedJobDetails({ jobTitle: '', company: '' });
+        return;
+      }
+
+      setIsExtractingDetails(true);
+      try {
+        const response = await fetch('/api/openai/extract-job-details', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ jobDescription }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to extract job details');
+        }
+
+        const data = await response.json();
+        setExtractedJobDetails({
+          jobTitle: data.jobTitle === 'Unknown' ? '' : data.jobTitle,
+          company: data.company === 'Unknown' ? '' : data.company,
+        });
+      } catch (error) {
+        console.error('Error extracting job details:', error);
+      } finally {
+        setIsExtractingDetails(false);
+      }
+    };
+
+    // Debounce the extraction to avoid too many API calls
+    const timeoutId = setTimeout(extractJobDetails, 1000);
+    return () => clearTimeout(timeoutId);
+  }, [jobDescription]);
+
   if (!isOpen) return null;
 
   const formalityOptions = [
@@ -40,14 +78,6 @@ export default function ApplicationModal({ isOpen, onClose }: ApplicationModalPr
     setJobDescription(e.target.value);
   };
 
-  const handleJobTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setJobTitle(e.target.value);
-  };
-
-  const handleCompanyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCompany(e.target.value);
-  };
-
   const handleGenerateClick = async () => {
     if (!cvText.trim()) {
       alert('Please enter your CV text');
@@ -59,32 +89,20 @@ export default function ApplicationModal({ isOpen, onClose }: ApplicationModalPr
       return;
     }
 
-    if (!jobTitle.trim()) {
-      alert('Please enter a job title');
-      return;
-    }
-
-    if (!company.trim()) {
-      alert('Please enter the company name');
+    if (!extractedJobDetails.jobTitle || !extractedJobDetails.company) {
+      alert('Please wait for job details to be extracted');
       return;
     }
 
     setIsProcessing(true);
     
     try {
-      // Prepare data to send to OpenAI API
       const data = {
         cv: cvText,
         jobDescription,
         formality
       };
       
-      console.log('Sending data to OpenAI API:');
-      console.log('CV length:', cvText.length);
-      console.log('Job Description length:', jobDescription.length);
-      console.log('Formality:', formality);
-      
-      // Call the API route that will interact with OpenAI
       const response = await fetch('/api/openai/analyze-cv', {
         method: 'POST',
         headers: {
@@ -98,17 +116,15 @@ export default function ApplicationModal({ isOpen, onClose }: ApplicationModalPr
         throw new Error(`API error: ${errorData.error || 'Unknown error'}`);
       }
       
-      // Handle the response
       const result = await response.json();
       
       if (!result.result) {
         throw new Error('No result returned from API');
       }
       
-      // Store the results in localStorage for immediate use
       localStorage.setItem('cvAnalysisResult', result.result);
-      localStorage.setItem('jobTitle', jobTitle);
-      localStorage.setItem('company', company);
+      localStorage.setItem('jobTitle', extractedJobDetails.jobTitle);
+      localStorage.setItem('company', extractedJobDetails.company);
       localStorage.setItem('cv', cvText);
       localStorage.setItem('jobDescription', jobDescription);
       localStorage.setItem('formality', formality);
@@ -120,12 +136,11 @@ export default function ApplicationModal({ isOpen, onClose }: ApplicationModalPr
         localStorage.setItem('resume', result.resume);
       }
       
-      // Save to Firebase if user is logged in
       if (user) {
         try {
           await saveApplicationKit(user.uid, {
-            jobTitle: jobTitle,
-            company: company,
+            jobTitle: extractedJobDetails.jobTitle,
+            company: extractedJobDetails.company,
             status: "Interested",
             coverLetter: result.result,
             resume: result.resume || "",
@@ -138,14 +153,10 @@ export default function ApplicationModal({ isOpen, onClose }: ApplicationModalPr
           });
         } catch (error) {
           console.error("Error saving to Firebase:", error);
-          // Continue with the flow even if Firebase save fails
         }
       }
       
-      // Close the modal
       onClose();
-      
-      // Navigate to the results page
       window.location.href = '/results';
       
     } catch (error) {
@@ -160,39 +171,7 @@ export default function ApplicationModal({ isOpen, onClose }: ApplicationModalPr
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg w-full max-w-lg max-h-[90vh] overflow-y-auto">
         <div className="p-6">
-          <h2 className="text-xl font-bold text-center mb-6">Create a new application kit</h2>
-          
-          <div className="bg-gray-100 p-4 rounded-lg mb-6">
-            <p className="font-medium mb-2">Job Details</p>
-            <div className="grid grid-cols-1 gap-4 mb-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Job Title
-                </label>
-                <input
-                  type="text"
-                  className="w-full border border-gray-300 rounded-lg p-2"
-                  placeholder="e.g. Software Engineer"
-                  value={jobTitle}
-                  onChange={handleJobTitleChange}
-                  disabled={isProcessing}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Company
-                </label>
-                <input
-                  type="text"
-                  className="w-full border border-gray-300 rounded-lg p-2"
-                  placeholder="e.g. Google"
-                  value={company}
-                  onChange={handleCompanyChange}
-                  disabled={isProcessing}
-                />
-              </div>
-            </div>
-          </div>
+          <h2 className="text-xl font-bold text-center mb-6">Create a new Hire Me Pack</h2>
           
           <div className="bg-gray-100 p-4 rounded-lg mb-6">
             <p className="font-medium mb-2">Enter your CV text</p>
@@ -209,7 +188,7 @@ export default function ApplicationModal({ isOpen, onClose }: ApplicationModalPr
           </div>
           
           <div className="bg-gray-100 p-4 rounded-lg mb-6">
-            <p className="font-medium mb-2">Job Description you'd like to tailor the application kit to</p>
+            <p className="font-medium mb-2">Job Description you'd like to tailor your application to</p>
             <textarea 
               className="w-full border border-gray-300 rounded-lg p-3 min-h-[150px]" 
               placeholder="Copy and paste the job description here"
@@ -217,6 +196,26 @@ export default function ApplicationModal({ isOpen, onClose }: ApplicationModalPr
               onChange={handleJobDescriptionChange}
               disabled={isProcessing}
             />
+            {isExtractingDetails && (
+              <p className="text-sm text-purple-600 mt-2">
+                Extracting job details...
+              </p>
+            )}
+            {(extractedJobDetails.jobTitle || extractedJobDetails.company) && !isExtractingDetails && (
+              <div className="mt-2 p-3 bg-white rounded-lg border border-gray-200">
+                <p className="text-sm font-medium text-gray-900">
+                  Detected Job Details:
+                </p>
+                <p className="text-sm text-gray-600">
+                  {extractedJobDetails.jobTitle && (
+                    <span className="block">Title: {extractedJobDetails.jobTitle}</span>
+                  )}
+                  {extractedJobDetails.company && (
+                    <span className="block">Company: {extractedJobDetails.company}</span>
+                  )}
+                </p>
+              </div>
+            )}
           </div>
           
           <div className="bg-gray-100 p-4 rounded-lg mb-6">
@@ -255,31 +254,31 @@ export default function ApplicationModal({ isOpen, onClose }: ApplicationModalPr
             </div>
           </div>
           
-          <div className="flex justify-between">
-            <button 
+          <div className="flex justify-end space-x-4">
+            <button
               onClick={onClose}
-              className="px-6 py-2 rounded-lg text-gray-700 font-medium hover:bg-gray-100 transition-colors"
+              className="px-4 py-2 text-gray-600 hover:text-gray-800"
               disabled={isProcessing}
             >
-              Close
+              Cancel
             </button>
-            <button 
+            <button
               onClick={handleGenerateClick}
-              className={`px-6 py-2 bg-purple-500 text-white rounded-lg font-medium flex items-center hover:bg-purple-600 transition-colors ${isProcessing ? 'opacity-70 cursor-not-allowed' : ''}`}
-              disabled={isProcessing}
+              disabled={isProcessing || isExtractingDetails || !extractedJobDetails.jobTitle || !extractedJobDetails.company}
+              className={`px-6 py-2 bg-purple-600 text-white rounded-lg flex items-center space-x-2
+                ${(isProcessing || isExtractingDetails || !extractedJobDetails.jobTitle || !extractedJobDetails.company) ? 
+                  'opacity-50 cursor-not-allowed' : 'hover:bg-purple-700'}`}
             >
               {isProcessing ? (
                 <>
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                  Processing...
+                  <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  <span>Processing...</span>
                 </>
               ) : (
-                <>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clipRule="evenodd" />
-                  </svg>
-                  Generate
-                </>
+                'Generate Hire Me Pack'
               )}
             </button>
           </div>

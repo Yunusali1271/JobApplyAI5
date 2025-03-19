@@ -42,7 +42,7 @@ export default function Login() {
       <div className="flex-1 p-8 bg-gray-50">
         <div className="max-w-md mx-auto mt-16">
           <div className="bg-white p-8 rounded-lg shadow-md">
-            <h1 className="text-2xl font-bold text-center mb-6">Login to CoverAI</h1>
+            <h1 className="text-2xl font-bold text-center mb-6">Login to JobApplyAI</h1>
             
             {error && (
               <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">

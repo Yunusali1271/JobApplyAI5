@@ -100,7 +100,7 @@ export default function CoverLettersPage() {
               onClick={handleNewCoverLetter}
               className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-full flex items-center"
             >
-              <FaPlus className="mr-2" /> New Application Kit
+              <FaPlus className="mr-2" /> New Hire Me Pack
             </button>
           </div>
           
@@ -112,13 +112,13 @@ export default function CoverLettersPage() {
             <div className="text-center py-10 bg-white rounded-lg shadow">
               <h3 className="text-lg font-medium">No cover letters yet</h3>
               <p className="text-gray-500 mt-2">
-                Create an application kit with a cover letter to get started.
+                Create a Hire Me Pack with a cover letter to get started.
               </p>
               <button 
                 onClick={handleNewCoverLetter}
                 className="mt-4 inline-block bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded"
               >
-                Create Application Kit
+                Create Hire Me Pack
               </button>
             </div>
           ) : (
