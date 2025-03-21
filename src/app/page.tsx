@@ -129,7 +129,7 @@ export default function Home() {
       <div className="max-w-7xl mx-auto px-6 pt-16 pb-24 text-center">
         <h1 className="text-[56px] leading-[1.1] tracking-[-0.002em]">
           <span className="block text-[#6e6e73] font-[510] mb-1">Your Automated AI-Powered</span>
-          <span className="block text-[#1d1d1f] font-[600]">Cover Letter Assistant</span>
+          <span className="block text-[#1d1d1f] font-[600]">Job Search Assistant</span>
         </h1>
         <div className="mt-12 flex flex-col items-center">
           <p className="text-[#6e6e73] text-[21px] leading-[1.4] max-w-[600px] mx-auto">
@@ -144,9 +144,33 @@ export default function Home() {
           </button>
           <div className="mt-12 flex items-center justify-center gap-2 text-[#6e6e73]">
             <div className="flex -space-x-2">
-              <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
-              <div className="w-8 h-8 bg-gray-300 rounded-full"></div>
-              <div className="w-8 h-8 bg-gray-400 rounded-full"></div>
+              <Image
+                src="/AIpic1.jpg"
+                alt="Profile 1"
+                width={100}
+                height={100}
+                className="w-8 h-8 rounded-full border-2 border-white object-cover"
+                priority
+                unoptimized
+              />
+              <Image
+                src="/AIpic2.jpg"
+                alt="Profile 2"
+                width={100}
+                height={100}
+                className="w-8 h-8 rounded-full border-2 border-white object-cover"
+                priority
+                unoptimized
+              />
+              <Image
+                src="/AIpic3.jpeg"
+                alt="Profile 3"
+                width={100}
+                height={100}
+                className="w-8 h-8 rounded-full border-2 border-white object-cover"
+                priority
+                unoptimized
+              />
             </div>
             <span className="text-[14px]">Loved by over 200,000 job seekers</span>
           </div>
@@ -559,7 +583,16 @@ export default function Home() {
           {/* First Row */}
           <div className="bg-white rounded-xl p-6 shadow-sm border border-[#7046EC] transition-all duration-300 hover:shadow-[0_0_15px_rgba(112,70,236,0.3)]">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+              <div className="relative w-10 h-10">
+                <Image
+                  src="/AIpic4.jpg"
+                  alt="Sarah Wilson"
+                  fill
+                  sizes="40px"
+                  className="rounded-full object-cover"
+                  priority
+                />
+              </div>
               <div>
                 <h3 className="font-medium">Sarah Wilson</h3>
                 <p className="text-gray-500 text-sm">@sarahw • 2d ago</p>
@@ -572,7 +605,16 @@ export default function Home() {
 
           <div className="bg-white rounded-xl p-6 shadow-sm border border-[#7046EC] transition-all duration-300 hover:shadow-[0_0_15px_rgba(112,70,236,0.3)]">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+              <div className="relative w-10 h-10">
+                <Image
+                  src="/AIpic5.jpg"
+                  alt="Michael Chen"
+                  fill
+                  sizes="40px"
+                  className="rounded-full object-cover"
+                  priority
+                />
+              </div>
               <div>
                 <h3 className="font-medium">Michael Chen</h3>
                 <p className="text-gray-500 text-sm">@mchen • 1w ago</p>
@@ -585,7 +627,16 @@ export default function Home() {
 
           <div className="bg-white rounded-xl p-6 shadow-sm border border-[#7046EC] transition-all duration-300 hover:shadow-[0_0_15px_rgba(112,70,236,0.3)]">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+              <div className="relative w-10 h-10">
+                <Image
+                  src="/AIpic6.jpg"
+                  alt="Emily Rodriguez"
+                  fill
+                  sizes="40px"
+                  className="rounded-full object-cover"
+                  priority
+                />
+              </div>
               <div>
                 <h3 className="font-medium">Emily Rodriguez</h3>
                 <p className="text-gray-500 text-sm">@emrodriguez • 3d ago</p>
@@ -599,7 +650,17 @@ export default function Home() {
           {/* Second Row */}
           <div className="bg-white rounded-xl p-6 shadow-sm border border-[#7046EC] transition-all duration-300 hover:shadow-[0_0_15px_rgba(112,70,236,0.3)]">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+              <div className="relative w-10 h-10 overflow-hidden rounded-full">
+                <Image
+                  src="/James.jpeg"
+                  alt="James Thompson"
+                  width={40}
+                  height={40}
+                  className="object-cover"
+                  priority
+                  unoptimized
+                />
+              </div>
               <div>
                 <h3 className="font-medium">James Thompson</h3>
                 <p className="text-gray-500 text-sm">@jamest • 5d ago</p>
@@ -612,7 +673,17 @@ export default function Home() {
 
           <div className="bg-white rounded-xl p-6 shadow-sm border border-[#7046EC] transition-all duration-300 hover:shadow-[0_0_15px_rgba(112,70,236,0.3)]">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+              <div className="relative w-10 h-10 overflow-hidden rounded-full">
+                <Image
+                  src="/lisa.jpg"
+                  alt="Lisa Patel"
+                  width={40}
+                  height={40}
+                  className="object-cover"
+                  priority
+                  unoptimized
+                />
+              </div>
               <div>
                 <h3 className="font-medium">Lisa Patel</h3>
                 <p className="text-gray-500 text-sm">@lisap • 1d ago</p>
@@ -625,7 +696,17 @@ export default function Home() {
 
           <div className="bg-white rounded-xl p-6 shadow-sm border border-[#7046EC] transition-all duration-300 hover:shadow-[0_0_15px_rgba(112,70,236,0.3)]">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+              <div className="relative w-10 h-10 overflow-hidden rounded-full">
+                <Image
+                  src="/michael.jpg"
+                  alt="David Kim"
+                  width={40}
+                  height={40}
+                  className="object-cover"
+                  priority
+                  unoptimized
+                />
+              </div>
               <div>
                 <h3 className="font-medium">David Kim</h3>
                 <p className="text-gray-500 text-sm">@davidk • 4d ago</p>

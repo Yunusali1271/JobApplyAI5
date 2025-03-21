@@ -3,7 +3,7 @@ import { Metadata } from "next";
 import AuthWrapper from "@/lib/components/AuthWrapper";
 
 export const metadata: Metadata = {
-  title: "JobApplyAI - AI-Powered Cover Letter Assistant",
+  title: "JobApplyAI - AI-Powered Job Search Assistant",
   description: "Create personalized, job-specific cover letters and resumes with ease using AI.",
 };
 

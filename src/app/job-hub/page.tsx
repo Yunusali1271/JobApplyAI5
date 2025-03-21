@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/hooks/useAuth";
-import { getUserApplicationKits } from "@/lib/firebase/applicationKitUtils";
+import { getUserApplicationKits, deleteApplicationKit } from "@/lib/firebase/applicationKitUtils";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FaPlus } from "react-icons/fa";
+import { FaPlus, FaTrash } from "react-icons/fa";
 import Sidebar from "@/app/components/Sidebar";
 
 interface ApplicationKit {
@@ -26,6 +26,9 @@ export default function JobHub() {
   const [loading, setLoading] = useState(true);
   const [signingIn, setSigningIn] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [kitToDelete, setKitToDelete] = useState<ApplicationKit | null>(null);
 
   useEffect(() => {
     const fetchApplicationKits = async () => {
@@ -69,13 +72,34 @@ export default function JobHub() {
     router.push("/");
   };
 
+  const handleDelete = async (kit: ApplicationKit) => {
+    setKitToDelete(kit);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!user || !kitToDelete) return;
+
+    try {
+      setDeletingId(kitToDelete.id);
+      await deleteApplicationKit(user.uid, kitToDelete.id);
+      setApplicationKits(prev => prev.filter(kit => kit.id !== kitToDelete.id));
+      setShowDeleteConfirm(false);
+      setKitToDelete(null);
+    } catch (error) {
+      console.error("Error deleting application kit:", error);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   if (!user) {
     return (
       <div className="flex min-h-screen">
         <Sidebar />
         <div className="flex-1 p-8 bg-gray-50">
           <div className="max-w-6xl mx-auto">
-            <h1 className="text-2xl font-bold mb-4">Job Hub</h1>
+            <h1 className="text-2xl font-bold mb-4">Application</h1>
             <div className="bg-white rounded-lg shadow-lg p-8 max-w-md mx-auto mt-8">
               <div className="text-center">
                 <h2 className="text-xl font-semibold mb-2">Sign in to access your applications</h2>
@@ -129,9 +153,9 @@ export default function JobHub() {
         <div className="max-w-6xl mx-auto">
           <div className="flex justify-between items-center mb-6">
             <div>
-              <h1 className="text-2xl font-bold">Job Hub</h1>
+              <h1 className="text-2xl font-bold">Application</h1>
               <p className="text-gray-600">
-                Your job hub is where you can manage all your Hire Me Packs and track job applications.
+                Your application dashboard is where you can manage all your Hire Me Packs and track job applications.
               </p>
             </div>
             <button 
@@ -161,58 +185,53 @@ export default function JobHub() {
             </div>
           ) : (
             <div className="bg-white rounded-lg shadow overflow-hidden">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Job
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Cover Letter
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Resume
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Follow-up
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Hire Me Pack
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+              <div className="min-w-full divide-y divide-gray-200">
+                <div className="bg-gray-50">
+                  <div className="grid grid-cols-[100px_2fr_2fr_1fr_1fr_1fr_1fr] gap-4 px-6 py-3">
+                    <div className="text-xs font-medium text-gray-500 uppercase">Status</div>
+                    <div className="text-xs font-medium text-gray-500 uppercase">Job</div>
+                    <div className="text-xs font-medium text-gray-500 uppercase">Company</div>
+                    <div className="text-xs font-medium text-gray-500 uppercase text-center">Cover Letter</div>
+                    <div className="text-xs font-medium text-gray-500 uppercase text-center">Resume</div>
+                    <div className="text-xs font-medium text-gray-500 uppercase text-center">Follow-up</div>
+                    <div className="text-xs font-medium text-gray-500 uppercase text-center">Actions</div>
+                  </div>
+                </div>
+                <div className="bg-white divide-y divide-gray-200">
                   {applicationKits.map((kit) => (
-                    <tr key={kit.id}>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-indigo-600 font-medium">{kit.status || "Interested"}</span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{kit.jobTitle}</div>
-                        <div className="text-sm text-gray-500">{kit.company}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <Link
-                          href={`/job-hub/${kit.id}?tab=coverLetter`}
-                          className="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-1 px-3 border border-gray-400 rounded shadow text-sm"
-                        >
-                          Open
-                        </Link>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <Link
-                          href={`/job-hub/${kit.id}?tab=resume`}
-                          className="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-1 px-3 border border-gray-400 rounded shadow text-sm"
-                        >
-                          Open
-                        </Link>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                    <div key={kit.id} className="grid grid-cols-[100px_2fr_2fr_1fr_1fr_1fr_1fr] gap-4 px-6 py-4 hover:bg-gray-50">
+                      <div className="flex items-center">
+                        <span className="text-purple-600">{kit.status}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <span className="text-gray-900">{kit.jobTitle}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <span className="text-gray-500">{kit.company}</span>
+                      </div>
+                      <div className="flex items-center justify-center">
                         <button 
-                          className="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-1 px-3 border border-gray-400 rounded shadow text-sm"
+                          onClick={() => {
+                            router.push(`/job-hub/${kit.id}?tab=coverLetter`);
+                          }}
+                          className="text-gray-600 hover:text-gray-900 px-3 py-1 rounded border border-gray-300 text-sm"
+                        >
+                          Open
+                        </button>
+                      </div>
+                      <div className="flex items-center justify-center">
+                        <button 
+                          onClick={() => {
+                            router.push(`/job-hub/${kit.id}?tab=resume`);
+                          }}
+                          className="text-gray-600 hover:text-gray-900 px-3 py-1 rounded border border-gray-300 text-sm"
+                        >
+                          Open
+                        </button>
+                      </div>
+                      <div className="flex items-center justify-center">
+                        <button 
+                          className="text-gray-600 hover:text-gray-900 px-3 py-1 rounded border border-gray-300 text-sm"
                           onClick={() => {
                             navigator.clipboard.writeText(kit.followUpEmail);
                             alert('Follow-up email copied to clipboard!');
@@ -220,23 +239,57 @@ export default function JobHub() {
                         >
                           Copy
                         </button>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <Link
-                          href={`/job-hub/${kit.id}`}
-                          className="inline-flex items-center justify-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+                      </div>
+                      <div className="flex items-center justify-center space-x-2">
+                        <button 
+                          onClick={() => handleDelete(kit)}
+                          className="text-red-600 hover:text-red-900 p-2 rounded-full hover:bg-red-50"
+                          disabled={deletingId === kit.id}
                         >
-                          <span className="mr-1">⦿</span> Open
-                        </Link>
-                      </td>
-                    </tr>
+                          {deletingId === kit.id ? (
+                            <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
+                          ) : (
+                            <FaTrash size={16} />
+                          )}
+                        </button>
+                      </div>
+                    </div>
                   ))}
-                </tbody>
-              </table>
+                </div>
+              </div>
             </div>
           )}
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && kitToDelete && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Delete Application</h3>
+            <p className="text-gray-500 mb-6">
+              Are you sure you want to delete your application for {kitToDelete.jobTitle} at {kitToDelete.company}? This action cannot be undone.
+            </p>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  setKitToDelete(null);
+                }}
+                className="px-4 py-2 text-gray-700 hover:text-gray-900"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 } 

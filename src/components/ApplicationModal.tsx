@@ -59,11 +59,11 @@ export default function ApplicationModal({ isOpen, onClose }: ApplicationModalPr
   if (!isOpen) return null;
 
   const formalityOptions = [
-    { value: 'informal', label: 'Informal', position: '20%' },
-    { value: 'semi-casual', label: 'Semi-Casual', position: '40%' },
-    { value: 'neutral', label: 'Neutral', position: '60%' },
-    { value: 'semi-formal', label: 'Semi-Formal', position: '80%' },
-    { value: 'formal', label: 'Formal', position: '100%' }
+    { value: 'informal', label: 'Informal', position: '0%' },
+    { value: 'casual', label: 'Casual', position: '25%' },
+    { value: 'standard', label: 'Standard', position: '50%' },
+    { value: 'formal', label: 'Formal', position: '75%' },
+    { value: 'professional', label: 'Professional', position: '100%' }
   ];
 
   const handleFormalityChange = (value: string) => {
@@ -219,22 +219,74 @@ export default function ApplicationModal({ isOpen, onClose }: ApplicationModalPr
           </div>
           
           <div className="bg-gray-100 p-4 rounded-lg mb-6">
-            <p className="font-medium mb-2">Select formality level</p>
-            <div className="mb-2 relative">
-              <div className="w-full bg-gray-300 h-2 rounded-full">
+            <p className="font-medium mb-4">Select formality level</p>
+            <div className="mb-4 relative">
+              <div 
+                className="w-full bg-gray-200 h-1 rounded-full cursor-pointer"
+                onClick={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const x = e.clientX - rect.left;
+                  const percentage = (x / rect.width) * 100;
+                  let newFormality = 'standard';
+                  if (percentage <= 12.5) newFormality = 'informal';
+                  else if (percentage <= 37.5) newFormality = 'casual';
+                  else if (percentage <= 62.5) newFormality = 'standard';
+                  else if (percentage <= 87.5) newFormality = 'formal';
+                  else newFormality = 'professional';
+                  handleFormalityChange(newFormality);
+                }}
+              >
                 <div 
-                  className="bg-purple-500 h-2 rounded-full"
-                  style={{ width: formality === 'informal' ? '20%' : 
-                           formality === 'semi-casual' ? '40%' : 
-                           formality === 'neutral' ? '60%' : 
-                           formality === 'semi-formal' ? '80%' : '100%' }}
+                  className="bg-purple-500 h-1 rounded-full transition-all duration-200"
+                  style={{ 
+                    width: formality === 'informal' ? '0%' : 
+                           formality === 'casual' ? '25%' : 
+                           formality === 'standard' ? '50%' : 
+                           formality === 'formal' ? '75%' : '100%' 
+                  }}
                 />
-                <div className="absolute -top-1 left-0 w-full flex justify-between">
+                <div 
+                  className="absolute -top-2 left-0 w-full flex justify-between"
+                  onMouseDown={(e) => {
+                    if (isProcessing) return;
+                    const slider = e.currentTarget.parentElement;
+                    if (!slider) return;
+                    
+                    const handleDrag = (moveEvent: MouseEvent) => {
+                      const rect = slider.getBoundingClientRect();
+                      const x = moveEvent.clientX - rect.left;
+                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
+                      
+                      let newFormality = 'standard';
+                      if (percentage <= 12.5) newFormality = 'informal';
+                      else if (percentage <= 37.5) newFormality = 'casual';
+                      else if (percentage <= 62.5) newFormality = 'standard';
+                      else if (percentage <= 87.5) newFormality = 'formal';
+                      else newFormality = 'professional';
+                      
+                      handleFormalityChange(newFormality);
+                    };
+
+                    const handleMouseUp = () => {
+                      document.removeEventListener('mousemove', handleDrag);
+                      document.removeEventListener('mouseup', handleMouseUp);
+                      document.body.style.cursor = 'default';
+                    };
+
+                    document.addEventListener('mousemove', handleDrag);
+                    document.addEventListener('mouseup', handleMouseUp);
+                    document.body.style.cursor = 'grabbing';
+                  }}
+                >
                   {formalityOptions.map((option) => (
                     <button
                       key={option.value}
                       onClick={() => handleFormalityChange(option.value)}
-                      className={`w-5 h-5 rounded-full ${formality === option.value ? 'bg-purple-500' : 'bg-white border-2 border-gray-300'}`}
+                      className={`w-4 h-4 rounded-full transition-all duration-200 transform hover:scale-110 cursor-grab active:cursor-grabbing
+                        ${formality === option.value 
+                          ? 'bg-purple-500 ring-2 ring-purple-200 ring-offset-2' 
+                          : 'bg-white border border-gray-300 hover:border-purple-300'
+                        }`}
                       style={{ transform: 'translateX(-50%)', left: option.position }}
                       disabled={isProcessing}
                     />
@@ -242,14 +294,19 @@ export default function ApplicationModal({ isOpen, onClose }: ApplicationModalPr
                 </div>
               </div>
             </div>
-            <div className="flex justify-between text-sm mt-4">
+            <div className="flex justify-between text-sm">
               {formalityOptions.map((option) => (
-                <span 
+                <button
                   key={option.value}
-                  className={`${formality === option.value ? 'font-medium text-purple-500' : 'text-gray-500'}`}
+                  onClick={() => handleFormalityChange(option.value)}
+                  className={`transition-colors duration-200 px-2 py-1 rounded hover:bg-purple-50
+                    ${formality === option.value 
+                      ? 'text-purple-600 font-medium' 
+                      : 'text-gray-500 hover:text-purple-500'
+                    }`}
                 >
                   {option.label}
-                </span>
+                </button>
               ))}
             </div>
           </div>

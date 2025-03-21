@@ -17,7 +17,6 @@ export default function ResultsPage() {
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [copiedEmail, setCopiedEmail] = useState(false);
-  const [showBlurredTemplate, setShowBlurredTemplate] = useState(true);
   const [showResumePreview, setShowResumePreview] = useState(false);
   const [jobTitle, setJobTitle] = useState<string>('');
   const [company, setCompany] = useState<string>('');
@@ -796,7 +795,7 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
   
   return (
     <div className="min-h-screen bg-gray-50 py-10">
-      <div className="max-w-5xl mx-auto px-4">
+      <div className="max-w-4xl mx-auto px-4">
         <div className="text-center max-w-3xl mx-auto">
           <h1 className="text-3xl font-bold mb-2">Here is your Hire-Me Pack!</h1>
           <p className="text-gray-600">Everything you need for your job application</p>
@@ -808,247 +807,240 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
             <span className="text-gray-500 text-sm uppercase tracking-wider">HIRE ME PACK</span>
           </div>
           
-          <div className="grid grid-cols-3 gap-6">
-            {/* Cover Letter Section */}
-            <div className="border border-gray-200 rounded-lg p-4">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center">
-                  <div className="w-6 h-6 bg-yellow-100 rounded-full flex items-center justify-center mr-2">
-                    <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                      <path fillRule="evenodd" d="M5 4a3 3 0 00-3 3v6a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3H5zm0 2a1 1 0 00-1 1v6a1 1 0 001 1h10a1 1 0 001-1V7a1 1 0 00-1-1H5z" clipRule="evenodd"></path>
-                    </svg>
-                  </div>
-                  <span className="font-medium">Cover Letter</span>
-                </div>
-                <div className="flex space-x-3">
-                  <button className="text-gray-500 hover:text-gray-700 flex items-center">
-                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
-                    </svg>
-                    <span className="text-sm">Edit</span>
-                  </button>
-                  <button 
-                    className="text-gray-500 hover:text-gray-700" 
-                    onClick={handleDownloadAsPdf}
-                    title="Download as PDF"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-                    </svg>
-                  </button>
-                </div>
-              </div>
-              <div className="h-[380px] overflow-y-auto bg-gray-100 rounded p-4 text-sm">
-                {result && (
-                  <div className="prose prose-sm max-w-none" ref={coverLetterRef}>
-                    <style jsx global>{`
-                      /* Remove all default margins */
-                      .cover-letter-content p {
-                        margin: 0;
-                        line-height: 1.4;
-                      }
-                      
-                      /* Better paragraph spacing for content paragraphs */
-                      .cover-letter-content p:not(:first-child):not(:nth-child(2)):not(:nth-child(3)):not(:nth-child(4)):not(:nth-child(5)):not(:nth-child(6)):not(:nth-child(7)) {
-                        margin-bottom: 1rem;
-                      }
-                      
-                      /* Add spacing before and after "Dear Hiring Manager" */
-                      .cover-letter-content p:nth-child(8) {
-                        margin-top: 1.5rem;
-                        margin-bottom: 1rem;
-                      }
-                      
-                      /* Special styling for greeting paragraph */
-                      .greeting-paragraph {
-                        margin-top: 1.5rem !important;
-                        margin-bottom: 1rem !important;
-                      }
-                    `}</style>
-                    <div className="cover-letter-content text-[0.85rem]">
-                      <ReactMarkdown
-                        components={{
-                          p: ({node, children, ...props}) => {
-                            const content = node.children
-                              .filter(child => child.type === 'text')
-                              .map(child => child.value)
-                              .join('');
-                            
-                            const isDearParagraph = content.includes('Dear');
-                            
-                            return (
-                              <p 
-                                {...props} 
-                                className={isDearParagraph ? 'greeting-paragraph' : ''}
-                              >
-                                {children}
-                              </p>
-                            );
-                          }
-                        }}
-                      >
-                        {result}
-                      </ReactMarkdown>
+          <div className="flex flex-col gap-4">
+            {/* Top Row: Cover Letter and Resume */}
+            <div className="grid grid-cols-2 gap-6">
+              {/* Cover Letter Section */}
+              <div className="border border-gray-200 rounded-lg p-3">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center">
+                    <div className="w-6 h-6 bg-yellow-100 rounded-full flex items-center justify-center mr-2">
+                      <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path fillRule="evenodd" d="M5 4a3 3 0 00-3 3v6a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3H5zm0 2a1 1 0 00-1 1v6a1 1 0 001 1h10a1 1 0 001-1V7a1 1 0 00-1-1H5z" clipRule="evenodd"></path>
+                      </svg>
                     </div>
+                    <span className="font-medium">Cover Letter</span>
                   </div>
-                )}
-              </div>
-            </div>
-            
-            {/* Resume Section */}
-            <div className="border border-gray-200 rounded-lg p-4">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center">
-                  <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mr-2">
-                    <svg className="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                      <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd"></path>
-                    </svg>
+                  <div className="flex space-x-3">
+                    <button className="text-gray-500 hover:text-gray-700 flex items-center">
+                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                      </svg>
+                      <span className="text-sm">Edit</span>
+                    </button>
+                    <button 
+                      className="text-gray-500 hover:text-gray-700" 
+                      onClick={handleDownloadAsPdf}
+                      title="Download as PDF"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                      </svg>
+                    </button>
                   </div>
-                  <span className="font-medium">Resume</span>
                 </div>
-                <div className="flex space-x-3">
-                  <button 
-                    className="text-gray-500 hover:text-gray-700 flex items-center"
-                    onClick={handleCopyResumeToClipboard}
-                    title="Copy to clipboard"
-                  >
-                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
-                    </svg>
-                    <span className="text-sm">Copy</span>
-                  </button>
-                  <button 
-                    className="text-gray-500 hover:text-gray-700 flex items-center" 
-                    onClick={() => setShowResumePreview(true)}
-                    title="Preview"
-                  >
-                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                    </svg>
-                    <span className="text-sm">Preview</span>
-                  </button>
-                  <button 
-                    className="text-gray-500 hover:text-gray-700" 
-                    onClick={handleDownloadResumePdf}
-                    title="Download as PDF"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-                    </svg>
-                  </button>
-                </div>
-              </div>
-              <div className="h-[380px] bg-gray-50 rounded relative">
-                <div className="relative h-full">
-                  {resume ? (
-                    <div 
-                      className={`w-full h-full p-4 overflow-auto text-sm ${showBlurredTemplate ? 'blur-[4px]' : ''}`} 
-                      ref={resumeRef}
-                      style={{ 
-                        whiteSpace: 'pre-wrap',
-                        fontFamily: 'Arial, sans-serif'
-                      }}
-                    >
-                      <ReactMarkdown>
-                        {resume}
-                      </ReactMarkdown>
-                    </div>
-                  ) : (
-                    <pre 
-                      className={`w-full h-full p-4 overflow-auto text-sm font-mono ${showBlurredTemplate ? 'blur-[4px]' : ''}`}
-                      style={{ 
-                        whiteSpace: 'pre-wrap',
-                        fontFamily: 'Georgia, serif',
-                        textAlign: 'left'
-                      }}
-                    >
-                      {defaultResumeTemplate}
-                    </pre>
-                  )}
-                  {showBlurredTemplate && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="bg-white bg-opacity-80 px-4 py-2 rounded-lg text-center">
-                        <p className="text-gray-700 font-medium">Click to view your resume</p>
-                        <button 
-                          onClick={() => setShowBlurredTemplate(false)}
-                          className="mt-2 bg-purple-500 text-white px-4 py-1 rounded-md text-sm hover:bg-purple-600 transition-colors"
+                <div className="h-[300px] overflow-y-auto bg-gray-100 rounded p-3 text-sm">
+                  {result && (
+                    <div className="prose prose-sm max-w-none" ref={coverLetterRef}>
+                      <style jsx global>{`
+                        /* Remove all default margins */
+                        .cover-letter-content p {
+                          margin: 0;
+                          line-height: 1.4;
+                        }
+                        
+                        /* Better paragraph spacing for content paragraphs */
+                        .cover-letter-content p:not(:first-child):not(:nth-child(2)):not(:nth-child(3)):not(:nth-child(4)):not(:nth-child(5)):not(:nth-child(6)):not(:nth-child(7)) {
+                          margin-bottom: 1rem;
+                        }
+                        
+                        /* Add spacing before and after "Dear Hiring Manager" */
+                        .cover-letter-content p:nth-child(8) {
+                          margin-top: 1.5rem;
+                          margin-bottom: 1rem;
+                        }
+                        
+                        /* Special styling for greeting paragraph */
+                        .greeting-paragraph {
+                          margin-top: 1.5rem !important;
+                          margin-bottom: 1rem !important;
+                        }
+                      `}</style>
+                      <div className="cover-letter-content text-[0.85rem]">
+                        <ReactMarkdown
+                          components={{
+                            p: ({node, children, ...props}) => {
+                              const content = node.children
+                                .filter(child => child.type === 'text')
+                                .map(child => child.value)
+                                .join('');
+                              
+                              const isDearParagraph = content.includes('Dear');
+                              
+                              return (
+                                <p 
+                                  {...props} 
+                                  className={isDearParagraph ? 'greeting-paragraph' : ''}
+                                >
+                                  {children}
+                                </p>
+                              );
+                            }
+                          }}
                         >
-                          View Resume
-                        </button>
+                          {result}
+                        </ReactMarkdown>
                       </div>
                     </div>
                   )}
                 </div>
               </div>
-            </div>
-            
-            {/* Follow-up Email Section */}
-            <div className="border border-gray-200 rounded-lg p-4">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center">
-                  <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center mr-2">
-                    <svg className="w-4 h-4 text-purple-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path>
-                      <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path>
-                    </svg>
+              
+              {/* Resume Section */}
+              <div className="border border-gray-200 rounded-lg p-3">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center">
+                    <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mr-2">
+                      <svg className="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd"></path>
+                      </svg>
+                    </div>
+                    <span className="font-medium">Resume</span>
                   </div>
-                  <span className="font-medium">Follow-up Email</span>
+                  <div className="flex space-x-3">
+                    <button 
+                      className="text-gray-500 hover:text-gray-700 flex items-center"
+                      onClick={handleCopyResumeToClipboard}
+                      title="Copy to clipboard"
+                    >
+                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
+                      </svg>
+                      <span className="text-sm">Copy</span>
+                    </button>
+                    <button 
+                      className="text-gray-500 hover:text-gray-700 flex items-center" 
+                      onClick={() => setShowResumePreview(true)}
+                      title="Preview"
+                    >
+                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                      </svg>
+                      <span className="text-sm">Preview</span>
+                    </button>
+                    <button 
+                      className="text-gray-500 hover:text-gray-700" 
+                      onClick={handleDownloadResumePdf}
+                      title="Download as PDF"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                      </svg>
+                    </button>
+                  </div>
                 </div>
-                <div className="flex space-x-3">
-                  <button 
-                    className="text-gray-500 hover:text-gray-700 flex items-center"
-                    onClick={handleCopyEmailToClipboard}
-                    title="Copy to clipboard"
-                  >
-                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
-                    </svg>
-                    <span className="text-sm">{copiedEmail ? 'Copied!' : 'Copy'}</span>
-                  </button>
-                  <button 
-                    className="text-gray-500 hover:text-gray-700" 
-                    onClick={handleDownloadEmailAsPdf}
-                    title="Download as PDF"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-                    </svg>
-                  </button>
+                <div className="h-[300px] bg-gray-50 rounded relative">
+                  <div className="relative h-full">
+                    {resume ? (
+                      <div 
+                        className="w-full h-full p-4 overflow-auto text-sm" 
+                        ref={resumeRef}
+                        style={{ 
+                          whiteSpace: 'pre-wrap',
+                          fontFamily: 'Arial, sans-serif'
+                        }}
+                      >
+                        <ReactMarkdown>
+                          {resume}
+                        </ReactMarkdown>
+                      </div>
+                    ) : (
+                      <pre 
+                        className="w-full h-full p-4 overflow-auto text-sm font-mono"
+                        style={{ 
+                          whiteSpace: 'pre-wrap',
+                          fontFamily: 'Georgia, serif',
+                          textAlign: 'left'
+                        }}
+                      >
+                        {defaultResumeTemplate}
+                      </pre>
+                    )}
+                  </div>
                 </div>
               </div>
-              <div className="h-[380px] overflow-y-auto bg-gray-100 rounded p-4 text-sm">
-                {followUpEmail ? (
-                  <div className="prose prose-sm max-w-none" ref={followUpEmailRef}>
-                    <style jsx global>{`
-                      /* Remove all default margins */
-                      .email-content p {
-                        margin: 0;
-                        line-height: 1.4;
-                      }
-                      
-                      /* Better paragraph spacing for content paragraphs */
-                      .email-content p:not(:first-child) {
-                        margin-bottom: 1rem;
-                      }
-                      
-                      /* Special styling for subject line */
-                      .email-content p:first-child {
-                        font-weight: bold;
-                        margin-bottom: 1.5rem;
-                      }
-                    `}</style>
-                    <div className="email-content text-[0.85rem]">
-                      <ReactMarkdown>
-                        {followUpEmail}
-                      </ReactMarkdown>
+            </div>
+            
+            {/* Bottom Row: Follow-up Email (Centered) */}
+            <div className="w-2/5 mx-auto">
+              {/* Follow-up Email Section */}
+              <div className="border border-gray-200 rounded-lg p-3">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center">
+                    <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center mr-2">
+                      <svg className="w-4 h-4 text-purple-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path>
+                        <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path>
+                      </svg>
                     </div>
+                    <span className="font-medium">Follow-up Email</span>
                   </div>
-                ) : (
-                  <div className="h-full flex items-center justify-center">
-                    <p className="text-gray-400">No follow-up email generated</p>
+                  <div className="flex space-x-3">
+                    <button 
+                      className="text-gray-500 hover:text-gray-700 flex items-center"
+                      onClick={handleCopyEmailToClipboard}
+                      title="Copy to clipboard"
+                    >
+                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
+                      </svg>
+                      <span className="text-sm">{copiedEmail ? 'Copied!' : 'Copy'}</span>
+                    </button>
+                    <button 
+                      className="text-gray-500 hover:text-gray-700" 
+                      onClick={handleDownloadEmailAsPdf}
+                      title="Download as PDF"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                      </svg>
+                    </button>
                   </div>
-                )}
+                </div>
+                <div className="h-[300px] overflow-y-auto bg-gray-100 rounded p-3 text-sm">
+                  {followUpEmail ? (
+                    <div className="prose prose-sm max-w-none" ref={followUpEmailRef}>
+                      <style jsx global>{`
+                        /* Remove all default margins */
+                        .email-content p {
+                          margin: 0;
+                          line-height: 1.4;
+                        }
+                        
+                        /* Better paragraph spacing for content paragraphs */
+                        .email-content p:not(:first-child) {
+                          margin-bottom: 1rem;
+                        }
+                        
+                        /* Special styling for subject line */
+                        .email-content p:first-child {
+                          font-weight: bold;
+                          margin-bottom: 1.5rem;
+                        }
+                      `}</style>
+                      <div className="email-content text-[0.85rem]">
+                        <ReactMarkdown>
+                          {followUpEmail}
+                        </ReactMarkdown>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="h-full flex items-center justify-center">
+                      <p className="text-gray-400">No follow-up email generated</p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
