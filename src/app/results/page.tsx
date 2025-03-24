@@ -26,6 +26,8 @@ export default function ResultsPage() {
   const followUpEmailRef = useRef<HTMLDivElement>(null);
   const resumeRef = useRef<HTMLDivElement>(null);
   const resumePreviewRef = useRef<HTMLDivElement>(null);
+  const [isEditingResume, setIsEditingResume] = useState(false);
+  const [editedResume, setEditedResume] = useState<string | null>(null);
   
   // Default resume template for fallback
   const defaultResumeTemplate = `YUNUS ALI
@@ -338,6 +340,18 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
     if (resume) {
       navigator.clipboard.writeText(resume);
       // Add state for resume copy feedback if needed
+    }
+  };
+
+  const handleResumeEdit = () => {
+    if (isEditingResume) {
+      // Save the edited resume
+      setResume(editedResume);
+      setIsEditingResume(false);
+    } else {
+      // Start editing
+      setEditedResume(resume);
+      setIsEditingResume(true);
     }
   };
 
@@ -920,14 +934,17 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
                     </button>
                     <button 
                       className="text-gray-500 hover:text-gray-700 flex items-center" 
-                      onClick={() => setShowResumePreview(true)}
-                      title="Preview"
+                      onClick={handleResumeEdit}
+                      title={isEditingResume ? "Save" : "Edit"}
                     >
                       <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                        {isEditingResume ? (
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                        ) : (
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                        )}
                       </svg>
-                      <span className="text-sm">Preview</span>
+                      <span className="text-sm">{isEditingResume ? "Save" : "Edit"}</span>
                     </button>
                     <button 
                       className="text-gray-500 hover:text-gray-700" 
@@ -948,12 +965,29 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
                         ref={resumeRef}
                         style={{ 
                           whiteSpace: 'pre-wrap',
-                          fontFamily: 'Arial, sans-serif'
                         }}
                       >
-                        <ReactMarkdown>
-                          {resume}
-                        </ReactMarkdown>
+                        {isEditingResume ? (
+                          <textarea
+                            className="w-full h-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            value={editedResume || ''}
+                            onChange={(e) => setEditedResume(e.target.value)}
+                            style={{ 
+                              whiteSpace: 'pre-wrap',
+                              fontFamily: 'inherit',
+                              fontSize: 'inherit',
+                              resize: 'none'
+                            }}
+                          />
+                        ) : (
+                          <ReactMarkdown
+                            components={{
+                              p: ({node, ...props}) => <div className="mb-2" {...props} />,
+                            }}
+                          >
+                            {resume}
+                          </ReactMarkdown>
+                        )}
                       </div>
                     ) : (
                       <pre 

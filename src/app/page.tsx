@@ -13,11 +13,12 @@ export default function Home() {
   const { user } = useAuth();
   const router = useRouter();
   const [pricingPlan, setPricingPlan] = useState({
-    price: "£4.99",
+    price: "£3.99",
     period: "per month",
     activeTab: "monthly"
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentTemplate, setCurrentTemplate] = useState('steve-jobs');
 
   // Add scroll to section functionality
   const scrollToSection = (sectionId) => {
@@ -30,15 +31,9 @@ export default function Home() {
   const handlePricingTabChange = (plan) => {
     if (plan === "monthly") {
       setPricingPlan({
-        price: "£4.99",
-        period: "per month",
-        activeTab: "monthly"
-      });
-    } else if (plan === "quarterly") {
-      setPricingPlan({
         price: "£3.99",
         period: "per month",
-        activeTab: "quarterly"
+        activeTab: "monthly"
       });
     } else if (plan === "yearly") {
       setPricingPlan({
@@ -55,6 +50,14 @@ export default function Home() {
 
   const closeModal = () => {
     setIsModalOpen(false);
+  };
+
+  const handleTemplateSwitch = () => {
+    setCurrentTemplate(current => {
+      if (current === 'steve-jobs') return 'jeffrey-su';
+      if (current === 'jeffrey-su') return 'elon-musk';
+      return 'steve-jobs';
+    });
   };
 
   return (
@@ -406,16 +409,90 @@ export default function Home() {
             {/* Resume */}
             <div className="relative">
               <h3 className="text-xl font-semibold text-center absolute -top-10 left-0 right-0">Job-specific resume</h3>
-              <div className="shadow-xl transform hover:scale-[1.02] transition-transform rotate-[2deg] origin-top overflow-hidden rounded-lg">
-                <Image
-                  src="/steve-jobs.jpg"
-                  alt="Example Resume"
-                  width={450}
-                  height={550}
-                  style={{ width: '450px', height: '550px', objectFit: 'contain' }}
-                  className="object-contain"
-                  priority
-                />
+              <div className="flex items-center">
+                <div className="relative w-[450px] h-[550px]">
+                  {currentTemplate === 'steve-jobs' && (
+                    <Image
+                      src="/steve-jobs.jpg"
+                      alt="Steve Jobs Resume Template"
+                      width={450}
+                      height={550}
+                      style={{ 
+                        width: '450px', 
+                        height: '550px', 
+                        objectFit: 'contain',
+                        backgroundColor: 'white'
+                      }}
+                      className="shadow-xl transform hover:scale-[1.02] transition-transform rotate-[2deg] origin-top rounded-lg object-contain bg-white"
+                      priority
+                    />
+                  )}
+                  {currentTemplate === 'jeffrey-su' && (
+                    <Image
+                      src="/JeffreySu.jpg"
+                      alt="Jeffrey Su Resume Template"
+                      width={450}
+                      height={550}
+                      style={{ 
+                        width: '450px', 
+                        height: '550px', 
+                        objectFit: 'contain',
+                        backgroundColor: 'white'
+                      }}
+                      className="shadow-xl transform hover:scale-[1.02] transition-transform rotate-[2deg] origin-top rounded-lg object-contain bg-white"
+                      priority
+                      unoptimized
+                    />
+                  )}
+                  {currentTemplate === 'elon-musk' && (
+                    <div className="relative">
+                      <Image
+                        src="/Elonmusk.jpg"
+                        alt="Elon Musk Resume Template"
+                        width={450}
+                        height={550}
+                        style={{ 
+                          width: '450px', 
+                          height: '550px', 
+                          objectFit: 'contain',
+                          backgroundColor: 'white'
+                        }}
+                        className="shadow-xl transform hover:scale-[1.02] transition-transform rotate-[2deg] origin-top rounded-lg object-contain bg-white"
+                        priority
+                        unoptimized
+                      />
+                      <div className="absolute -bottom-8 left-0 right-0">
+                        <p className="text-emerald-500 text-sm font-medium transform rotate-[2deg] origin-top w-[450px] mx-auto whitespace-nowrap">
+                          Best Results: Industry Recommended with Highest Success Rate!
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                {/* Right Arrow */}
+                <button 
+                  className="ml-8 cursor-pointer"
+                  onClick={handleTemplateSwitch}
+                  aria-label="Switch template"
+                >
+                  <div 
+                    className="w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center cursor-pointer hover:shadow-xl transition-all duration-300 hover:bg-gray-50"
+                  >
+                    <svg 
+                      className="w-6 h-6 text-[#7046EC]" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" 
+                        strokeWidth="2" 
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
+                  </div>
+                </button>
               </div>
             </div>
           </div>
@@ -733,14 +810,15 @@ export default function Home() {
           </p>
         </div>
 
+        {/* Pricing Section Tabs */}
         <div className="flex justify-center mb-12">
           <div className="inline-flex bg-gray-100 p-1 rounded-full relative">
             {/* Sliding background */}
             <div 
               className="absolute top-1 bottom-1 rounded-full bg-[#7046EC] transition-all duration-300 ease-in-out z-0"
               style={{ 
-                left: pricingPlan.activeTab === "monthly" ? "4px" : pricingPlan.activeTab === "quarterly" ? "calc(33.33% + 2px)" : "calc(66.66% + 0px)",
-                width: "calc(33.33% - 6px)"
+                left: pricingPlan.activeTab === "monthly" ? "4px" : "calc(50% - 2px)",
+                width: "calc(50% - 6px)"
               }}
             ></div>
             
@@ -749,12 +827,6 @@ export default function Home() {
               onClick={() => handlePricingTabChange("monthly")}
             >
               Monthly
-            </button>
-            <button 
-              className={`px-6 py-2 rounded-full text-sm font-medium relative z-10 transition-colors duration-300 ${pricingPlan.activeTab === "quarterly" ? "text-white" : "text-gray-600"}`}
-              onClick={() => handlePricingTabChange("quarterly")}
-            >
-              Quarterly
             </button>
             <button 
               className={`px-6 py-2 rounded-full text-sm font-medium relative z-10 transition-colors duration-300 ${pricingPlan.activeTab === "yearly" ? "text-white" : "text-gray-600"}`}

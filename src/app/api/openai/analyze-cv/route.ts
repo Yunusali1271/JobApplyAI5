@@ -6,6 +6,27 @@ const openai = new OpenAI({
   apiKey: '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',
 });
 
+// Add this function before the POST handler
+function cleanResumeContent(resumeContent: string): string {
+  // Split the content by double newlines to separate sections
+  const sections = resumeContent.split('\n\n');
+  
+  // Find the index where the explanation starts (usually begins with "This CV is tailored to")
+  const explanationIndex = sections.findIndex(section => 
+    section.toLowerCase().includes('this cv is tailored to') ||
+    section.toLowerCase().includes('this resume is tailored to') ||
+    section.toLowerCase().includes('this harvard-style cv')
+  );
+  
+  // If we found an explanation section, remove it and all subsequent sections
+  if (explanationIndex !== -1) {
+    sections.splice(explanationIndex);
+  }
+  
+  // Join the remaining sections back together
+  return sections.join('\n\n');
+}
+
 export async function POST(req: Request) {
   try {
     // Parse the request body
@@ -74,7 +95,7 @@ Structure the CV in the following format:
 1.	Contact Information 
 o	Full name, phone number, email, LinkedIn URL (omit physical address)
 o	No photographs unless specifically requested
-2.	Personal Statement/Profile 
+2.	Personal Statement/Profile [header name = Summary] 
 o	2-3 concise sentences that align the candidate's experience with the job requirements
 o	Highlight most relevant qualifications and unique value proposition
 o	Include specific language that mirrors the job posting
@@ -82,7 +103,6 @@ o	Include specific language that mirrors the job posting
 o	Reverse chronological order
 o	Institution names, locations, graduation dates
 o	Degree titles, concentrations, minors
-o	GPA if above 3.5/4.0
 o	Relevant coursework that aligns with job requirements
 o	Academic honors and distinctions
 4.	Work/Research Experience 
@@ -104,6 +124,7 @@ o	List only the most relevant/impressive publications
 7.	Awards and Affiliations 
 o	Scholarships, honors, and recognitions
 o	Professional memberships and leadership roles
+At the end of the CV/resume, do not provide reasoning or context of why you have made the choices you have made in the resume, just provide the resume content.
 4. CREATE A TARGETED COVER LETTER
 •	Adapt tone and language based on the specified formality level: 
 o	Informal: Conversational, personal stories, first-person heavy
@@ -149,7 +170,7 @@ ADDITIONAL GUIDANCE
 •	Eliminate first-person pronouns from the CV (but allow in cover letter)
 •	Provide brief explanations for gaps in employment history if evident
 •	Prioritize recent, relevant experience over older roles
-  Do not provide any other additional text at the bottom of the cv i just want the cv/resume content no need to for an explanation at the bottom of the resume;`
+  Do not provide any other additional text at the bottom of the resume i just want the cv/resume content no need to for an explanation at the bottom of the resume;`
   
 
     const cvResumeUserPrompt = `
@@ -203,7 +224,8 @@ Please create a Harvard-style CV that is optimized for this specific job descrip
       throw new Error('Invalid response format from OpenAI for CV/resume');
     }
     
-    const cvResumeContent = cvResumeData.choices[0].message.content;
+    // Clean up the resume content before using it
+    const cvResumeContent = cleanResumeContent(cvResumeData.choices[0].message.content);
     console.log('CV/resume content length:', cvResumeContent?.length || 0);
     
     console.log('Calling OpenAI API for cover letter...');
