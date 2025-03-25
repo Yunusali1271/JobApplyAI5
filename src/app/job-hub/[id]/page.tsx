@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/hooks/useAuth";
 import { getApplicationKit, deleteApplicationKit, updateApplicationKit } from "@/lib/firebase/applicationKitUtils";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Sidebar from "@/app/components/Sidebar";
+import { FaArrowLeft } from "react-icons/fa";
 
 interface ApplicationKit {
   id: string;
@@ -137,8 +138,17 @@ export default function ApplicationKitDetail() {
             <>
               <div className="flex justify-between items-center mb-6">
                 <div>
-                  <h1 className="text-2xl font-bold">{kit.jobTitle}</h1>
-                  <p className="text-gray-600">{kit.company}</p>
+                  <div className="flex items-center gap-4 mb-1">
+                    <button
+                      onClick={() => router.push("/job-hub")}
+                      className="text-gray-600 hover:text-gray-900 p-1 rounded-full hover:bg-gray-100 transition-colors"
+                      aria-label="Back to dashboard"
+                    >
+                      <FaArrowLeft size={20} />
+                    </button>
+                    <h1 className="text-2xl font-bold">{kit.jobTitle}</h1>
+                  </div>
+                  <p className="text-gray-600 ml-9">{kit.company}</p>
                 </div>
                 <div className="flex items-center gap-4">
                   <select

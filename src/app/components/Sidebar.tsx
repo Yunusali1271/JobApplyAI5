@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { logoutUser } from "@/lib/firebase/firebaseUtils";
@@ -39,16 +40,18 @@ export default function Sidebar() {
       ]
     },
     {
-      group: "Extra",
+      group: "Premium",
       items: [
-        { name: "Auto apply", icon: <FaCog />, path: "/auto-apply" },
+        { name: "Interview Assistant", icon: <FaCog />, path: "/auto-apply" },
       ]
     }
   ];
 
   return (
-    <div className="w-56 bg-gray-800 text-white min-h-screen flex flex-col">
-      <div className="p-4 font-bold text-xl">JobApplyAI</div>
+    <div className="w-56 bg-[#1a1f2b] text-white min-h-screen flex flex-col">
+      <Link href="/" className="p-4 hover:text-gray-300 transition-colors">
+        <span className="text-xl font-bold">JobApply</span>
+      </Link>
 
       <div className="flex-1 overflow-y-auto">
         {navItems.map((group) => (

@@ -812,13 +812,13 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
       <div className="max-w-4xl mx-auto px-4">
         <div className="text-center max-w-3xl mx-auto">
           <h1 className="text-3xl font-bold mb-2">Here is your Hire-Me Pack!</h1>
-          <p className="text-gray-600">Everything you need for your job application</p>
+          <p className="text-gray-600">The application ultimate Tool-Kit</p>
         </div>
         
-        <div className="bg-white rounded-2xl shadow-lg p-8 mb-10">
+        <div className="bg-white rounded-2xl shadow-lg p-8 mb-10 border border-purple-600">
           <div className="flex justify-between items-center mb-8">
-            <div className="h-4 w-64 bg-gray-200 rounded-full"></div>
-            <span className="text-gray-500 text-sm uppercase tracking-wider">HIRE ME PACK</span>
+            <div></div>
+            <span className="bg-purple-600 text-white text-sm uppercase tracking-wider px-4 py-1 rounded-full font-bold">HIRE ME PACK</span>
           </div>
           
           <div className="flex flex-col gap-4">
@@ -833,7 +833,7 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
                         <path fillRule="evenodd" d="M5 4a3 3 0 00-3 3v6a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3H5zm0 2a1 1 0 00-1 1v6a1 1 0 001 1h10a1 1 0 001-1V7a1 1 0 00-1-1H5z" clipRule="evenodd"></path>
                       </svg>
                     </div>
-                    <span className="font-medium">Cover Letter</span>
+                    <span className="font-bold">Cover Letter</span>
                   </div>
                   <div className="flex space-x-3">
                     <button className="text-gray-500 hover:text-gray-700 flex items-center">
@@ -919,7 +919,7 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
                         <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd"></path>
                       </svg>
                     </div>
-                    <span className="font-medium">Resume</span>
+                    <span className="font-bold">Resume</span>
                   </div>
                   <div className="flex space-x-3">
                     <button 
@@ -961,7 +961,7 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
                   <div className="relative h-full">
                     {resume ? (
                       <div 
-                        className="w-full h-full p-4 overflow-auto text-sm" 
+                        className="w-full h-full overflow-auto text-sm" 
                         ref={resumeRef}
                         style={{ 
                           whiteSpace: 'pre-wrap',
@@ -1018,7 +1018,7 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
                         <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path>
                       </svg>
                     </div>
-                    <span className="font-medium">Follow-up Email</span>
+                    <span className="font-bold">Follow-up Email</span>
                   </div>
                   <div className="flex space-x-3">
                     <button 
@@ -1083,14 +1083,14 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
         {/* Review Section */}
         <div className="flex flex-col items-center mt-12 mb-8">
           <div className="flex mb-2">⭐⭐⭐⭐⭐</div>
-          <p className="text-center text-gray-700 max-w-2xl mb-4">
-            "JobApplyAI transformed my job search completely! The tailored resume and cover letter helped me land interviews at top tech companies. The follow-up email was the perfect finishing touch - I got my dream job within 3 weeks!"
+          <p className="text-center text-gray-700 max-w-2xl mb-4 text-sm italic">
+            "JobApply transformed my job search completely! The tailored resume and cover letter helped me land interviews at top tech companies. The follow-up email was the perfect finishing touch - I got my dream job within 3 weeks!"
           </p>
           <div className="flex items-center">
             <div className="w-8 h-8 bg-[#7046EC] rounded-full flex items-center justify-center text-white font-semibold mr-2">
               M
             </div>
-            <span className="font-medium">Michael T.</span>
+            <span className="font-medium text-sm">Michael T.</span>
           </div>
         </div>
         
