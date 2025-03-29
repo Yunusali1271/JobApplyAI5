@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from "@/lib/hooks/useAuth";
+import { useIpLimits } from "@/lib/hooks/useIpLimits";
 import { saveApplicationKit } from "@/lib/firebase/applicationKitUtils";
 import { useRouter } from "next/navigation";
 
@@ -10,14 +11,100 @@ interface ApplicationModalProps {
 
 export default function ApplicationModal({ isOpen, onClose }: ApplicationModalProps) {
   const { user } = useAuth();
+  const { hasCreatedPack, isLoading: checkingIpLimit, error: ipError, recordPackCreation } = useIpLimits();
   const router = useRouter();
-  const [formality, setFormality] = useState('informal');
+  const [formality, setFormality] = useState('standard');
   const [cvText, setCvText] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [jobDescription, setJobDescription] = useState('');
   const [extractedJobDetails, setExtractedJobDetails] = useState({ jobTitle: '', company: '' });
   const [isExtractingDetails, setIsExtractingDetails] = useState(false);
-  
+  const trackRef = useRef<HTMLDivElement>(null);
+  const isDragging = useRef(false);
+
+  const formalityOptions = [
+    { value: 'informal', label: 'Informal', position: 0 },
+    { value: 'casual', label: 'Casual', position: 25 },
+    { value: 'standard', label: 'Standard', position: 50 },
+    { value: 'formal', label: 'Formal', position: 75 },
+    { value: 'professional', label: 'Professional', position: 100 }
+  ];
+
+  // Find percentage for the slider and get formality value
+  const getPercentageAndFormality = (clientX: number) => {
+    if (!trackRef.current) return { percentage: 50, value: 'standard' };
+    
+    const rect = trackRef.current.getBoundingClientRect();
+    const rawPercentage = ((clientX - rect.left) / rect.width) * 100;
+    const percentage = Math.max(0, Math.min(100, rawPercentage));
+    
+    let value = 'standard';
+    if (percentage < 12.5) value = 'informal';
+    else if (percentage < 37.5) value = 'casual';
+    else if (percentage < 62.5) value = 'standard';
+    else if (percentage < 87.5) value = 'formal';
+    else value = 'professional';
+    
+    return { percentage, value };
+  };
+
+  // Handle track click
+  const handleTrackClick = useCallback((e: React.MouseEvent) => {
+    if ((hasCreatedPack && !user) || isProcessing || isDragging.current) return;
+    
+    const { value } = getPercentageAndFormality(e.clientX);
+    setFormality(value);
+  }, [hasCreatedPack, user, isProcessing]);
+
+  // Handle thumb drag
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    if ((hasCreatedPack && !user) || isProcessing) return;
+    
+    e.preventDefault();
+    isDragging.current = true;
+    
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      if (!isDragging.current) return;
+      
+      const { value } = getPercentageAndFormality(moveEvent.clientX);
+      setFormality(value);
+    };
+    
+    const handleMouseUp = () => {
+      isDragging.current = false;
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+    
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  }, [hasCreatedPack, user, isProcessing]);
+
+  // Handle touch events for mobile
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if ((hasCreatedPack && !user) || isProcessing) return;
+    
+    e.preventDefault();
+    isDragging.current = true;
+    
+    const handleTouchMove = (moveEvent: TouchEvent) => {
+      if (!isDragging.current || !moveEvent.touches[0]) return;
+      
+      const { value } = getPercentageAndFormality(moveEvent.touches[0].clientX);
+      setFormality(value);
+    };
+    
+    const handleTouchEnd = () => {
+      isDragging.current = false;
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleTouchEnd);
+    };
+    
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
+    document.addEventListener('touchend', handleTouchEnd);
+  }, [hasCreatedPack, user, isProcessing]);
+
+  // Setup rest of component (job description extraction, etc.)
   useEffect(() => {
     const extractJobDetails = async () => {
       if (!jobDescription.trim()) {
@@ -51,23 +138,22 @@ export default function ApplicationModal({ isOpen, onClose }: ApplicationModalPr
       }
     };
 
-    // Debounce the extraction to avoid too many API calls
     const timeoutId = setTimeout(extractJobDetails, 1000);
     return () => clearTimeout(timeoutId);
   }, [jobDescription]);
 
   if (!isOpen) return null;
 
-  const formalityOptions = [
-    { value: 'informal', label: 'Informal', position: '0%' },
-    { value: 'casual', label: 'Casual', position: '25%' },
-    { value: 'standard', label: 'Standard', position: '50%' },
-    { value: 'formal', label: 'Formal', position: '75%' },
-    { value: 'professional', label: 'Professional', position: '100%' }
-  ];
-
-  const handleFormalityChange = (value: string) => {
-    setFormality(value);
+  // Get position for the thumb
+  const getThumbPosition = () => {
+    switch (formality) {
+      case 'informal': return '0%';
+      case 'casual': return '25%';
+      case 'standard': return '50%';
+      case 'formal': return '75%';
+      case 'professional': return '100%';
+      default: return '50%';
+    }
   };
 
   const handleCvTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -78,6 +164,7 @@ export default function ApplicationModal({ isOpen, onClose }: ApplicationModalPr
     setJobDescription(e.target.value);
   };
 
+  // Generate button click handler
   const handleGenerateClick = async () => {
     if (!cvText.trim()) {
       alert('Please enter your CV text');
@@ -92,6 +179,13 @@ export default function ApplicationModal({ isOpen, onClose }: ApplicationModalPr
     if (!extractedJobDetails.jobTitle || !extractedJobDetails.company) {
       alert('Please wait for job details to be extracted');
       return;
+    }
+    
+    if (!user) {
+      const allowed = await recordPackCreation();
+      if (!allowed) {
+        return;
+      }
     }
 
     setIsProcessing(true);
@@ -173,6 +267,17 @@ export default function ApplicationModal({ isOpen, onClose }: ApplicationModalPr
         <div className="p-6">
           <h2 className="text-xl font-bold text-center mb-6">Create a new Hire Me Pack</h2>
           
+          {hasCreatedPack && !user && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-600">You have already created a Hire Me Pack. Please log in to create more.</p>
+              <p className="text-sm mt-2">
+                <a href="/login" className="text-blue-600 font-medium">
+                  Log in or create an account
+                </a> to create unlimited Hire Me Packs.
+              </p>
+            </div>
+          )}
+          
           <div className="bg-gray-100 p-4 rounded-lg mb-6">
             <p className="font-medium mb-2">Enter your CV text</p>
             <textarea 
@@ -180,7 +285,7 @@ export default function ApplicationModal({ isOpen, onClose }: ApplicationModalPr
               placeholder="Copy and paste your CV text here"
               value={cvText}
               onChange={handleCvTextChange}
-              disabled={isProcessing}
+              disabled={isProcessing || (hasCreatedPack && !user)}
             />
             <p className="text-xs text-gray-500 mt-2">
               Include your name, contact information, skills, education, and work experience
@@ -194,7 +299,7 @@ export default function ApplicationModal({ isOpen, onClose }: ApplicationModalPr
               placeholder="Copy and paste the job description here"
               value={jobDescription}
               onChange={handleJobDescriptionChange}
-              disabled={isProcessing}
+              disabled={isProcessing || (hasCreatedPack && !user)}
             />
             {isExtractingDetails && (
               <p className="text-sm text-purple-600 mt-2">
@@ -220,117 +325,78 @@ export default function ApplicationModal({ isOpen, onClose }: ApplicationModalPr
           
           <div className="bg-gray-100 p-4 rounded-lg mb-6">
             <p className="font-medium mb-4">Select formality level</p>
-            <div className="mb-4 relative">
+            
+            {/* Minimal Slider */}
+            <div className="mt-6 mb-2">
+              {/* Track */}
               <div 
-                className="w-full bg-gray-200 h-1 rounded-full cursor-pointer"
-                onClick={(e) => {
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  const x = e.clientX - rect.left;
-                  const percentage = (x / rect.width) * 100;
-                  let newFormality = 'standard';
-                  if (percentage <= 12.5) newFormality = 'informal';
-                  else if (percentage <= 37.5) newFormality = 'casual';
-                  else if (percentage <= 62.5) newFormality = 'standard';
-                  else if (percentage <= 87.5) newFormality = 'formal';
-                  else newFormality = 'professional';
-                  handleFormalityChange(newFormality);
-                }}
+                ref={trackRef}
+                className="w-full h-1 bg-gray-200 rounded-full relative cursor-pointer mb-6"
+                onClick={handleTrackClick}
               >
+                {/* Colored track portion */}
                 <div 
-                  className="bg-purple-500 h-1 rounded-full transition-all duration-200"
-                  style={{ 
-                    width: formality === 'informal' ? '0%' : 
-                           formality === 'casual' ? '25%' : 
-                           formality === 'standard' ? '50%' : 
-                           formality === 'formal' ? '75%' : '100%' 
-                  }}
-                />
-                <div 
-                  className="absolute -top-2 left-0 w-full flex justify-between"
-                  onMouseDown={(e) => {
-                    if (isProcessing) return;
-                    const slider = e.currentTarget.parentElement;
-                    if (!slider) return;
-                    
-                    const handleDrag = (moveEvent: MouseEvent) => {
-                      const rect = slider.getBoundingClientRect();
-                      const x = moveEvent.clientX - rect.left;
-                      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
-                      
-                      let newFormality = 'standard';
-                      if (percentage <= 12.5) newFormality = 'informal';
-                      else if (percentage <= 37.5) newFormality = 'casual';
-                      else if (percentage <= 62.5) newFormality = 'standard';
-                      else if (percentage <= 87.5) newFormality = 'formal';
-                      else newFormality = 'professional';
-                      
-                      handleFormalityChange(newFormality);
-                    };
-
-                    const handleMouseUp = () => {
-                      document.removeEventListener('mousemove', handleDrag);
-                      document.removeEventListener('mouseup', handleMouseUp);
-                      document.body.style.cursor = 'default';
-                    };
-
-                    document.addEventListener('mousemove', handleDrag);
-                    document.addEventListener('mouseup', handleMouseUp);
-                    document.body.style.cursor = 'grabbing';
-                  }}
-                >
-                  {formalityOptions.map((option) => (
-                    <button
-                      key={option.value}
-                      onClick={() => handleFormalityChange(option.value)}
-                      className={`w-4 h-4 rounded-full transition-all duration-200 transform hover:scale-110 cursor-grab active:cursor-grabbing
-                        ${formality === option.value 
-                          ? 'bg-purple-500 ring-2 ring-purple-200 ring-offset-2' 
-                          : 'bg-white border border-gray-300 hover:border-purple-300'
-                        }`}
-                      style={{ transform: 'translateX(-50%)', left: option.position }}
-                      disabled={isProcessing}
-                    />
-                  ))}
-                </div>
+                  className="absolute top-0 left-0 h-1 bg-purple-600 rounded-full"
+                  style={{ width: getThumbPosition() }}
+                ></div>
+                
+                {/* Thumb - small and minimal */}
+                <div
+                  className="absolute top-0 h-4 w-4 -mt-1.5 -ml-2 bg-purple-600 rounded-full cursor-grab active:cursor-grabbing"
+                  style={{ left: getThumbPosition() }}
+                  onMouseDown={handleMouseDown}
+                  onTouchStart={handleTouchStart}
+                  role="slider"
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={formalityOptions.find(o => o.value === formality)?.position || 50}
+                  aria-valuetext={formality}
+                  tabIndex={0}
+                  aria-label="Formality level"
+                ></div>
               </div>
-            </div>
-            <div className="flex justify-between text-sm">
-              {formalityOptions.map((option) => (
-                <button
-                  key={option.value}
-                  onClick={() => handleFormalityChange(option.value)}
-                  className={`transition-colors duration-200 px-2 py-1 rounded hover:bg-purple-50
-                    ${formality === option.value 
-                      ? 'text-purple-600 font-medium' 
-                      : 'text-gray-500 hover:text-purple-500'
+              
+              {/* Simple text labels only */}
+              <div className="flex justify-between w-full">
+                {formalityOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    className={`text-xs ${
+                      formality === option.value 
+                        ? 'font-medium text-purple-600' 
+                        : 'text-gray-500'
                     }`}
-                >
-                  {option.label}
-                </button>
-              ))}
+                    onClick={() => setFormality(option.value)}
+                    disabled={isProcessing || (hasCreatedPack && !user)}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
           
-          <div className="flex justify-end space-x-4">
+          <div className="flex justify-between pt-4 mt-4 border-t border-gray-200">
             <button
               onClick={onClose}
               className="px-4 py-2 text-gray-600 hover:text-gray-800"
-              disabled={isProcessing}
+              disabled={isProcessing || (hasCreatedPack && !user)}
             >
               Cancel
             </button>
             <button
               onClick={handleGenerateClick}
-              disabled={isProcessing || isExtractingDetails || !extractedJobDetails.jobTitle || !extractedJobDetails.company}
+              disabled={isProcessing || isExtractingDetails || !extractedJobDetails.jobTitle || !extractedJobDetails.company || (hasCreatedPack && !user)}
               className={`px-6 py-2 bg-purple-600 text-white rounded-lg flex items-center space-x-2
-                ${(isProcessing || isExtractingDetails || !extractedJobDetails.jobTitle || !extractedJobDetails.company) ? 
+                ${(isProcessing || isExtractingDetails || !extractedJobDetails.jobTitle || !extractedJobDetails.company || (hasCreatedPack && !user)) ? 
                   'opacity-50 cursor-not-allowed' : 'hover:bg-purple-700'}`}
             >
               {isProcessing ? (
                 <>
-                  <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
                   <span>Processing...</span>
                 </>

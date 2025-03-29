@@ -9,7 +9,7 @@ const blogPosts = [
     excerpt: "Learn the essential tips and tricks to create a compelling cover letter that catches recruiters' attention.",
     date: "March 24, 2024",
     readTime: "5 min read",
-    image: "/blog/cover-letter.jpg"
+    image: "/coverletter.jpeg"
   },
   {
     id: 2,
@@ -17,7 +17,7 @@ const blogPosts = [
     excerpt: "Discover the latest trends and best practices for creating a professional resume that stands out.",
     date: "March 23, 2024",
     readTime: "4 min read",
-    image: "/blog/resume.jpg"
+    image: "/Resume.png"
   },
   {
     id: 3,
@@ -25,7 +25,7 @@ const blogPosts = [
     excerpt: "How artificial intelligence is transforming the job application process and what it means for job seekers.",
     date: "March 22, 2024",
     readTime: "6 min read",
-    image: "/blog/ai.jpg"
+    image: "/AIjob.jpg"
   }
 ];
 
@@ -55,7 +55,9 @@ export default function BlogPage() {
                   src={post.image}
                   alt={post.title}
                   fill
-                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  priority={post.id === 1}
+                  className="object-cover hover:scale-105 transition-transform duration-300"
                 />
               </div>
               <div className="p-6">

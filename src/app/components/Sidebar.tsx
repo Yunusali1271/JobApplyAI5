@@ -61,18 +61,28 @@ export default function Sidebar() {
             </div>
             <nav>
               {group.items.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.path}
-                  className={`flex items-center px-4 py-3 text-sm ${
-                    isActive(item.path)
-                      ? "bg-gray-900 text-white"
-                      : "text-gray-300 hover:bg-gray-700"
-                  }`}
-                >
-                  <span className="mr-3">{item.icon}</span>
-                  {item.name}
-                </Link>
+                item.name === "Interview Assistant" ? (
+                  <div
+                    key={item.name}
+                    className={`flex items-center px-4 py-3 text-sm text-gray-300 cursor-default`}
+                  >
+                    <span className="mr-3">{item.icon}</span>
+                    {item.name}
+                  </div>
+                ) : (
+                  <Link
+                    key={item.name}
+                    href={item.path}
+                    className={`flex items-center px-4 py-3 text-sm ${
+                      isActive(item.path)
+                        ? "bg-gray-900 text-white"
+                        : "text-gray-300 hover:bg-gray-700"
+                    }`}
+                  >
+                    <span className="mr-3">{item.icon}</span>
+                    {item.name}
+                  </Link>
+                )
               ))}
             </nav>
           </div>

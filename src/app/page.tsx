@@ -2,15 +2,17 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/hooks/useAuth";
+import { useIpLimits } from "@/lib/hooks/useIpLimits";
 import ApplicationModal from "@/components/ApplicationModal";
 import { FaUser } from "react-icons/fa";
 import styles from './styles/rocket.module.css';
 
 export default function Home() {
   const { user } = useAuth();
+  const { hasCreatedPack, isLoading: checkingIpStatus } = useIpLimits();
   const router = useRouter();
   const [pricingPlan, setPricingPlan] = useState({
     price: "£3.99",
@@ -132,12 +134,18 @@ export default function Home() {
           ) : (
             <>
               <Link href="/login" className="text-gray-600 hover:text-gray-900">Log in</Link>
-              <button 
-                onClick={openModal}
-                className="bg-[#7046EC] text-white px-4 py-2 rounded-lg hover:bg-[#5e3bc4] transition-colors"
-              >
-                Start now
-              </button>
+              {hasCreatedPack ? (
+                <Link href="/login" className="bg-[#7046EC] text-white px-4 py-2 rounded-lg hover:bg-[#5e3bc4] transition-colors">
+                  Log in to create more
+                </Link>
+              ) : (
+                <button 
+                  onClick={openModal}
+                  className="bg-[#7046EC] text-white px-4 py-2 rounded-lg hover:bg-[#5e3bc4] transition-colors"
+                >
+                  Start now
+                </button>
+              )}
             </>
           )}
         </div>
@@ -154,12 +162,39 @@ export default function Home() {
             The AI-powered tool to help you create personalized, job-specific cover 
             letters and resumes with ease.
           </p>
-          <button 
-            onClick={openModal}
-            className="mt-8 bg-[#7046EC] text-white px-10 py-3.5 rounded-full text-[17px] font-medium hover:bg-[#5e3bc4] transition-colors"
-          >
-            Start now - it&apos;s free
-          </button>
+          
+          {!user && hasCreatedPack ? (
+            <div className="mt-8 flex flex-col items-center">
+              <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 mb-4 max-w-md">
+                <p className="text-sm">
+                  You've already created one Hire Me Pack. 
+                  <a href="/login" className="font-medium underline ml-1">Log in</a> to create more.
+                </p>
+              </div>
+              <div className="flex gap-4">
+                <a 
+                  href="/login"
+                  className="bg-[#7046EC] text-white px-8 py-3 rounded-full text-[17px] font-medium hover:bg-[#5e3bc4] transition-colors"
+                >
+                  Log in
+                </a>
+                <a 
+                  href="/register"
+                  className="border border-[#7046EC] text-[#7046EC] px-8 py-3 rounded-full text-[17px] font-medium hover:bg-[#f5f2ff] transition-colors"
+                >
+                  Sign up
+                </a>
+              </div>
+            </div>
+          ) : (
+            <button 
+              onClick={openModal}
+              className="mt-8 bg-[#7046EC] text-white px-10 py-3.5 rounded-full text-[17px] font-medium hover:bg-[#5e3bc4] transition-colors"
+            >
+              Start now - it&apos;s free
+            </button>
+          )}
+          
           <div className="mt-12 flex items-center justify-center gap-2 text-[#6e6e73]">
             <div className="flex -space-x-2">
               <Image

@@ -212,8 +212,8 @@ export default function JobHub() {
           <div className="flex justify-between items-center mb-6">
             <div>
               <h1 className="text-2xl font-bold">Tracking Portal</h1>
-              <p className="text-gray-600">
-                Your application dashboard is where you can manage all your Hire Me Packs and track job applications.
+              <p className="text-gray-600 mb-8">
+                Your application dashboard is where you can manage all your Hire Packs and track job applications.
               </p>
             </div>
             <button 
