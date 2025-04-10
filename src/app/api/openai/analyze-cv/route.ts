@@ -174,7 +174,9 @@ ADDITIONAL GUIDANCE
   
 
     const cvResumeUserPrompt = `
-Please analyze the following CV and job description to create a tailored Harvard-style resume with a ${formalityLevel} formality level:
+Please analyze the following CV and job description to create a tailored Harvard-style resume with a ${formalityLevel} formality level, and return response only in JSON format. not any description or explanation:
+
+Include a **professional summary paragraph** at the beginning of the response that highlights the candidate's key qualifications, years of experience, notable achievements, and career goals based on the CV and job description.
 
 CV:
 ${cv}
@@ -184,7 +186,98 @@ ${jobDescription}
 
 Formality Level: ${formalityLevel}
 
-Please create a Harvard-style CV that is optimized for this specific job description, highlighting the most relevant qualifications from the original CV.
+Your response would **strictly** follow the json format like below because I will parse the respone directly in my code.
+{
+  "summary": "A highly analytical and results-driven professional with X years of experience in [industry/field]...",
+
+  "personalInformation": {
+    "name": "John Doe",
+    "phone": "+1-234-567-8900",
+    "linkedin": "https://www.linkedin.com/in/johndoe",
+    "address": "123 Main St, City, State, Zip",
+    "email": "johndoe@gmail.com"
+  },
+  "professionalExperience": [
+    {
+      "company": "Ernst & Young",
+      "position": "Senior Consultant",
+      "location": "New York City (U.S) and Shanghai (CN)",
+      "duration": "July 2014 – June 2016",
+      "responsibilities": [
+        {
+          "category": "Finance transformation and operational restructuring",
+          "details": [
+            "Performed in-depth FTE analysis and identified lack of an operations function as an area of improvement; implementation of operations group decreased administrative hours by 10%, resulting in US$ 0.5M in cost savings",
+            "Shortened job management lifecycle by an average of 50 days, improved working capital position by 7% for Q4, and increased level of compliance by creating and integrating new Cash Advance, SharePoint, and AMEX processes"
+          ]
+        },
+        {
+          "category": "Supply chain analytics and process improvement",
+          "details": [
+            "Owned work stream in network optimization, transportation cost modeling, and safety stock calculation of a planned manufacturing plant; findings resulted in total cost savings of US$ 11M and projected savings of US$ 3.5M over two years",
+            "Performed assessment of assortment and distribution of products originating from a new manufacturing plant and diagnosed a high level of SKU complexity as an operational cost driver"
+          ]
+        }
+      ]
+    },
+    {
+      "company": "KPMG",
+      "position": "Summer Associate (Consultant)",
+      "location": "Hong Kong",
+      "duration": "June 2013 – August 2013",
+      "responsibilities": [
+        {
+          "category": "Project governance and resource coordination",
+          "details": [
+            "Assisted with project governance and coordination of resources for a Swiss financial services client; helped allocate 580,000 USD among application fees, initial capital investment in Hong Kong, and business continuity plan",
+            "Client successfully opened one Local Representative Branch (LRO) in summer of 2013 with a projection of two more in 2014"
+          ]
+        },
+        {
+          "category": "Consulting competition",
+          "details": [
+            "Placed first in the Hong Kong Consulting Competition (out of 8 finalist teams); analyzed and presented on a Harvard Business Review Case Study concerning a high-growth international travel agency"
+          ]
+        }
+      ]
+    }
+  ],
+  "education": {
+    "institution": "Emory University, Goizueta Business School",
+    "degree": "Bachelor of Business Administration (BBA)",
+    "location": "Atlanta, GA",
+    "graduationDate": "May 2014",
+    "concentrations": [
+      "Finance",
+      "Strategy & Management Consulting"
+    ],
+    "minor": "Economics",
+    "gpa": 3.8,
+    "achievements": [
+      "Emory Admissions Fellow; assisted Dean of Admissions with student applications and Emory’s marketing strategy in the rollout of the university’s new website"
+    ]
+  },
+  "skillsAndInterests": {
+    "interests": [
+      "Semantics",
+      "TED Talks",
+      "Udemy",
+      "Behavioral Economics",
+      "Hiking",
+      "Lacrosse",
+      "Wrestling",
+      "Badminton"
+    ],
+    "languages": {
+      "native": ["English", "Mandarin"],
+      "fluent": ["Cantonese Chinese"]
+    },
+    "technical": [
+      "SQL",
+      "Google Ads & Analytics Certified"
+    ]
+  }
+}
 `;
 
     // Call the OpenAI API for CV/resume
