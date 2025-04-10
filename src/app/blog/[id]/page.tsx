@@ -32,7 +32,7 @@ const blogPosts = {
 };
 
 export default function BlogPost({ params }: { params: { id: string } }) {
-  const post = blogPosts[params.id as keyof typeof blogPosts];
+  const post = blogPosts[params.id as unknown as keyof typeof blogPosts];
 
   if (!post) {
     return (

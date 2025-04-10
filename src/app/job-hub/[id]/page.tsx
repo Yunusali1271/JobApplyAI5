@@ -50,7 +50,7 @@ export default function ApplicationKitDetail() {
       }
 
       try {
-        const kitData = await getApplicationKit(user.uid, id);
+        const kitData:any = await getApplicationKit(user.uid, id);
         // Convert Firestore timestamp to Date object
         const formattedKit = {
           ...kitData,

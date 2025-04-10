@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 "use client";
 
 import Link from "next/link";
@@ -6,9 +7,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { useIpLimits } from "@/lib/hooks/useIpLimits";
-import ApplicationModal from "@/components/ApplicationModal";
+// import ApplicationModal from "@/components/ApplicationModal";
 import { FaUser } from "react-icons/fa";
 import styles from './styles/rocket.module.css';
+import ApplicationModal from "@/components/ApplicationModal";
 
 export default function Home() {
   const { user } = useAuth();
@@ -27,14 +29,14 @@ export default function Home() {
   };
 
   // Add scroll to section functionality
-  const scrollToSection = (sectionId) => {
+  const scrollToSection = (sectionId:any) => {
     const section = document.getElementById(sectionId);
     if (section) {
       section.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
-  const handlePricingTabChange = (plan) => {
+  const handlePricingTabChange = (plan:any) => {
     if (plan === "monthly") {
       setPricingPlan({
         price: "£3.99",
