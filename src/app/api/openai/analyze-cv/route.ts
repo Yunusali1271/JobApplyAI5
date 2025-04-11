@@ -173,10 +173,12 @@ ADDITIONAL GUIDANCE
   Do not provide any other additional text at the bottom of the resume i just want the cv/resume content no need to for an explanation at the bottom of the resume;`
   
 
-    const cvResumeUserPrompt = `
-Please analyze the following CV and job description to create a tailored Harvard-style resume with a ${formalityLevel} formality level, and return response only in JSON format. not any description or explanation:
+  const cvResumeUserPrompt = `
+Analyze the following CV and job description to create a tailored Harvard-style resume in JSON format only. You must NOT return markdown, explanations, or any text before or after the JSON. Only a single, valid, parseable JSON object should be returned.
 
-Include a **professional summary paragraph** at the beginning of the response that highlights the candidate's key qualifications, years of experience, notable achievements, and career goals based on the CV and job description.
+The resume must include:
+- A **professional summary paragraph** that highlights key qualifications, years of experience, achievements, and career goals tailored to the job description.
+- A complete breakdown using the structure below. All keys must be included, even if their values are empty.
 
 CV:
 ${cv}
@@ -184,9 +186,10 @@ ${cv}
 Job Description:
 ${jobDescription}
 
-Formality Level: ${formalityLevel}
+Formality Level: ${formalityLevel} (options: "casual", "neutral", "formal")
 
-Your response would **strictly** follow the json format like below because I will parse the respone directly in my code.
+Return response strictly in the following JSON structure:
+
 {
   "summary": "A highly analytical and results-driven professional with X years of experience in [industry/field]...",
 
@@ -207,36 +210,15 @@ Your response would **strictly** follow the json format like below because I wil
         {
           "category": "Finance transformation and operational restructuring",
           "details": [
-            "Performed in-depth FTE analysis and identified lack of an operations function as an area of improvement; implementation of operations group decreased administrative hours by 10%, resulting in US$ 0.5M in cost savings",
-            "Shortened job management lifecycle by an average of 50 days, improved working capital position by 7% for Q4, and increased level of compliance by creating and integrating new Cash Advance, SharePoint, and AMEX processes"
+            "Performed in-depth FTE analysis and identified lack of an operations function as an area of improvement...",
+            "Shortened job management lifecycle by an average of 50 days..."
           ]
         },
         {
           "category": "Supply chain analytics and process improvement",
           "details": [
-            "Owned work stream in network optimization, transportation cost modeling, and safety stock calculation of a planned manufacturing plant; findings resulted in total cost savings of US$ 11M and projected savings of US$ 3.5M over two years",
-            "Performed assessment of assortment and distribution of products originating from a new manufacturing plant and diagnosed a high level of SKU complexity as an operational cost driver"
-          ]
-        }
-      ]
-    },
-    {
-      "company": "KPMG",
-      "position": "Summer Associate (Consultant)",
-      "location": "Hong Kong",
-      "duration": "June 2013 – August 2013",
-      "responsibilities": [
-        {
-          "category": "Project governance and resource coordination",
-          "details": [
-            "Assisted with project governance and coordination of resources for a Swiss financial services client; helped allocate 580,000 USD among application fees, initial capital investment in Hong Kong, and business continuity plan",
-            "Client successfully opened one Local Representative Branch (LRO) in summer of 2013 with a projection of two more in 2014"
-          ]
-        },
-        {
-          "category": "Consulting competition",
-          "details": [
-            "Placed first in the Hong Kong Consulting Competition (out of 8 finalist teams); analyzed and presented on a Harvard Business Review Case Study concerning a high-growth international travel agency"
+            "Owned work stream in network optimization...",
+            "Performed assessment of assortment and distribution of products..."
           ]
         }
       ]
@@ -247,35 +229,20 @@ Your response would **strictly** follow the json format like below because I wil
     "degree": "Bachelor of Business Administration (BBA)",
     "location": "Atlanta, GA",
     "graduationDate": "May 2014",
-    "concentrations": [
-      "Finance",
-      "Strategy & Management Consulting"
-    ],
+    "concentrations": ["Finance", "Strategy & Management Consulting"],
     "minor": "Economics",
     "gpa": 3.8,
     "achievements": [
-      "Emory Admissions Fellow; assisted Dean of Admissions with student applications and Emory’s marketing strategy in the rollout of the university’s new website"
+      "Emory Admissions Fellow; assisted Dean of Admissions..."
     ]
   },
   "skillsAndInterests": {
-    "interests": [
-      "Semantics",
-      "TED Talks",
-      "Udemy",
-      "Behavioral Economics",
-      "Hiking",
-      "Lacrosse",
-      "Wrestling",
-      "Badminton"
-    ],
+    "interests": ["Semantics", "TED Talks", "Udemy", "Behavioral Economics", "Hiking", "Lacrosse", "Wrestling", "Badminton"],
     "languages": {
       "native": ["English", "Mandarin"],
       "fluent": ["Cantonese Chinese"]
     },
-    "technical": [
-      "SQL",
-      "Google Ads & Analytics Certified"
-    ]
+    "technical": ["SQL", "Google Ads & Analytics Certified"]
   }
 }
 `;

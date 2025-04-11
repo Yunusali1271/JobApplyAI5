@@ -65,7 +65,6 @@ export default function TemplateTwo({ result }: { result: any }) {
         </Title>
         <Divider className="my-1 bg-gray-300" />
 
-        {/* Tesla */}
         {professionalExperience?.map((experience: any, index: any) => (
           <div className="mb-4" key={index}>
             <div className="flex justify-between items-center">
@@ -76,17 +75,7 @@ export default function TemplateTwo({ result }: { result: any }) {
                 {experience?.duration}
               </Text>
             </div>
-            {/* <ul className="list-disc pl-6 mt-1 mb-0">
-            <li className="text-sm text-gray-700">
-              Provided strategic leadership that increased annual revenue by 20%.
-            </li>
-            <li className="text-sm text-gray-700">
-              Implemented advanced technologies, improving operational efficiency by 15%.
-            </li>
-            <li className="text-sm text-gray-700">
-              Led the company through multiple successful funding rounds and product launches.
-            </li>
-          </ul> */}
+           
             <ul className="list-disc list-inside text-sm mt-2">
               {experience?.responsibilities?.map(
                 (responsibility: any, Idx: any) => (
@@ -105,69 +94,7 @@ export default function TemplateTwo({ result }: { result: any }) {
             </ul>
           </div>
         ))}
-        {/* SpaceX */}
-        {/* <div className="mb-4">
-          <div className="flex justify-between items-center">
-            <Text strong className="text-gray-800">
-              CEO | SpaceX
-            </Text>
-            <Text className="text-gray-600 text-sm font-semibold">01/2020</Text>
-          </div>
-          <ul className="list-disc pl-6 mt-1 mb-0">
-            <li className="text-sm text-gray-700">
-              Led software development for space projects, enhancing product delivery by 25%.
-            </li>
-            <li className="text-sm text-gray-700">
-              Oversaw company operations, contributing to a 30% increase in project success rate.
-            </li>
-            <li className="text-sm text-gray-700">
-              Collaborated with NASA and other organizations to advance space exploration.
-            </li>
-          </ul>
-        </div> */}
-
-        {/* Apple */}
-        {/* <div className="mb-4">
-          <div className="flex justify-between items-center">
-            <Text strong className="text-gray-800">
-              Software Engineer | Apple
-            </Text>
-            <Text className="text-gray-600 text-sm font-semibold">01/2021 to 12/2022</Text>
-          </div>
-          <ul className="list-disc pl-6 mt-1 mb-0">
-            <li className="text-sm text-gray-700">
-              Developed software solutions for Apple products, enhancing user satisfaction scores by 40%.
-            </li>
-            <li className="text-sm text-gray-700">
-              Created applications that improved functionality and user experience, maintaining Apple's technological
-              leadership.
-            </li>
-            <li className="text-sm text-gray-700">
-              Worked on cross-functional teams to deliver complex projects on time.
-            </li>
-          </ul>
-        </div> */}
-
-        {/* AI/App */}
-        {/* <div className="mb-4">
-          <div className="flex justify-between items-center">
-            <Text strong className="text-gray-800">
-              Co-Founder & CTO | AI/App
-            </Text>
-            <Text className="text-gray-600 text-sm font-semibold">09/2023 to Present</Text>
-          </div>
-          <ul className="list-disc pl-6 mt-1 mb-0">
-            <li className="text-sm text-gray-700">
-              Spearheaded the development of cutting-edge AI applications, driving user engagement and satisfaction.
-            </li>
-            <li className="text-sm text-gray-700">
-              Directed technical strategy and managed a high-performing team to deliver projects successfully.
-            </li>
-            <li className="text-sm text-gray-700">
-              Played a key role in business development, expanding market reach and driving revenue growth.
-            </li>
-          </ul>
-        </div> */}
+        
       </div>
 
       {/* Education */}
@@ -185,10 +112,7 @@ export default function TemplateTwo({ result }: { result: any }) {
               {education?.degree} | {education?.institution}
             </Text>
           </div>
-          {/* <Paragraph className="text-sm text-gray-700 mb-0">
-            {education?.location} |{" "}
-            {education?.duration || education?.graduationDate}
-          </Paragraph> */}
+          
           <div>
             Concentrations: {education?.concentrations?.join(', ')}; Minor in{' '}
             {education?.minor} | GPA: {education?.gpa} / 4.0
@@ -214,6 +138,19 @@ export default function TemplateTwo({ result }: { result: any }) {
           <Col span={16}>
             <Text className="text-gray-700 text-sm">
               {skillsAndInterests?.technical?.join(",  ")}
+            </Text>
+          </Col>
+        </Row>
+        
+        <Row gutter={[16, 16]} className="mb-5">
+          <Col span={8}>
+            <Text strong className="text-gray-800">
+              Interests{" "}
+            </Text>{" "}
+          </Col>
+          <Col span={16}>
+            <Text className="text-gray-700 text-sm">
+              {skillsAndInterests?.interests?.join(",  ")}
             </Text>
           </Col>
         </Row>
