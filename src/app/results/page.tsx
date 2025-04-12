@@ -1,11 +1,11 @@
 /* eslint-disable react/no-unescaped-entities */
-'use client';
-import { useState, useEffect, useRef, Suspense } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import ReactMarkdown from 'react-markdown';
-import { useAuth } from '@/lib/hooks/useAuth';
-import { saveApplicationKit } from '@/lib/firebase/applicationKitUtils';
+"use client";
+import { useState, useEffect, useRef, Suspense } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import ReactMarkdown from "react-markdown";
+import { useAuth } from "@/lib/hooks/useAuth";
+import { saveApplicationKit } from "@/lib/firebase/applicationKitUtils";
 import TemplateOne from "../components/template/TempleteOne";
 import TemplateTwo from "../components/template/TemplateTwo";
 type PageProps = {
@@ -25,8 +25,8 @@ export default function ResultsPage({ params }: PageProps) {
   const [copied, setCopied] = useState(false);
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [showResumePreview, setShowResumePreview] = useState(false);
-  const [jobTitle, setJobTitle] = useState<string>('');
-  const [company, setCompany] = useState<string>('');
+  const [jobTitle, setJobTitle] = useState<string>("");
+  const [company, setCompany] = useState<string>("");
   const [savingToFirebase, setSavingToFirebase] = useState(false);
   const [savedToFirebase, setSavedToFirebase] = useState(false);
   const coverLetterRef = useRef<HTMLDivElement>(null);
@@ -64,7 +64,7 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
   // const resultId = searchParams.get('id');
 
   useEffect(() => {
-    const storedResume = localStorage.getItem('resume');
+    const storedResume = localStorage.getItem("resume");
     setCvResume(storedResume && JSON.parse(storedResume));
   }, []);
 
@@ -76,12 +76,12 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
     // In a real app, you would fetch the result from a database using the resultId
     // For now, we'll just retrieve it from localStorage
     try {
-      const storedResult = localStorage.getItem('cvAnalysisResult');
+      const storedResult = localStorage.getItem("cvAnalysisResult");
 
-      const storedFollowUpEmail = localStorage.getItem('followUpEmail');
-      const storedResume = localStorage.getItem('resume');
-      const storedJobTitle = localStorage.getItem('jobTitle');
-      const storedCompany = localStorage.getItem('company');
+      const storedFollowUpEmail = localStorage.getItem("followUpEmail");
+      const storedResume = localStorage.getItem("resume");
+      const storedJobTitle = localStorage.getItem("jobTitle");
+      const storedCompany = localStorage.getItem("company");
 
       if (storedResult) {
         setResult(storedResult);
@@ -100,13 +100,13 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
         }
         setLoading(false);
       } else {
-        setError('Result not found. Please try generating a new cover letter.');
+        setError("Result not found. Please try generating a new cover letter.");
         setLoading(false);
       }
     } catch (err) {
-      console.error('Error retrieving result:', err);
+      console.error("Error retrieving result:", err);
       setError(
-        'An error occurred while retrieving your cover letter. Please try again.'
+        "An error occurred while retrieving your cover letter. Please try again."
       );
       setLoading(false);
     }
@@ -119,22 +119,22 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
         try {
           setSavingToFirebase(true);
           await saveApplicationKit(user.uid, {
-            jobTitle: jobTitle || 'Job Application',
-            company: company || 'Company',
-            status: 'Interested',
+            jobTitle: jobTitle || "Job Application",
+            company: company || "Company",
+            status: "Interested",
             coverLetter: result,
-            resume: resume || '',
-            followUpEmail: followUpEmail || '',
+            resume: resume || "",
+            followUpEmail: followUpEmail || "",
             original: {
-              cv: localStorage.getItem('cv') || '',
-              jobDescription: localStorage.getItem('jobDescription') || '',
-              formality: localStorage.getItem('formality') || 'neutral',
+              cv: localStorage.getItem("cv") || "",
+              jobDescription: localStorage.getItem("jobDescription") || "",
+              formality: localStorage.getItem("formality") || "neutral",
             },
           });
           setSavedToFirebase(true);
           setSavingToFirebase(false);
         } catch (error) {
-          console.error('Error saving to Firebase:', error);
+          console.error("Error saving to Firebase:", error);
           setSavingToFirebase(false);
         }
       }
@@ -198,37 +198,42 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
     const content = resumeRef.current.innerHTML;
 
     // Create a hidden iframe
-    const iframe = document.createElement('iframe');
-    iframe.style.position = 'fixed';
-    iframe.style.right = '0';
-    iframe.style.bottom = '0';
-    iframe.style.width = '0';
-    iframe.style.height = '0';
-    iframe.style.border = '0';
+    const iframe = document.createElement("iframe");
+    iframe.style.position = "fixed";
+    iframe.style.right = "0";
+    iframe.style.bottom = "0";
+    iframe.style.width = "0";
+    iframe.style.height = "0";
+    iframe.style.border = "0";
     document.body.appendChild(iframe);
 
     const doc = iframe.contentWindow?.document;
     if (!doc) return;
-
+    const printPageStyle = `
+    @media print {
+      @page {
+        margin: 0.5cm;
+      }
+    }
+  `;
     // Grab all stylesheets and inline them in the iframe
     const styles = Array.from(document.styleSheets)
       .map((styleSheet) => {
         try {
           return Array.from(styleSheet.cssRules)
             .map((rule) => rule.cssText)
-            .join('\n');
+            .join("\n");
         } catch (e) {
-          return ''; // Skip inaccessible stylesheets
+          return ""; // Skip inaccessible stylesheets
         }
       })
-      .join('\n');
+      .join("\n");
 
     doc.open();
     doc.write(`
     <html>
       <head>
-        <title>Resume</title>
-        <style>${styles}</style>
+        <style>${styles}\n${printPageStyle}</style>
       </head>
       <body>
         ${content}
@@ -253,39 +258,43 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
     const content = resumeTwoRef.current.innerHTML;
 
     // Create a hidden iframe
-    const iframe = document.createElement('iframe');
-    iframe.style.position = 'fixed';
-    iframe.style.right = '0';
-    iframe.style.bottom = '0';
-    iframe.style.width = '0';
-    iframe.style.height = '0';
-    iframe.style.border = '0';
+    const iframe = document.createElement("iframe");
+    iframe.style.position = "fixed";
+    iframe.style.right = "0";
+    iframe.style.bottom = "0";
+    iframe.style.width = "0";
+    iframe.style.height = "0";
+    iframe.style.border = "0";
     document.body.appendChild(iframe);
 
     const doc = iframe.contentWindow?.document;
     if (!doc) return;
-
+    const printPageStyle = `
+    @media print {
+      @page {
+        margin: 0.5cm;
+      }
+    }
+  `;
     // Copy styles from current page
     const styles = Array.from(document.styleSheets)
       .map((styleSheet) => {
         try {
           return Array.from(styleSheet.cssRules)
             .map((rule) => rule.cssText)
-            .join('\n');
+            .join("\n");
         } catch (e) {
-          return ''; // ignore CORS-restricted stylesheets
+          return ""; // ignore CORS-restricted stylesheets
         }
       })
-      .join('\n');
+      .join("\n");
 
     doc.open();
     doc.write(`
     <html>
       <head>
-        <title>Resume</title>
-        <style>
-          ${styles}
-        </style>
+               <style>${styles}\n${printPageStyle}</style>
+
       </head>
       <body>
         ${content}
@@ -308,55 +317,54 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
     if (!result) return;
 
     // Dynamically import html2pdf only on the client side
-    const html2pdf = (await import('html2pdf.js')).default;
+    const html2pdf = (await import("html2pdf.js")).default;
     // const html2pdf = require('html2pdf.js') as any;
 
-
     // Create a clean PDF-specific template
-    const container = document.createElement('div');
-    container.style.width = '210mm';
-    container.style.padding = '20mm';
-    container.style.backgroundColor = 'white';
-    container.style.fontFamily = 'Arial, sans-serif';
+    const container = document.createElement("div");
+    container.style.width = "210mm";
+    container.style.padding = "20mm";
+    container.style.backgroundColor = "white";
+    container.style.fontFamily = "Arial, sans-serif";
 
-    const content = document.createElement('div');
-    content.className = 'pdf-content';
-    content.style.fontSize = '12px';
-    content.style.lineHeight = '1.5';
-    content.style.color = '#000';
+    const content = document.createElement("div");
+    content.className = "pdf-content";
+    content.style.fontSize = "12px";
+    content.style.lineHeight = "1.5";
+    content.style.color = "#000";
 
     // First split by double newlines which separate paragraphs
     // Then for the first 6-7 lines (contact info), we'll treat each line separately
-    const sections = result.split('\n\n');
+    const sections = result.split("\n\n");
 
     // Process each section
     sections.forEach((section, sectionIndex) => {
       // For the first several sections (contact info), split by single newlines
       if (sectionIndex < 7) {
-        const lines = section.split('\n');
+        const lines = section.split("\n");
         lines.forEach((line) => {
           if (line.trim()) {
-            const p = document.createElement('p');
+            const p = document.createElement("p");
             p.textContent = line.trim();
-            p.style.margin = '0';
-            p.style.marginBottom = '3px';
+            p.style.margin = "0";
+            p.style.marginBottom = "3px";
             content.appendChild(p);
           }
         });
       }
       // For Dear line (usually the 7th or 8th section)
-      else if (section.includes('Dear')) {
-        const p = document.createElement('p');
+      else if (section.includes("Dear")) {
+        const p = document.createElement("p");
         p.textContent = section;
-        p.style.marginTop = '20px';
-        p.style.marginBottom = '15px';
+        p.style.marginTop = "20px";
+        p.style.marginBottom = "15px";
         content.appendChild(p);
       }
       // Regular paragraphs for the rest of the content
       else {
-        const p = document.createElement('p');
+        const p = document.createElement("p");
         p.textContent = section;
-        p.style.marginBottom = '15px';
+        p.style.marginBottom = "15px";
         content.appendChild(p);
       }
     });
@@ -365,18 +373,18 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
     document.body.appendChild(container);
 
     // Add a loading state for PDF generation
-    const loadingToast = document.createElement('div');
+    const loadingToast = document.createElement("div");
     loadingToast.className =
-      'fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded shadow-lg z-50';
-    loadingToast.innerText = 'Generating PDF...';
+      "fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded shadow-lg z-50";
+    loadingToast.innerText = "Generating PDF...";
     document.body.appendChild(loadingToast);
 
     const opt = {
       margin: [0, 0, 0, 0],
-      filename: 'cover-letter.pdf',
-      image: { type: 'jpeg', quality: 1 },
+      filename: "cover-letter.pdf",
+      image: { type: "jpeg", quality: 1 },
       html2canvas: { scale: 2 },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
     };
 
     html2pdf()
@@ -391,10 +399,10 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
         document.body.removeChild(loadingToast);
 
         // Add a success toast
-        const successToast = document.createElement('div');
+        const successToast = document.createElement("div");
         successToast.className =
-          'fixed bottom-4 right-4 bg-green-600 text-white px-4 py-2 rounded shadow-lg z-50';
-        successToast.innerText = 'PDF downloaded successfully!';
+          "fixed bottom-4 right-4 bg-green-600 text-white px-4 py-2 rounded shadow-lg z-50";
+        successToast.innerText = "PDF downloaded successfully!";
         document.body.appendChild(successToast);
 
         // Remove the success toast after 3 seconds
@@ -408,39 +416,39 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
     if (!followUpEmail) return;
 
     // Dynamically import html2pdf only on the client side
-    const html2pdf = (await import('html2pdf.js')).default as any;
+    const html2pdf = (await import("html2pdf.js")).default as any;
 
     // Create a clean PDF-specific template
-    const container = document.createElement('div');
-    container.style.width = '210mm';
-    container.style.padding = '20mm';
-    container.style.backgroundColor = 'white';
-    container.style.fontFamily = 'Arial, sans-serif';
+    const container = document.createElement("div");
+    container.style.width = "210mm";
+    container.style.padding = "20mm";
+    container.style.backgroundColor = "white";
+    container.style.fontFamily = "Arial, sans-serif";
 
-    const content = document.createElement('div');
-    content.className = 'pdf-content';
-    content.style.fontSize = '12px';
-    content.style.lineHeight = '1.5';
-    content.style.color = '#000';
+    const content = document.createElement("div");
+    content.className = "pdf-content";
+    content.style.fontSize = "12px";
+    content.style.lineHeight = "1.5";
+    content.style.color = "#000";
 
     // Split by double newlines which separate paragraphs
-    const sections = followUpEmail.split('\n\n');
+    const sections = followUpEmail.split("\n\n");
 
     // Process each section
     sections.forEach((section, sectionIndex) => {
       // For the subject line (usually the first section)
-      if (sectionIndex === 0 && section.toLowerCase().includes('subject:')) {
-        const p = document.createElement('p');
+      if (sectionIndex === 0 && section.toLowerCase().includes("subject:")) {
+        const p = document.createElement("p");
         p.textContent = section;
-        p.style.fontWeight = 'bold';
-        p.style.marginBottom = '20px';
+        p.style.fontWeight = "bold";
+        p.style.marginBottom = "20px";
         content.appendChild(p);
       }
       // For all other sections
       else {
-        const p = document.createElement('p');
+        const p = document.createElement("p");
         p.textContent = section;
-        p.style.marginBottom = '15px';
+        p.style.marginBottom = "15px";
         content.appendChild(p);
       }
     });
@@ -449,18 +457,18 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
     document.body.appendChild(container);
 
     // Add a loading state for PDF generation
-    const loadingToast = document.createElement('div');
+    const loadingToast = document.createElement("div");
     loadingToast.className =
-      'fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded shadow-lg z-50';
-    loadingToast.innerText = 'Generating PDF...';
+      "fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded shadow-lg z-50";
+    loadingToast.innerText = "Generating PDF...";
     document.body.appendChild(loadingToast);
 
     const opt = {
       margin: [0, 0, 0, 0],
-      filename: 'follow-up-email.pdf',
-      image: { type: 'jpeg', quality: 1 },
+      filename: "follow-up-email.pdf",
+      image: { type: "jpeg", quality: 1 },
       html2canvas: { scale: 2 },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
     };
 
     html2pdf()
@@ -475,10 +483,10 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
         document.body.removeChild(loadingToast);
 
         // Add a success toast
-        const successToast = document.createElement('div');
+        const successToast = document.createElement("div");
         successToast.className =
-          'fixed bottom-4 right-4 bg-green-600 text-white px-4 py-2 rounded shadow-lg z-50';
-        successToast.innerText = 'PDF downloaded successfully!';
+          "fixed bottom-4 right-4 bg-green-600 text-white px-4 py-2 rounded shadow-lg z-50";
+        successToast.innerText = "PDF downloaded successfully!";
         document.body.appendChild(successToast);
 
         // Remove the success toast after 3 seconds
@@ -489,7 +497,7 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
   };
 
   const navigateToJobHub = () => {
-    router.push('/job-hub');
+    router.push("/job-hub");
   };
 
   if (loading) {
@@ -665,21 +673,21 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
                               components={{
                                 p: ({ node, children, ...props }) => {
                                   const content = (node?.children ?? [])
-                                    .filter((child) => child.type === 'text')
+                                    .filter((child) => child.type === "text")
                                     .map((child) => child.value)
-                                    .join('');
+                                    .join("");
 
                                   const isDearParagraph =
-                                    content.includes('Dear');
+                                    content.includes("Dear");
 
-                                  console.log('children====>>', children);
+                                  console.log("children====>>", children);
                                   return (
                                     <p
                                       {...props}
                                       className={
                                         isDearParagraph
-                                          ? 'greeting-paragraph'
-                                          : ''
+                                          ? "greeting-paragraph"
+                                          : ""
                                       }
                                     >
                                       {children}
@@ -752,7 +760,7 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
                         <button
                           className="text-gray-500 hover:text-gray-700 flex items-center"
                           onClick={handleResumeEdit}
-                          title={isEditingResume ? 'Save' : 'Edit'}
+                          title={isEditingResume ? "Save" : "Edit"}
                         >
                           <svg
                             className="w-4 h-4 mr-1"
@@ -778,7 +786,7 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
                             )}
                           </svg>
                           <span className="text-sm">
-                            {isEditingResume ? 'Save' : 'Edit'}
+                            {isEditingResume ? "Save" : "Edit"}
                           </span>
                         </button>
                         <button
@@ -810,21 +818,21 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
                             className="w-full h-full p-4 overflow-auto text-sm"
                             ref={resumeRef}
                             style={{
-                              whiteSpace: 'pre-wrap',
+                              whiteSpace: "pre-wrap",
                             }}
                           >
                             {isEditingResume ? (
                               <textarea
                                 className="w-full h-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                value={editedResume || ''}
+                                value={editedResume || ""}
                                 onChange={(e) =>
                                   setEditedResume(e.target.value)
                                 }
                                 style={{
-                                  whiteSpace: 'pre-wrap',
-                                  fontFamily: 'inherit',
-                                  fontSize: 'inherit',
-                                  resize: 'none',
+                                  whiteSpace: "pre-wrap",
+                                  fontFamily: "inherit",
+                                  fontSize: "inherit",
+                                  resize: "none",
                                 }}
                               />
                             ) : (
@@ -841,9 +849,9 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
                           <pre
                             className="w-full h-full p-4 overflow-auto text-sm font-mono"
                             style={{
-                              whiteSpace: 'pre-wrap',
-                              fontFamily: 'Georgia, serif',
-                              textAlign: 'left',
+                              whiteSpace: "pre-wrap",
+                              fontFamily: "Georgia, serif",
+                              textAlign: "left",
                             }}
                           >
                             {defaultResumeTemplate}
@@ -905,7 +913,7 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
                         <button
                           className="text-gray-500 hover:text-gray-700 flex items-center"
                           onClick={handleResumeTwoEdit}
-                          title={isEditingResumeTwo ? 'Save' : 'Edit'}
+                          title={isEditingResumeTwo ? "Save" : "Edit"}
                         >
                           <svg
                             className="w-4 h-4 mr-1"
@@ -931,7 +939,7 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
                             )}
                           </svg>
                           <span className="text-sm">
-                            {isEditingResumeTwo ? 'Save' : 'Edit'}
+                            {isEditingResumeTwo ? "Save" : "Edit"}
                           </span>
                         </button>
                         <button
@@ -963,21 +971,21 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
                             className="w-full h-full p-4 overflow-auto text-sm"
                             ref={resumeTwoRef}
                             style={{
-                              whiteSpace: 'pre-wrap',
+                              whiteSpace: "pre-wrap",
                             }}
                           >
                             {isEditingResumeTwo ? (
                               <textarea
                                 className="w-full h-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                value={editedResumeTwo || ''}
+                                value={editedResumeTwo || ""}
                                 onChange={(e) =>
                                   setEditedResumeTwo(e.target.value)
                                 }
                                 style={{
-                                  whiteSpace: 'pre-wrap',
-                                  fontFamily: 'inherit',
-                                  fontSize: 'inherit',
-                                  resize: 'none',
+                                  whiteSpace: "pre-wrap",
+                                  fontFamily: "inherit",
+                                  fontSize: "inherit",
+                                  resize: "none",
                                 }}
                               />
                             ) : (
@@ -994,9 +1002,9 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
                           <pre
                             className="w-full h-full p-4 overflow-auto text-sm font-mono"
                             style={{
-                              whiteSpace: 'pre-wrap',
-                              fontFamily: 'Georgia, serif',
-                              textAlign: 'left',
+                              whiteSpace: "pre-wrap",
+                              fontFamily: "Georgia, serif",
+                              textAlign: "left",
                             }}
                           >
                             {defaultResumeTemplate}
@@ -1045,7 +1053,7 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
                           ></path>
                         </svg>
                         <span className="text-sm">
-                          {copiedEmail ? 'Copied!' : 'Copy'}
+                          {copiedEmail ? "Copied!" : "Copy"}
                         </span>
                       </button>
                       <button
@@ -1099,21 +1107,21 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
                             components={{
                               p: ({ node, children, ...props }) => {
                                 const content = node?.children
-                                  .filter((child) => child.type === 'text')
+                                  .filter((child) => child.type === "text")
                                   .map((child) => child.value)
-                                  .join('');
+                                  .join("");
 
                                 const isDearParagraph =
-                                  content?.includes('Dear');
+                                  content?.includes("Dear");
 
-                                console.log('children====>>', children);
+                                console.log("children====>>", children);
                                 return (
                                   <p
                                     {...props}
                                     className={
                                       isDearParagraph
-                                        ? 'greeting-paragraph'
-                                        : ''
+                                        ? "greeting-paragraph"
+                                        : ""
                                     }
                                   >
                                     {children}
@@ -1187,17 +1195,17 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
                   <div
                     className="w-[210mm] h-[297mm] bg-white shadow-lg p-[20mm] overflow-hidden flex-shrink-0"
                     style={{
-                      fontFamily: 'Arial, sans-serif',
+                      fontFamily: "Arial, sans-serif",
                     }}
                   >
                     <div
                       ref={resumePreviewRef}
                       className="pdf-content"
                       style={{
-                        fontSize: '12px',
-                        lineHeight: '1.5',
-                        color: '#000',
-                        fontFamily: 'Arial, sans-serif',
+                        fontSize: "12px",
+                        lineHeight: "1.5",
+                        color: "#000",
+                        fontFamily: "Arial, sans-serif",
                       }}
                     >
                       {/* Content will be populated by useEffect */}
