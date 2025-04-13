@@ -2,6 +2,7 @@
   "name": "template-2",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev -p 3000",
     "build": "next build",
@@ -18,9 +19,11 @@
     "firebase": "^10.13.0",
     "framer-motion": "^11.3.31",
     "html2pdf.js": "^0.10.3",
+    "jspdf-html2canvas": "^1.5.2",
     "lucide-react": "^0.436.0",
     "mammoth": "^1.9.0",
     "next": "14.2.7",
+    "node-fetch": "^3.3.2",
     "openai": "^4.93.0",
     "pdfjs-dist": "^5.0.375",
     "react": "^18",
@@ -40,6 +43,7 @@
     "eslint-config-next": "14.2.7",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
+    "ts-node": "^10.9.2",
     "typescript": "^5"
   }
 }

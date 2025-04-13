@@ -31,6 +31,8 @@ export default function JobHub() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [kitToDelete, setKitToDelete] = useState<ApplicationKit | null>(null);
   const [selectedKits, setSelectedKits] = useState<Set<string>>(new Set());
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [newlyCreatedKitId, setNewlyCreatedKitId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchApplicationKits = async () => {
@@ -56,6 +58,45 @@ export default function JobHub() {
 
     fetchApplicationKits();
   }, [user]);
+
+  useEffect(() => {
+    // Check if user just created a new Hire Me Pack and returned to dashboard
+    const checkForNewHirePack = () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('newPack') === 'true') {
+        setShowSuccessMessage(true);
+        
+        // Get the newest kit ID from the URL if available
+        const newKitId = urlParams.get('kitId');
+        if (newKitId) {
+          setNewlyCreatedKitId(newKitId);
+        }
+        
+        // Remove the query parameter
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+        
+        // Hide the success message after 5 seconds
+        setTimeout(() => {
+          setShowSuccessMessage(false);
+        }, 5000);
+      }
+    };
+    
+    checkForNewHirePack();
+  }, []);
+
+  // Scroll to newly created kit
+  useEffect(() => {
+    if (newlyCreatedKitId && !loading) {
+      setTimeout(() => {
+        const kitElement = document.getElementById(`kit-${newlyCreatedKitId}`);
+        if (kitElement) {
+          kitElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 500);
+    }
+  }, [newlyCreatedKitId, loading]);
 
   const handleSignIn = async () => {
     setSigningIn(true);
@@ -209,6 +250,25 @@ export default function JobHub() {
       <Sidebar />
       <div className="flex-1 p-8 bg-gray-50">
         <div className="max-w-6xl mx-auto">
+          {showSuccessMessage && (
+            <div className="bg-green-50 border border-green-200 text-green-800 rounded-lg p-4 mb-6 flex items-center justify-between">
+              <div className="flex items-center">
+                <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path>
+                </svg>
+                <span>Your Hire Me Pack was successfully created!</span>
+              </div>
+              <button 
+                onClick={() => setShowSuccessMessage(false)} 
+                className="text-green-600 hover:text-green-800"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+          )}
+
           <div className="flex justify-between items-center mb-6">
             <div>
               <h1 className="text-2xl font-bold">Tracking Portal</h1>
@@ -218,9 +278,9 @@ export default function JobHub() {
             </div>
             <button 
               onClick={openModal}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-full flex items-center"
+              className="bg-[#7046EC] hover:bg-[#5e3bc4] text-white px-6 py-3 rounded-lg flex items-center font-medium transition-colors"
             >
-              <FaPlus className="mr-2" /> New Hire Pack
+              <FaPlus className="mr-2" /> Create New Hire Pack
             </button>
           </div>
           
@@ -235,8 +295,8 @@ export default function JobHub() {
                 Create your first Hire Me Pack to get started.
               </p>
               <button
-                onClick={() => setIsModalOpen(true)}
-                className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+                onClick={openModal}
+                className="bg-[#7046EC] hover:bg-[#5e3bc4] text-white px-6 py-3 rounded-lg transition-colors"
               >
                 Create Hire Me Pack
               </button>
@@ -300,7 +360,11 @@ export default function JobHub() {
                   </div>
                   <div className="divide-y divide-gray-100">
                     {applicationKits.map((kit) => (
-                      <div key={kit.id} className="grid grid-cols-[40px_1fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-4 px-6 py-4 hover:bg-gray-50">
+                      <div 
+                        key={kit.id} 
+                        id={`kit-${kit.id}`}
+                        className={`grid grid-cols-[40px_1fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-4 px-6 py-4 hover:bg-gray-50 ${newlyCreatedKitId === kit.id ? 'bg-purple-50 border-l-4 border-purple-500' : ''}`}
+                      >
                         <div className="flex items-center">
                           <input
                             type="checkbox"
@@ -371,9 +435,9 @@ export default function JobHub() {
                         <div className="flex items-center justify-center">
                           <button 
                             onClick={() => router.push(`/job-hub/${kit.id}`)}
-                            className="text-sm text-indigo-600 hover:text-indigo-900"
+                            className="text-sm bg-[#7046EC] text-white px-4 py-2 rounded-lg hover:bg-[#5e3bc4] transition-colors"
                           >
-                            Open
+                            View Details
                           </button>
                         </div>
                       </div>

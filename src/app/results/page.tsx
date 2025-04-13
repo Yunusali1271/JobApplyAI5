@@ -6,8 +6,11 @@ import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { saveApplicationKit } from "@/lib/firebase/applicationKitUtils";
-import TemplateOne from "../components/template/TempleteOne";
+import TemplateOne from "../components/template/TemplateOne";
 import TemplateTwo from "../components/template/TemplateTwo";
+import { FaArrowLeft } from "react-icons/fa";
+import ResumeEditForm from "../components/ResumeeditForm";
+
 type PageProps = {
   params: {
     id: string; // or number if you're sure
@@ -29,6 +32,7 @@ export default function ResultsPage({ params }: PageProps) {
   const [company, setCompany] = useState<string>("");
   const [savingToFirebase, setSavingToFirebase] = useState(false);
   const [savedToFirebase, setSavedToFirebase] = useState(false);
+  const [cameFromJobHub, setCameFromJobHub] = useState(false);
   const coverLetterRef = useRef<HTMLDivElement>(null);
   const followUpEmailRef = useRef<HTMLDivElement>(null);
   const resumeRef = useRef<HTMLDivElement>(null);
@@ -38,10 +42,71 @@ export default function ResultsPage({ params }: PageProps) {
   const [editedResume, setEditedResume] = useState<string | null>(null);
   const [isEditingResumeTwo, setIsEditingResumeTwo] = useState(false);
   const [isFirstResumeVisible, setIsFirstResumeVisible] = useState(true);
+  const [isEditingCoverLetter, setIsEditingCoverLetter] = useState(false);
+  const [editedCoverLetter, setEditedCoverLetter] = useState<string | null>(null);
 
   const [editedResumeTwo, setEditedResumeTwo] = useState<string | null>(null);
 
   const [cvResume, setCvResume] = useState<null>(null);
+
+  // Default structured resume template for editing form
+  const defaultStructuredResume = {
+    "summary": "A highly skilled Technical Application Engineer with a strong background in mechanical engineering.",
+    "personalInformation": {
+      "name": "YUNUS ALI",
+      "phone": "+07429299862",
+      "linkedin": "linkedin.com/in/yunusali",
+      "address": "London, UK",
+      "email": "youremail123@gmail.com"
+    },
+    "professionalExperience": [
+      {
+        "company": "Nosel",
+        "position": "Technical Applications Engineer",
+        "location": "London, UK",
+        "duration": "2023-07-01 - Present",
+        "responsibilities": [
+          {
+            "category": "Technical Support and Solutions",
+            "details": [
+              "Collaborate closely with customers and internal teams",
+              "Offer strategically engineered solutions leveraging gained modes and saving frequency (Decoy FVDIs) with encoders, optimizing both technically and financially",
+              "Provide valuable post-sales support, specializing in commissioning and root cause analysis"
+            ]
+          },
+          {
+            "category": "Troubleshooting and Development",
+            "details": [
+              "Collaborate with customers to resolve Technical Support incidents related to both operational and configuration issues",
+              "Work with development and engineering teams to identify issues and provide recommendations/solutions for new and existing systems",
+              "Position involves extensive travel for installation and testing issues remotely or on-site where necessary"
+            ]
+          }
+        ]
+      }
+    ],
+    "education": {
+      "institution": "University of Engineering",
+      "degree": "Bachelor of Science in Mechanical Engineering",
+      "location": "London, UK",
+      "duration": "2018-2022",
+      "concentrations": ["Mechanical Design", "Fluid Dynamics"],
+      "minor": "Business Administration",
+      "gpa": "3.8",
+      "achievements": [
+        "Dean's List for Academic Excellence",
+        "Senior Design Project Award for Innovative Solutions"
+      ]
+    },
+    "skillsAndInterests": {
+      "interests": ["Engineering", "Problem Solving", "Innovation", "Automation"],
+      "languages": {
+        "native": ["English"],
+        "fluent": ["Arabic"]
+      },
+      "technical": ["CAD/CAM Software", "Engineering Analysis Tools", "Project Management", "Technical Documentation"]
+    }
+  };
 
   // Default resume template for fallback
   const defaultResumeTemplate = `YUNUS ALI
@@ -63,21 +128,48 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
   // const searchParams = useSearchParams();
   // const resultId = searchParams.get('id');
 
+  // Check if user came from job-hub
+  useEffect(() => {
+    const referrer = document.referrer;
+    if (referrer && referrer.includes('job-hub')) {
+      setCameFromJobHub(true);
+    }
+  }, []);
+
   useEffect(() => {
     const storedResume = localStorage.getItem("resume");
     setCvResume(storedResume && JSON.parse(storedResume));
   }, []);
 
+  // Keep both template data in sync when cvResume changes
+  useEffect(() => {
+    if (cvResume) {
+      try {
+        const resumeString = JSON.stringify(cvResume);
+        setEditedResume(resumeString);
+        setEditedResumeTwo(resumeString);
+      } catch (e) {
+        console.error("Error syncing resume data:", e);
+      }
+    }
+  }, [cvResume]);
+
   const handleSwitchResume = () => {
+    // If currently editing, apply those changes before switching templates
+    if (isEditingResume) {
+      handleResumeEdit();
+    } else if (isEditingResumeTwo) {
+      handleResumeTwoEdit();
+    }
+    
+    // Switch the visible template
     setIsFirstResumeVisible(!isFirstResumeVisible);
   };
 
   useEffect(() => {
-    // In a real app, you would fetch the result from a database using the resultId
-    // For now, we'll just retrieve it from localStorage
-    try {
+    // Try to load data from localStorage
+    const loadData = () => {
       const storedResult = localStorage.getItem("cvAnalysisResult");
-
       const storedFollowUpEmail = localStorage.getItem("followUpEmail");
       const storedResume = localStorage.getItem("resume");
       const storedJobTitle = localStorage.getItem("jobTitle");
@@ -89,8 +181,15 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
           setFollowUpEmail(storedFollowUpEmail);
         }
         if (storedResume) {
-          console.log({ storedResume });
-          setResume(storedResume);
+          try {
+            // Try to parse as JSON (for structured resume data)
+            const resumeData = JSON.parse(storedResume);
+            setResume(storedResume);
+            setCvResume(resumeData);
+          } catch (e) {
+            // If not valid JSON, just use as string
+            setResume(storedResume);
+          }
         }
         if (storedJobTitle) {
           setJobTitle(storedJobTitle);
@@ -99,47 +198,109 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
           setCompany(storedCompany);
         }
         setLoading(false);
-      } else {
-        setError("Result not found. Please try generating a new cover letter.");
-        setLoading(false);
+        return true;
       }
-    } catch (err) {
-      console.error("Error retrieving result:", err);
-      setError(
-        "An error occurred while retrieving your cover letter. Please try again."
-      );
-      setLoading(false);
+      return false;
+    };
+
+    // Initial loading state
+    setLoading(true); 
+    setError(null);
+
+    // First attempt to load data
+    if (!loadData()) {
+      // If no data found, retry several times with a delay
+      let retryCount = 0;
+      const maxRetries = 5;
+      
+      const retryInterval = setInterval(() => {
+        retryCount++;
+        console.log(`Retrying data load attempt ${retryCount}...`);
+        
+        if (loadData()) {
+          // Data found, clear the interval
+          clearInterval(retryInterval);
+        } else if (retryCount >= maxRetries) {
+          // Max retries reached, show error and stop trying
+          clearInterval(retryInterval);
+          setError("Result not found. Please try generating a new cover letter.");
+          setLoading(false);
+        }
+      }, 800); // Retry every 800ms
+      
+      // Clean up the interval if component unmounts
+      return () => clearInterval(retryInterval);
     }
+
+    // Cleanup function for normal case
+    return () => {
+      setResult(null);
+      setFollowUpEmail(null);
+      setResume(null);
+      setJobTitle("");
+      setCompany("");
+      setLoading(true);
+      setError(null);
+    };
   }, [resultId]);
 
   // Save to Firebase when mounted if user is logged in
   useEffect(() => {
     const saveToFirebase = async () => {
-      if (user && result && !savedToFirebase && !savingToFirebase) {
-        try {
-          setSavingToFirebase(true);
-          await saveApplicationKit(user.uid, {
-            jobTitle: jobTitle || "Job Application",
-            company: company || "Company",
-            status: "Interested",
-            coverLetter: result,
-            resume: resume || "",
-            followUpEmail: followUpEmail || "",
-            original: {
-              cv: localStorage.getItem("cv") || "",
-              jobDescription: localStorage.getItem("jobDescription") || "",
-              formality: localStorage.getItem("formality") || "neutral",
-            },
-          });
-          setSavedToFirebase(true);
-          setSavingToFirebase(false);
-        } catch (error) {
-          console.error("Error saving to Firebase:", error);
-          setSavingToFirebase(false);
+      if (!user || !result || savedToFirebase || savingToFirebase) {
+        return;
+      }
+      
+      try {
+        console.log("Saving to Firebase...");
+        setSavingToFirebase(true);
+        
+        const saveData = {
+          jobTitle: jobTitle || "Job Application",
+          company: company || "Company",
+          status: "Interested",
+          coverLetter: result,
+          resume: resume || "",
+          followUpEmail: followUpEmail || "",
+          original: {
+            cv: localStorage.getItem("cv") || "",
+            jobDescription: localStorage.getItem("jobDescription") || "",
+            formality: localStorage.getItem("formality") || "neutral",
+          },
+        };
+        
+        // Add some retry logic
+        let retries = 0;
+        const maxRetries = 3;
+        let success = false;
+        
+        while (!success && retries < maxRetries) {
+          try {
+            await saveApplicationKit(user.uid, saveData);
+            success = true;
+          } catch (error) {
+            retries++;
+            console.error(`Error saving to Firebase (attempt ${retries}):`, error);
+            
+            if (retries >= maxRetries) {
+              throw error;
+            }
+            
+            // Wait a bit before retrying
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
         }
+        
+        setSavedToFirebase(true);
+        console.log("Successfully saved to Firebase");
+      } catch (error) {
+        console.error("Final error saving to Firebase:", error);
+      } finally {
+        setSavingToFirebase(false);
       }
     };
 
+    // Call the function
     saveToFirebase();
   }, [
     user,
@@ -176,141 +337,113 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
   };
 
   const handleResumeEdit = () => {
-    if (isEditingResume) {
-      setIsEditingResume(false);
-    } else {
-      setEditedResume(resume);
-      setIsEditingResume(true);
-    }
-  };
-  const handleResumeTwoEdit = () => {
-    if (isEditingResumeTwo) {
-      setIsEditingResumeTwo(false);
-    } else {
-      setEditedResumeTwo(resume);
-      setIsEditingResumeTwo(true);
-    }
+    // We're just toggling edit mode now - saving is handled by the form component
+    setIsEditingResume(!isEditingResume);
   };
 
-  const handleDownloadResumePdf = () => {
+  const handleResumeTwoEdit = () => {
+    // We're just toggling edit mode now - saving is handled by the form component
+    setIsEditingResumeTwo(!isEditingResumeTwo);
+  };
+
+  const handleSaveResumeEdit = (updatedResume: any) => {
+    setCvResume(updatedResume);
+    const updatedResumeStr = JSON.stringify(updatedResume);
+    setResume(updatedResumeStr);
+    localStorage.setItem("resume", updatedResumeStr);
+    
+    // Update both template states with the same data
+    setEditedResume(updatedResumeStr);
+    setEditedResumeTwo(updatedResumeStr);
+    setIsEditingResume(false);
+  };
+
+  const handleSaveResumeTwoEdit = (updatedResume: any) => {
+    setCvResume(updatedResume);
+    const updatedResumeStr = JSON.stringify(updatedResume);
+    setResume(updatedResumeStr);
+    localStorage.setItem("resume", updatedResumeStr);
+    
+    // Update both template states with the same data
+    setEditedResume(updatedResumeStr);
+    setEditedResumeTwo(updatedResumeStr);
+    setIsEditingResumeTwo(false);
+  };
+
+  const handleCancelResumeEdit = () => {
+    setIsEditingResume(false);
+  };
+
+  const handleCancelResumeTwoEdit = () => {
+    setIsEditingResumeTwo(false);
+  };
+
+  const handleDownloadResumePdf = async () => {
     if (!resumeRef.current) return;
 
-    const content = resumeRef.current.innerHTML;
+    try {
+      // Add a loading state for PDF generation
+      const loadingToast = document.createElement("div");
+      loadingToast.className =
+        "fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded shadow-lg z-50";
+      loadingToast.innerText = "Generating Resume PDF...";
+      document.body.appendChild(loadingToast);
 
-    // Create a hidden iframe
-    const iframe = document.createElement("iframe");
-    iframe.style.position = "fixed";
-    iframe.style.right = "0";
-    iframe.style.bottom = "0";
-    iframe.style.width = "0";
-    iframe.style.height = "0";
-    iframe.style.border = "0";
-    document.body.appendChild(iframe);
+      // Dynamically import html2pdf only on the client side
+      const html2pdf = (await import("html2pdf.js")).default;
 
-    const doc = iframe.contentWindow?.document;
-    if (!doc) return;
-    const printPageStyle = `
-    @media print {
-      @page {
-        margin: 0.5cm;
-      }
+      const element = resumeRef.current;
+      
+      const opt = {
+        margin: [10, 10, 10, 10],
+        filename: "resume.pdf",
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+      };
+
+      await html2pdf().set(opt).from(element).save();
+
+      // Remove the loading toast after PDF generation is complete
+      document.body.removeChild(loadingToast);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      alert("There was an error generating the PDF. Please try again.");
     }
-  `;
-    // Grab all stylesheets and inline them in the iframe
-    const styles = Array.from(document.styleSheets)
-      .map((styleSheet) => {
-        try {
-          return Array.from(styleSheet.cssRules)
-            .map((rule) => rule.cssText)
-            .join("\n");
-        } catch (e) {
-          return ""; // Skip inaccessible stylesheets
-        }
-      })
-      .join("\n");
-
-    doc.open();
-    doc.write(`
-    <html>
-      <head>
-        <style>${styles}\n${printPageStyle}</style>
-      </head>
-      <body>
-        ${content}
-      </body>
-    </html>
-  `);
-    doc.close();
-
-    iframe.onload = () => {
-      iframe.contentWindow?.focus();
-      iframe.contentWindow?.print();
-
-      setTimeout(() => {
-        document.body.removeChild(iframe);
-      }, 1000);
-    };
   };
 
-  const handleDownloadResumeTwoPdf = () => {
+  const handleDownloadResumeTwoPdf = async () => {
     if (!resumeTwoRef.current) return;
 
-    const content = resumeTwoRef.current.innerHTML;
+    try {
+      // Add a loading state for PDF generation
+      const loadingToast = document.createElement("div");
+      loadingToast.className =
+        "fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded shadow-lg z-50";
+      loadingToast.innerText = "Generating Resume PDF...";
+      document.body.appendChild(loadingToast);
 
-    // Create a hidden iframe
-    const iframe = document.createElement("iframe");
-    iframe.style.position = "fixed";
-    iframe.style.right = "0";
-    iframe.style.bottom = "0";
-    iframe.style.width = "0";
-    iframe.style.height = "0";
-    iframe.style.border = "0";
-    document.body.appendChild(iframe);
+      // Dynamically import html2pdf only on the client side
+      const html2pdf = (await import("html2pdf.js")).default;
 
-    const doc = iframe.contentWindow?.document;
-    if (!doc) return;
-    const printPageStyle = `
-    @media print {
-      @page {
-        margin: 0.5cm;
-      }
+      const element = resumeTwoRef.current;
+      
+      const opt = {
+        margin: [10, 10, 10, 10],
+        filename: "resume.pdf",
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+      };
+
+      await html2pdf().set(opt).from(element).save();
+
+      // Remove the loading toast after PDF generation is complete
+      document.body.removeChild(loadingToast);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      alert("There was an error generating the PDF. Please try again.");
     }
-  `;
-    // Copy styles from current page
-    const styles = Array.from(document.styleSheets)
-      .map((styleSheet) => {
-        try {
-          return Array.from(styleSheet.cssRules)
-            .map((rule) => rule.cssText)
-            .join("\n");
-        } catch (e) {
-          return ""; // ignore CORS-restricted stylesheets
-        }
-      })
-      .join("\n");
-
-    doc.open();
-    doc.write(`
-    <html>
-      <head>
-               <style>${styles}\n${printPageStyle}</style>
-
-      </head>
-      <body>
-        ${content}
-      </body>
-    </html>
-  `);
-    doc.close();
-
-    iframe.onload = () => {
-      iframe.contentWindow?.focus();
-      iframe.contentWindow?.print();
-
-      setTimeout(() => {
-        document.body.removeChild(iframe);
-      }, 1000);
-    };
   };
 
   const handleDownloadAsPdf = async () => {
@@ -325,13 +458,26 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
     container.style.width = "210mm";
     container.style.padding = "20mm";
     container.style.backgroundColor = "white";
-    container.style.fontFamily = "Arial, sans-serif";
+    container.style.fontFamily = "Arial, sans-serif"; // Ensure Arial is used as font
+
+    // Add a style element to enforce Arial font throughout the document
+    const style = document.createElement("style");
+    style.textContent = `
+      * {
+        font-family: Arial, sans-serif !important;
+      }
+      p, div, span {
+        font-family: Arial, sans-serif !important;
+      }
+    `;
+    container.appendChild(style);
 
     const content = document.createElement("div");
     content.className = "pdf-content";
-    content.style.fontSize = "12px";
+    content.style.fontSize = "14px";
     content.style.lineHeight = "1.5";
     content.style.color = "#000";
+    content.style.fontFamily = "Arial, sans-serif"; // Ensure content also uses Arial
 
     // First split by double newlines which separate paragraphs
     // Then for the first 6-7 lines (contact info), we'll treat each line separately
@@ -348,6 +494,7 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
             p.textContent = line.trim();
             p.style.margin = "0";
             p.style.marginBottom = "3px";
+            p.style.fontFamily = "Arial, sans-serif"; // Set Arial for each paragraph
             content.appendChild(p);
           }
         });
@@ -358,16 +505,37 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
         p.textContent = section;
         p.style.marginTop = "20px";
         p.style.marginBottom = "15px";
+        p.style.fontFamily = "Arial, sans-serif"; // Set Arial for greeting
         content.appendChild(p);
       }
       // Regular paragraphs for the rest of the content
       else {
         const p = document.createElement("p");
         p.textContent = section;
-        p.style.marginBottom = "15px";
+        p.style.marginBottom = "22px"; // Adjusted from 30px to 22px for better paragraph separation
+        p.style.fontFamily = "Arial, sans-serif"; // Set Arial for body paragraphs
         content.appendChild(p);
       }
     });
+
+    // Add some additional styling for better paragraph separation
+    const additionalStyle = document.createElement("style");
+    additionalStyle.textContent = `
+      .pdf-content p {
+        margin-bottom: 22px !important;
+      }
+      
+      /* Add more space after greeting */
+      .pdf-content p:nth-of-type(8) {
+        margin-bottom: 30px !important;
+      }
+      
+      /* Add space between paragraphs */
+      .pdf-content p + p {
+        margin-top: 15px !important;
+      }
+    `;
+    container.appendChild(additionalStyle);
 
     container.appendChild(content);
     document.body.appendChild(container);
@@ -423,13 +591,26 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
     container.style.width = "210mm";
     container.style.padding = "20mm";
     container.style.backgroundColor = "white";
-    container.style.fontFamily = "Arial, sans-serif";
+    container.style.fontFamily = "Arial, sans-serif"; // Ensure Arial is used as font
+
+    // Add a style element to enforce Arial font throughout the document
+    const style = document.createElement("style");
+    style.textContent = `
+      * {
+        font-family: Arial, sans-serif !important;
+      }
+      p, div, span {
+        font-family: Arial, sans-serif !important;
+      }
+    `;
+    container.appendChild(style);
 
     const content = document.createElement("div");
     content.className = "pdf-content";
     content.style.fontSize = "12px";
     content.style.lineHeight = "1.5";
     content.style.color = "#000";
+    content.style.fontFamily = "Arial, sans-serif"; // Ensure content also uses Arial
 
     // Split by double newlines which separate paragraphs
     const sections = followUpEmail.split("\n\n");
@@ -442,6 +623,7 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
         p.textContent = section;
         p.style.fontWeight = "bold";
         p.style.marginBottom = "20px";
+        p.style.fontFamily = "Arial, sans-serif"; // Set Arial for subject line
         content.appendChild(p);
       }
       // For all other sections
@@ -449,6 +631,7 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
         const p = document.createElement("p");
         p.textContent = section;
         p.style.marginBottom = "15px";
+        p.style.fontFamily = "Arial, sans-serif"; // Set Arial for body paragraphs
         content.appendChild(p);
       }
     });
@@ -496,6 +679,28 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
       });
   };
 
+  const handleCoverLetterEdit = () => {
+    setEditedCoverLetter(result);
+    setIsEditingCoverLetter(true);
+  };
+
+  const handleSaveCoverLetterEdit = () => {
+    if (editedCoverLetter) {
+      setResult(editedCoverLetter);
+      localStorage.setItem("cvAnalysisResult", editedCoverLetter);
+    }
+    setIsEditingCoverLetter(false);
+  };
+
+  const handleCancelCoverLetterEdit = () => {
+    setIsEditingCoverLetter(false);
+    setEditedCoverLetter(null);
+  };
+
+  const handleCoverLetterChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setEditedCoverLetter(e.target.value);
+  };
+
   const navigateToJobHub = () => {
     router.push("/job-hub");
   };
@@ -504,8 +709,9 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
-          <p className="mt-4 text-gray-600">Loading your Hire Me Pack...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-300 border-t-purple-600"></div>
+          <p className="mt-4 text-gray-600 font-medium">Loading your Hire Me Pack...</p>
+          <p className="mt-2 text-gray-500 text-sm">This may take a moment...</p>
         </div>
       </div>
     );
@@ -545,8 +751,18 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <div className="min-h-screen bg-gray-50 py-10 text-black">
-        <div className="max-w-[1200px] mx-auto px-4">
+        <div className="max-w-[1600px] mx-auto px-4">
           <div className="text-center max-w-3xl mx-auto">
+            {user && (
+              <div className="flex justify-end mb-4">
+                <button
+                  onClick={navigateToJobHub}
+                  className="flex items-center text-purple-600 hover:text-purple-800 font-medium"
+                >
+                  <FaArrowLeft className="mr-2" /> Back to Dashboard
+                </button>
+              </div>
+            )}
             <h1 className="text-3xl text-black font-bold mb-2">
               Here is your Hire-Me Pack!
             </h1>
@@ -562,113 +778,335 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
                 HIRE ME PACK
               </span>
             </div>
-            {/* <TemplateOne result={cvResume} /> */}
             <div className="flex flex-col gap-4">
-              {/* Top Row: Cover Letter and Resume */}
-              <div className="grid grid-cols-2 gap-6">
-                {/* Cover Letter Section */}
-                <div className="border border-gray-200 rounded-lg p-3">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center">
-                      <div className="w-6 h-6 bg-yellow-100 rounded-full flex items-center justify-center mr-2">
-                        <svg
-                          className="w-4 h-4 text-yellow-500"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M5 4a3 3 0 00-3 3v6a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3H5zm0 2a1 1 0 00-1 1v6a1 1 0 001 1h10a1 1 0 001-1V7a1 1 0 00-1-1H5z"
-                            clipRule="evenodd"
-                          ></path>
-                        </svg>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-[1600px] mx-auto">
+                <div className="flex flex-col space-y-6">
+                  <div className="border border-gray-200 rounded-lg p-3">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center">
+                        <div className="w-6 h-6 bg-yellow-100 rounded-full flex items-center justify-center mr-2">
+                          <svg
+                            className="w-4 h-4 text-yellow-500"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M5 4a3 3 0 00-3 3v6a3 3 0 003 3h10a3 3 0 00-3-3H5zm0 2a1 1 0 00-1 1v6a1 1 0 001 1h10a1 1 0 001-1V7a1 1 0 00-1-1H5z"
+                              clipRule="evenodd"
+                            ></path>
+                          </svg>
+                        </div>
+                        <span className="font-medium">Cover Letter</span>
                       </div>
-                      <span className="font-medium">Cover Letter</span>
+                      <div className="flex space-x-3">
+                        {isEditingCoverLetter ? (
+                          <>
+                            <button 
+                              className="text-green-600 hover:text-green-700 flex items-center"
+                              onClick={handleSaveCoverLetterEdit}
+                            >
+                              <svg
+                                className="w-4 h-4 mr-1"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M5 13l4 4L19 7"
+                                ></path>
+                              </svg>
+                              <span className="text-sm">Save</span>
+                            </button>
+                            <button 
+                              className="text-red-600 hover:text-red-700 flex items-center"
+                              onClick={handleCancelCoverLetterEdit}
+                            >
+                              <svg
+                                className="w-4 h-4 mr-1"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M6 18L18 6M6 6l12 12"
+                                ></path>
+                              </svg>
+                              <span className="text-sm">Cancel</span>
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button 
+                              className="text-gray-500 hover:text-gray-700 flex items-center"
+                              onClick={handleCoverLetterEdit}
+                            >
+                              <svg
+                                className="w-4 h-4 mr-1"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                                ></path>
+                              </svg>
+                              <span className="text-sm">Edit</span>
+                            </button>
+                            <button
+                              className="text-gray-500 hover:text-gray-700"
+                              onClick={handleDownloadAsPdf}
+                              title="Download as PDF"
+                            >
+                              <svg
+                                className="w-5 h-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                                ></path>
+                              </svg>
+                            </button>
+                          </>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex space-x-3">
-                      <button className="text-gray-500 hover:text-gray-700 flex items-center">
-                        <svg
-                          className="w-4 h-4 mr-1"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                          ></path>
-                        </svg>
-                        <span className="text-sm">Edit</span>
-                      </button>
-                      <button
-                        className="text-gray-500 hover:text-gray-700"
-                        onClick={handleDownloadAsPdf}
-                        title="Download as PDF"
-                      >
-                        <svg
-                          className="w-5 h-5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                          ></path>
-                        </svg>
-                      </button>
+                    <div className="relative h-[300px] w-full overflow-hidden rounded">
+                      <div className="absolute inset-0 grid grid-cols-2 grid-rows-2">
+                        <div className="bg-gradient-to-br from-white to-gray-200" />
+                        <div className="bg-gradient-to-br from-white to-gray-200" />
+                        <div className="bg-gradient-to-br from-white to-gray-200" />
+                        <div className="bg-gradient-to-br from-white to-gray-200" />
+                      </div>
+                      <div className="relative z-10 h-full p-3 text-sm overflow-y-auto">
+                        {isEditingCoverLetter ? (
+                          <textarea
+                            className="w-full h-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500 font-sans"
+                            value={editedCoverLetter || ""}
+                            onChange={handleCoverLetterChange}
+                            style={{ 
+                              resize: "none", 
+                              minHeight: "190px", 
+                              lineHeight: "1.4",
+                              fontSize: "0.85rem"
+                            }}
+                          />
+                        ) : result ? (
+                          <div
+                            className="prose prose-sm flex justify-center items-center"
+                            ref={coverLetterRef}
+                          >
+                            <style jsx global>{`
+                              /* Remove all default margins */
+                              .cover-letter-content p {
+                                margin: 0;
+                                line-height: 1.4;
+                              }
+
+                              /* Better paragraph spacing for body paragraphs */
+                              .cover-letter-content .body-paragraph {
+                                margin-top: 2px !important;
+                                margin-bottom: 2px !important;
+                                position: relative;
+                              }
+                              
+                              /* Add visual separator between paragraphs */
+                              .cover-letter-content .body-paragraph:after {
+                                content: '';
+                                display: block;
+                                height: 2px;
+                              }
+
+                              /* Add spacing before and after "Dear Hiring Manager" */
+                              .cover-letter-content p:nth-child(8),
+                              .cover-letter-content .greeting-paragraph {
+                                margin-top: 6px !important;
+                                margin-bottom: 6px !important;
+                                font-weight: 500;
+                              }
+                            `}</style>
+                            <div className="cover-letter-content text-[0.85rem] max-w-full px-3">
+                              <ReactMarkdown
+                                components={{
+                                  p: ({ node, children, ...props }) => {
+                                    const content = (node?.children ?? [])
+                                      .filter((child) => child.type === "text")
+                                      .map((child) => child.value)
+                                      .join("");
+
+                                    const isDearParagraph =
+                                      content.includes("Dear");
+
+                                    // Check if it's a body paragraph (not header info or greeting)
+                                    const isBodyParagraph = 
+                                      !isDearParagraph && 
+                                      !content.includes("@") && 
+                                      !content.includes("linkedin") &&
+                                      content.length > 30;
+                                    
+                                    // Return a fragment with paragraph + spacing div for body paragraphs
+                                    return isBodyParagraph ? (
+                                      <>
+                                        <p
+                                          {...props}
+                                          className="body-paragraph"
+                                        >
+                                          {children}
+                                        </p>
+                                        <div style={{ height: '3px' }}></div>
+                                      </>
+                                    ) : (
+                                      <p
+                                        {...props}
+                                        className={
+                                          isDearParagraph ? "greeting-paragraph" : ""
+                                        }
+                                      >
+                                        {children}
+                                      </p>
+                                    );
+                                  },
+                                }}
+                              >
+                                {result}
+                              </ReactMarkdown>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="h-full flex items-center justify-center">
+                            <p className="text-gray-400">
+                              No cover letter generated
+                            </p>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                  <div className="relative h-[300px] w-full overflow-hidden rounded">
-                    <div className="absolute inset-0 grid grid-cols-2 grid-rows-2">
-                      <div className="bg-gradient-to-br from-white to-gray-200" />
-                      <div className="bg-gradient-to-br from-white to-gray-200" />
-                      <div className="bg-gradient-to-br from-white to-gray-200" />
-                      <div className="bg-gradient-to-br from-white to-gray-200" />
+
+                  <div className="border border-gray-200 rounded-lg p-3">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center">
+                        <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center mr-2">
+                          <svg
+                            className="w-4 h-4 text-purple-500"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path>
+                            <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path>
+                          </svg>
+                        </div>
+                        <span className="font-medium">Follow-up Email</span>
+                      </div>
+                      <div className="flex space-x-3">
+                        <button
+                          className="text-gray-500 hover:text-gray-700 flex items-center"
+                          onClick={handleCopyEmailToClipboard}
+                          title="Copy to clipboard"
+                        >
+                          <svg
+                            className="w-4 h-4 mr-1"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
+                            ></path>
+                          </svg>
+                          <span className="text-sm">
+                            {copiedEmail ? "Copied!" : "Copy"}
+                          </span>
+                        </button>
+                        <button
+                          className="text-gray-500 hover:text-gray-700"
+                          onClick={handleDownloadEmailAsPdf}
+                          title="Download as PDF"
+                        >
+                          <svg
+                            className="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                            ></path>
+                          </svg>
+                        </button>
+                      </div>
                     </div>
-                    <div className="relative z-10 h-full p-3 text-sm overflow-y-auto">
-                      {result && (
+                    <div className="h-[300px] overflow-y-auto bg-gray-100 rounded p-3 text-sm">
+                      {followUpEmail ? (
                         <div
-                          className="prose prose-sm flex justify-center items-center"
-                          ref={coverLetterRef}
+                          className="prose prose-sm max-w-none"
+                          ref={followUpEmailRef}
                         >
                           <style jsx global>{`
                             /* Remove all default margins */
-                            .cover-letter-content p {
+                            .email-content p {
                               margin: 0;
                               line-height: 1.4;
                             }
 
-                            /* Better paragraph spacing for content paragraphs */
-                            .cover-letter-content
-                              p:not(:first-child):not(:nth-child(2)):not(
-                                :nth-child(3)
-                              ):not(:nth-child(4)):not(:nth-child(5)):not(
-                                :nth-child(6)
-                              ):not(:nth-child(7)) {
-                              margin-bottom: 1rem;
+                            /* Better paragraph spacing for body paragraphs */
+                            .email-content .body-paragraph {
+                              margin-top: 2px !important;
+                              margin-bottom: 2px !important;
+                              position: relative;
+                            }
+                            
+                            /* Add visual separator between paragraphs */
+                            .email-content .body-paragraph:after {
+                              content: '';
+                              display: block;
+                              height: 2px;
                             }
 
-                            /* Add spacing before and after "Dear Hiring Manager" */
-                            .cover-letter-content p:nth-child(8) {
-                              margin-top: 1.5rem;
-                              margin-bottom: 1rem;
+                            /* Special styling for subject line */
+                            .email-content .subject-line,
+                            .email-content p:first-child {
+                              font-weight: bold;
+                              margin-bottom: 8px !important;
+                              margin-top: 4px !important;
                             }
-
-                            /* Special styling for greeting paragraph */
-                            .greeting-paragraph {
-                              margin-top: 1.5rem !important;
-                              margin-bottom: 1rem !important;
+                            
+                            /* Special styling for greeting */
+                            .email-content .greeting-paragraph {
+                              margin-top: 6px !important;
+                              margin-bottom: 6px !important;
+                              font-weight: 500;
                             }
                           `}</style>
-                          <div className="cover-letter-content text-[0.85rem] max-w-[355px] px-3">
+                          <div className="email-content text-[0.85rem] max-w-full px-3">
                             <ReactMarkdown
                               components={{
                                 p: ({ node, children, ...props }) => {
@@ -678,16 +1116,33 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
                                     .join("");
 
                                   const isDearParagraph =
-                                    content.includes("Dear");
+                                    content?.includes("Dear");
 
-                                  console.log("children====>>", children);
-                                  return (
+                                  // Check if it's a body paragraph (not header info or greeting)
+                                  const isBodyParagraph = 
+                                    !isDearParagraph && 
+                                    !content?.includes("Subject:") &&
+                                    !content?.includes("@") && 
+                                    !content?.includes("linkedin") &&
+                                    content?.length > 30;
+                                  
+                                  // Return a fragment with paragraph + spacing div for body paragraphs
+                                  return isBodyParagraph ? (
+                                    <>
+                                      <p
+                                        {...props}
+                                        className="body-paragraph"
+                                      >
+                                        {children}
+                                      </p>
+                                      <div style={{ height: '3px' }}></div>
+                                    </>
+                                  ) : (
                                     <p
                                       {...props}
                                       className={
-                                        isDearParagraph
-                                          ? "greeting-paragraph"
-                                          : ""
+                                        isDearParagraph ? "greeting-paragraph" : 
+                                        content?.includes("Subject:") ? "subject-line" : ""
                                       }
                                     >
                                       {children}
@@ -696,16 +1151,20 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
                                 },
                               }}
                             >
-                              {result}
+                              {followUpEmail}
                             </ReactMarkdown>
                           </div>
+                        </div>
+                      ) : (
+                        <div className="h-full flex items-center justify-center">
+                          <p className="text-gray-400">
+                            No follow-up email generated
+                          </p>
                         </div>
                       )}
                     </div>
                   </div>
                 </div>
-
-                {/* Resume Section */}
 
                 {isFirstResumeVisible ? (
                   <div className="border border-gray-200 rounded-lg p-3">
@@ -811,53 +1270,20 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
                         </button>
                       </div>
                     </div>
-                    <div className="h-[300px] bg-gray-50 rounded relative">
-                      <div className="relative h-full">
-                        {resume ? (
-                          <div
-                            className="w-full h-full p-4 overflow-auto text-sm"
-                            ref={resumeRef}
-                            style={{
-                              whiteSpace: "pre-wrap",
-                            }}
-                          >
-                            {isEditingResume ? (
-                              <textarea
-                                className="w-full h-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                value={editedResume || ""}
-                                onChange={(e) =>
-                                  setEditedResume(e.target.value)
-                                }
-                                style={{
-                                  whiteSpace: "pre-wrap",
-                                  fontFamily: "inherit",
-                                  fontSize: "inherit",
-                                  resize: "none",
-                                }}
-                              />
-                            ) : (
-                              <TemplateOne
-                                result={
-                                  editedResume
-                                    ? JSON.parse(editedResume)
-                                    : cvResume
-                                }
-                              />
-                            )}
-                          </div>
-                        ) : (
-                          <pre
-                            className="w-full h-full p-4 overflow-auto text-sm font-mono"
-                            style={{
-                              whiteSpace: "pre-wrap",
-                              fontFamily: "Georgia, serif",
-                              textAlign: "left",
-                            }}
-                          >
-                            {defaultResumeTemplate}
-                          </pre>
-                        )}
-                      </div>
+                    <div className="h-[700px] bg-white rounded relative overflow-y-auto">
+                      {isEditingResume ? (
+                        <div className="p-5 bg-white border rounded h-full overflow-auto">
+                          <ResumeEditForm 
+                            resume={editedResume ? JSON.parse(editedResume) : (cvResume || defaultStructuredResume)}
+                            onSave={handleSaveResumeEdit}
+                            onCancel={handleCancelResumeEdit}
+                          />
+                        </div>
+                      ) : (
+                        <div ref={resumeRef} className="bg-white w-full h-full">
+                          <TemplateOne result={editedResume ? JSON.parse(editedResume) : cvResume} />
+                        </div>
+                      )}
                     </div>
                   </div>
                 ) : (
@@ -964,190 +1390,27 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
                         </button>
                       </div>
                     </div>
-                    <div className="h-[300px] bg-gray-50 rounded relative">
-                      <div className="relative h-full">
-                        {resume ? (
-                          <div
-                            className="w-full h-full p-4 overflow-auto text-sm"
-                            ref={resumeTwoRef}
-                            style={{
-                              whiteSpace: "pre-wrap",
-                            }}
-                          >
-                            {isEditingResumeTwo ? (
-                              <textarea
-                                className="w-full h-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                value={editedResumeTwo || ""}
-                                onChange={(e) =>
-                                  setEditedResumeTwo(e.target.value)
-                                }
-                                style={{
-                                  whiteSpace: "pre-wrap",
-                                  fontFamily: "inherit",
-                                  fontSize: "inherit",
-                                  resize: "none",
-                                }}
-                              />
-                            ) : (
-                              <TemplateTwo
-                                result={
-                                  editedResumeTwo
-                                    ? JSON.parse(editedResumeTwo)
-                                    : cvResume
-                                }
-                              />
-                            )}
-                          </div>
-                        ) : (
-                          <pre
-                            className="w-full h-full p-4 overflow-auto text-sm font-mono"
-                            style={{
-                              whiteSpace: "pre-wrap",
-                              fontFamily: "Georgia, serif",
-                              textAlign: "left",
-                            }}
-                          >
-                            {defaultResumeTemplate}
-                          </pre>
-                        )}
-                      </div>
+                    <div className="h-[700px] bg-white rounded relative overflow-y-auto">
+                      {isEditingResumeTwo ? (
+                        <div className="p-5 bg-white border rounded h-full overflow-auto">
+                          <ResumeEditForm 
+                            resume={editedResumeTwo ? JSON.parse(editedResumeTwo) : (cvResume || defaultStructuredResume)}
+                            onSave={handleSaveResumeTwoEdit}
+                            onCancel={handleCancelResumeTwoEdit}
+                          />
+                        </div>
+                      ) : (
+                        <div ref={resumeTwoRef} className="bg-white w-full h-full">
+                          <TemplateTwo result={editedResumeTwo ? JSON.parse(editedResumeTwo) : cvResume} />
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
-
-                {/* follow up email  */}
-                <div className="border border-gray-200 rounded-lg p-3">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center">
-                      <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center mr-2">
-                        <svg
-                          className="w-4 h-4 text-purple-500"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path>
-                          <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path>
-                        </svg>
-                      </div>
-                      <span className="font-medium">Follow-up Email</span>
-                    </div>
-                    <div className="flex space-x-3">
-                      <button
-                        className="text-gray-500 hover:text-gray-700 flex items-center"
-                        onClick={handleCopyEmailToClipboard}
-                        title="Copy to clipboard"
-                      >
-                        <svg
-                          className="w-4 h-4 mr-1"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
-                          ></path>
-                        </svg>
-                        <span className="text-sm">
-                          {copiedEmail ? "Copied!" : "Copy"}
-                        </span>
-                      </button>
-                      <button
-                        className="text-gray-500 hover:text-gray-700"
-                        onClick={handleDownloadEmailAsPdf}
-                        title="Download as PDF"
-                      >
-                        <svg
-                          className="w-5 h-5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                          ></path>
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                  <div className="h-[300px] overflow-y-auto bg-gray-100 rounded p-3 text-sm">
-                    {followUpEmail ? (
-                      <div
-                        className="prose prose-sm max-w-none"
-                        ref={followUpEmailRef}
-                      >
-                        <style jsx global>{`
-                          /* Remove all default margins */
-                          .email-content p {
-                            margin: 0;
-                            line-height: 1.4;
-                          }
-
-                          /* Better paragraph spacing for content paragraphs */
-                          .email-content p:not(:first-child) {
-                            margin-bottom: 1rem;
-                          }
-
-                          /* Special styling for subject line */
-                          .email-content p:first-child {
-                            font-weight: bold;
-                            margin-bottom: 1.5rem;
-                          }
-                        `}</style>
-                        <div className="cover-letter-content text-[0.85rem] max-w-[355px] px-3">
-                          <ReactMarkdown
-                            components={{
-                              p: ({ node, children, ...props }) => {
-                                const content = node?.children
-                                  .filter((child) => child.type === "text")
-                                  .map((child) => child.value)
-                                  .join("");
-
-                                const isDearParagraph =
-                                  content?.includes("Dear");
-
-                                console.log("children====>>", children);
-                                return (
-                                  <p
-                                    {...props}
-                                    className={
-                                      isDearParagraph
-                                        ? "greeting-paragraph"
-                                        : ""
-                                    }
-                                  >
-                                    {children}
-                                  </p>
-                                );
-                              },
-                            }}
-                          >
-                            {result}
-                          </ReactMarkdown>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="h-full flex items-center justify-center">
-                        <p className="text-gray-400">
-                          No follow-up email generated
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
               </div>
             </div>
           </div>
 
-          {/* Review Section */}
           <div className="flex flex-col items-center mt-12 mb-8">
             <div className="flex mb-2">⭐⭐⭐⭐⭐</div>
             <p className="text-center text-gray-700 max-w-2xl mb-4">
@@ -1163,69 +1426,6 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
               <span className="font-medium">Michael T.</span>
             </div>
           </div>
-
-          {/* Resume Preview Modal */}
-          {showResumePreview && (
-            <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
-              <div className="bg-white rounded-lg w-full max-w-4xl h-[90vh] flex flex-col">
-                <div className="flex items-center justify-between p-4 border-b">
-                  <h3 className="text-xl font-semibold">Resume Preview</h3>
-                  <button
-                    onClick={() => setShowResumePreview(false)}
-                    className="text-gray-500 hover:text-gray-700"
-                    aria-label="Close preview"
-                  >
-                    <svg
-                      className="w-6 h-6"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M6 18L18 6M6 6l12 12"
-                      ></path>
-                    </svg>
-                  </button>
-                </div>
-                <div className="flex-1 overflow-auto p-8 bg-gray-100 flex justify-center">
-                  <div
-                    className="w-[210mm] h-[297mm] bg-white shadow-lg p-[20mm] overflow-hidden flex-shrink-0"
-                    style={{
-                      fontFamily: "Arial, sans-serif",
-                    }}
-                  >
-                    <div
-                      ref={resumePreviewRef}
-                      className="pdf-content"
-                      style={{
-                        fontSize: "12px",
-                        lineHeight: "1.5",
-                        color: "#000",
-                        fontFamily: "Arial, sans-serif",
-                      }}
-                    >
-                      {/* Content will be populated by useEffect */}
-                    </div>
-                  </div>
-                </div>
-                <div className="p-4 border-t flex justify-between">
-                  <div className="text-sm text-gray-500">
-                    PDF preview showing exact A4 layout and formatting
-                  </div>
-                  <button
-                    onClick={() => setShowResumePreview(false)}
-                    className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors"
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
 
           <div className="flex justify-center mt-8">
             <button

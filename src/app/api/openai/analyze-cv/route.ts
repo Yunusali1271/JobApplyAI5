@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 
 // Initialize the OpenAI client with the provided API key
 const openai = new OpenAI({
-  apiKey: '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',
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 // Add this function before the POST handler
@@ -100,18 +100,23 @@ o	2-3 concise sentences that align the candidate's experience with the job requi
 o	Highlight most relevant qualifications and unique value proposition
 o	Include specific language that mirrors the job posting
 3.	Education 
+o	Include indepth education history do not delete any education history
 o	Reverse chronological order
 o	Institution names, locations, graduation dates
-o	Degree titles, concentrations, minors
-o	Relevant coursework that aligns with job requirements
+o	Degree titles, concentrations, minors 
+o	modules taken and percentages and marks if available 
+o	Include secondary or high school education if available
+o	key course works relevant to the job description
 o	Academic honors and distinctions
 4.	Work/Research Experience 
 o	Reverse chronological order
+o	Always add atleast 2 previous experiences if possible even if they are not relevant to the job description
 o	Company/organization names, locations, employment dates
 o	Job titles with clear descriptions
-o	3-5 bullet points per position using ACTION VERBS
+o	4-6 bullet points per position using ACTION VERBS
 o	Quantify achievements wherever possible (%, $, time saved)
 o	Focus on experiences most relevant to the target position
+o	Focus on roles/responsibilities that are most relevant to the job description
 o	Emphasize transferable skills for career changers
 5.	Skills Section 
 o	Technical skills relevant to the position
@@ -143,6 +148,7 @@ o	Professional: Highest level of formality, sophisticated vocabulary, industry-s
 FORMATTING GUIDELINES
 For Harvard-Style CV:
 •	Use clean, professional font (Arial or Times New Roman, 11-12pt)
+•	The person's name should be in Arial font, larger than the rest of the text (14-16pt)
 •	Maintain consistent formatting throughout
 •	Use bullet points for experience and achievements
 •	Limited bold/italics for emphasis only
@@ -160,12 +166,12 @@ For Cover Letter:
 OUTPUT FORMAT
 Provide a complete Harvard-style CV tailored to the job description.
 ADDITIONAL GUIDANCE
-•	Delete irrelevant experiences or skills not applicable to the target position
+• Delete irrelevant experiences or skills not applicable to the target position unless they don't have much experience then include all experiences
 •	Reorganize sections to emphasize strengths that match job requirements
 •	Use industry-specific terminology from the job description
 •	Incorporate keywords naturally throughout both documents for ATS optimization
 •	Focus on achievements rather than responsibilities
-•	Every bullet point should demonstrate value, not just describe tasks
+•	Every bullet point should demonstrate value, not just describe tasks unless tasks are relevant to the job description
 •	Use present tense for current positions, past tense for previous roles
 •	Eliminate first-person pronouns from the CV (but allow in cover letter)
 •	Provide brief explanations for gaps in employment history if evident
@@ -195,6 +201,7 @@ Return response strictly in the following JSON structure:
 
   "personalInformation": {
     "name": "John Doe",
+    "fontStyle": "Arial, 16pt, bold",
     "phone": "+1-234-567-8900",
     "linkedin": "https://www.linkedin.com/in/johndoe",
     "address": "123 Main St, City, State, Zip",
@@ -222,20 +229,42 @@ Return response strictly in the following JSON structure:
           ]
         }
       ]
+    },
+    {
+      "company": "Second Company Name",
+      "position": "Previous Position Title",
+      "location": "City, Country",
+      "duration": "Start Date – End Date",
+      "responsibilities": [
+        {
+          "category": "Category of Responsibilities",
+          "details": [
+            "Detail of accomplishment or responsibility...",
+            "Another detail of accomplishment or responsibility..."
+          ]
+        }
+      ]
     }
   ],
-  "education": {
-    "institution": "Emory University, Goizueta Business School",
-    "degree": "Bachelor of Business Administration (BBA)",
-    "location": "Atlanta, GA",
-    "graduationDate": "May 2014",
-    "concentrations": ["Finance", "Strategy & Management Consulting"],
-    "minor": "Economics",
-    "gpa": 3.8,
-    "achievements": [
-      "Emory Admissions Fellow; assisted Dean of Admissions..."
-    ]
-  },
+  "education": [
+    {
+      "institution": "Emory University, Goizueta Business School",
+      "degree": "Bachelor of Business Administration (BBA)",
+      "location": "Atlanta, GA",
+      "graduationDate": "May 2014",
+      "concentrations": ["Finance(add % or marks if available)", "Strategy & Management Consulting (add % or marks if available)", "Marketing(add % or marks if available)", "Operations(add % or marks if available), ... add other concentrations with the highest grades or relevance but limit to 10"],
+      "minor": "Economics(add % or marks if available)",
+      "gpa": "3.8 or First Class Honours",
+      "achievements": [
+        "Emory Admissions Fellow; assisted Dean of Admissions..."
+      ]
+
+    },
+    {
+      "institution": "Second Institution",
+      ...
+    }
+  ],
   "skillsAndInterests": {
     "interests": ["Semantics", "TED Talks", "Udemy", "Behavioral Economics", "Hiking", "Lacrosse", "Wrestling", "Badminton"],
     "languages": {
@@ -343,9 +372,11 @@ Based on your analysis, create a personalized cover letter that:
    - Professional: Highly formal, sophisticated vocabulary, no contractions, complete titles
 
 2. Follows this structure:
+   - Start directly with "Dear Hiring Manager," or similar appropriate greeting
    - Opening paragraph: Introduction, position applying for, brief statement of interest and fit
    - Body paragraphs (2-3): Specific examples connecting qualifications to job requirements
-   - Closing paragraph: Call to action, availability for interview, gratitude
+   - Closing paragraph: Call to action, availability for interview, gratitude (do not include email or phone number or any contact information)
+   - End with an appropriate closing like "Sincerely," followed by just the candidate's name
 
 3. Incorporates:
    - Specificity: References to the company name, role, and key requirements
@@ -371,8 +402,9 @@ When the resume and job description have minimal overlap or are entirely differe
 8. Include any relevant coursework, self-study, volunteer work, or personal projects that might not be formal work experience but demonstrate capability or interest in the field
 
 ## OUTPUT FORMAT
-1. Return a complete, ready-to-use cover letter with appropriate greeting and signature
-2. Format the letter with proper paragraphing and spacing
+1. Return a complete, ready-to-use cover letter starting with "Dear Hiring Manager," and ending with an appropriate sign-off and the candidate's name
+2. DO NOT include header information like candidate's address, date, or company address
+3. Format the letter with proper paragraphing and spacing
 
 ## SPECIAL CONSIDERATIONS
 - If the resume lacks certain required qualifications, focus on transferable skills and learning potential
@@ -451,13 +483,15 @@ Generate a brief, light-hearted follow-up email for a job application. The email
 3. The desired formality level (Informal, Casual, Standard, Formal, or Professional)
 
 ## EMAIL REQUIREMENTS
-- Create a single paragraph email (3-5 sentences maximum)
+- Create a 2 paragraph email 
+- first paragraph 2 sentences maximum (start with "Hope you are doing great!" or similar)
+- second paragraph 1 sentence maximum (Include a subtle reminder to take a peak at the application)
+- short and concise to the point 
 - Express genuine enthusiasm for the position and company
-- Include a subtle reminder about the application
 - Maintain the specified formality level
 - Use the specific job title and company name
 - Keep the tone positive and light-hearted
-- Include an appropriate subject line and signature
+- Include an appropriate subject line and signature (provide just the name at the end of the email)
 - Avoid detailed qualification listings or requesting application status
 
 ## OUTPUT

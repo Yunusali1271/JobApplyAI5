@@ -110,6 +110,16 @@ export default function ApplicationModal({
       return;
     }
 
+    // Clear previous results from localStorage to avoid stale data
+    localStorage.removeItem('cvAnalysisResult');
+    localStorage.removeItem('followUpEmail');
+    localStorage.removeItem('resume');
+    localStorage.removeItem('jobTitle');
+    localStorage.removeItem('company');
+    localStorage.removeItem('cv');
+    localStorage.removeItem('jobDescription');
+    localStorage.removeItem('formality');
+
     setIsProcessing(true);
 
     try {
@@ -138,6 +148,7 @@ export default function ApplicationModal({
         throw new Error('No result returned from API');
       }
 
+      // Store the results in localStorage immediately
       localStorage.setItem('cvAnalysisResult', result.result);
       localStorage.setItem('jobTitle', extractedJobDetails?.jobTitle);
       localStorage.setItem('company', extractedJobDetails?.company);
@@ -152,32 +163,58 @@ export default function ApplicationModal({
         localStorage.setItem('resume', result.resume);
       }
 
+      // Always reset processing state once data is ready
+      setIsProcessing(false);
+      
+      // Create a success message
+      const successToast = document.createElement("div");
+      successToast.className = "fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center";
+      successToast.innerHTML = `
+        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+        </svg>
+        <span>Your Hire Me Pack was created successfully! Redirecting...</span>
+      `;
+      document.body.appendChild(successToast);
+      
+      // Close modal immediately
+      onClose();
+      
+      // Redirect immediately to results page
+      window.location.href = '/results';
+      
+      // If user is logged in, save to Firebase in the background without blocking UI
       if (user) {
         try {
-          await saveApplicationKit(user.uid, {
-            jobTitle: extractedJobDetails?.jobTitle,
-            company: extractedJobDetails?.company,
-            status: 'Interested',
-            coverLetter: result.result,
-            resume: result.resume || '',
-            followUpEmail: result.followUpEmail || '',
-            original: {
-              cv: cvText,
-              jobDescription: jobDescription,
-              formality: formality,
-            },
-          });
+          // This happens after redirect, so it doesn't block the UI
+          setTimeout(async () => {
+            try {
+              await saveApplicationKit(user.uid, {
+                jobTitle: extractedJobDetails?.jobTitle,
+                company: extractedJobDetails?.company,
+                status: 'Interested',
+                coverLetter: result.result,
+                resume: result.resume || '',
+                followUpEmail: result.followUpEmail || '',
+                original: {
+                  cv: cvText,
+                  jobDescription: jobDescription,
+                  formality: formality,
+                },
+              });
+              console.log('Successfully saved to Firebase in background');
+            } catch (error) {
+              console.error('Error saving to Firebase in background:', error);
+            }
+          }, 100);
         } catch (error) {
-          console.error('Error saving to Firebase:', error);
+          console.error('Error setting up Firebase save:', error);
+          // Continue without blocking the UI
         }
       }
-
-      onClose();
-      window.location.href = '/results';
     } catch (error) {
       console.error('Error with OpenAI processing:', error);
       alert(`Error processing your request: ${error}. Please try again.`);
-    } finally {
       setIsProcessing(false);
     }
   };
@@ -187,7 +224,7 @@ export default function ApplicationModal({
       <div className="bg-white rounded-lg w-full max-w-lg max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <h2 className="text-xl font-bold text-center mb-6">
-            Create a new Hire Me Pack
+            {window.location.pathname.includes('job-hub') ? 'Create New Hire Me Pack' : 'Create a new Hire Me Pack'}
           </h2>
 
           <CvText
