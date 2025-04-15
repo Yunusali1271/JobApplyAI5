@@ -8,14 +8,51 @@ import { useAuth } from "@/lib/hooks/useAuth";
 import { saveApplicationKit } from "@/lib/firebase/applicationKitUtils";
 import TemplateOne from "../components/template/TemplateOne";
 import TemplateTwo from "../components/template/TemplateTwo";
+import TemplateThree from "../components/template/TemplateThree";
 import { FaArrowLeft } from "react-icons/fa";
-import ResumeEditForm from "../components/ResumeeditForm";
+import ResumeEditForm, { ResumeFormRef } from "../components/ResumeeditForm";
+
+// Custom toast hook
+function useToast() {
+  const showToast = (props: { title: string; description?: string; variant?: 'default' | 'destructive' }) => {
+    // Create a div element for the toast
+    const toastEl = document.createElement('div');
+    toastEl.className = `fixed bottom-4 right-4 p-4 rounded shadow-lg z-50 ${
+      props.variant === 'destructive' ? 'bg-red-600 text-white' : 'bg-gray-800 text-white'
+    }`;
+    
+    // Create the title
+    const titleEl = document.createElement('div');
+    titleEl.className = 'font-bold';
+    titleEl.textContent = props.title;
+    toastEl.appendChild(titleEl);
+    
+    // Add description if provided
+    if (props.description) {
+      const descEl = document.createElement('div');
+      descEl.className = 'text-sm mt-1';
+      descEl.textContent = props.description;
+      toastEl.appendChild(descEl);
+    }
+    
+    // Add to document
+    document.body.appendChild(toastEl);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+      document.body.removeChild(toastEl);
+    }, 3000);
+  };
+  
+  return { toast: showToast };
+}
 
 type PageProps = {
   params: {
     id: string; // or number if you're sure
   };
 };
+
 export default function ResultsPage({ params }: PageProps) {
   const { id: resultId } = params;
 
@@ -37,17 +74,25 @@ export default function ResultsPage({ params }: PageProps) {
   const followUpEmailRef = useRef<HTMLDivElement>(null);
   const resumeRef = useRef<HTMLDivElement>(null);
   const resumeTwoRef = useRef<HTMLDivElement>(null);
+  const resumeThreeRef = useRef<HTMLDivElement>(null);
   const resumePreviewRef = useRef<HTMLDivElement>(null);
   const [isEditingResume, setIsEditingResume] = useState(false);
   const [editedResume, setEditedResume] = useState<string | null>(null);
   const [isEditingResumeTwo, setIsEditingResumeTwo] = useState(false);
-  const [isFirstResumeVisible, setIsFirstResumeVisible] = useState(true);
+  const [isEditingResumeThree, setIsEditingResumeThree] = useState(false);
+  const [activeTemplate, setActiveTemplate] = useState<1 | 2 | 3>(2);
   const [isEditingCoverLetter, setIsEditingCoverLetter] = useState(false);
   const [editedCoverLetter, setEditedCoverLetter] = useState<string | null>(null);
+  const [showSummary, setShowSummary] = useState<boolean>(false);
 
   const [editedResumeTwo, setEditedResumeTwo] = useState<string | null>(null);
+  const [editedResumeThree, setEditedResumeThree] = useState<string | null>(null);
 
-  const [cvResume, setCvResume] = useState<null>(null);
+  const [cvResume, setCvResume] = useState<any>(null);
+
+  const resumeFormRef = useRef<ResumeFormRef>(null);
+  const resumeTwoFormRef = useRef<ResumeFormRef>(null);
+  const resumeThreeFormRef = useRef<ResumeFormRef>(null);
 
   // Default structured resume template for editing form
   const defaultStructuredResume = {
@@ -138,7 +183,31 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
 
   useEffect(() => {
     const storedResume = localStorage.getItem("resume");
-    setCvResume(storedResume && JSON.parse(storedResume));
+    try {
+      if (storedResume) {
+        const parsedResume = JSON.parse(storedResume);
+        setCvResume(parsedResume);
+        // Also update the template states
+        setEditedResume(storedResume);
+        setEditedResumeTwo(storedResume);
+        setEditedResumeThree(storedResume);
+      } else {
+        // Set default resume if none exists
+        setCvResume(defaultStructuredResume);
+        const defaultResumeStr = JSON.stringify(defaultStructuredResume);
+        setEditedResume(defaultResumeStr);
+        setEditedResumeTwo(defaultResumeStr);
+        setEditedResumeThree(defaultResumeStr);
+      }
+    } catch (error) {
+      console.error("Failed to parse resume from localStorage:", error);
+      // Initialize with default resume structure if parsing fails
+      setCvResume(defaultStructuredResume);
+      const defaultResumeStr = JSON.stringify(defaultStructuredResume);
+      setEditedResume(defaultResumeStr);
+      setEditedResumeTwo(defaultResumeStr);
+      setEditedResumeThree(defaultResumeStr);
+    }
   }, []);
 
   // Keep both template data in sync when cvResume changes
@@ -148,22 +217,35 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
         const resumeString = JSON.stringify(cvResume);
         setEditedResume(resumeString);
         setEditedResumeTwo(resumeString);
+        setEditedResumeThree(resumeString);
       } catch (e) {
         console.error("Error syncing resume data:", e);
       }
     }
   }, [cvResume]);
 
-  const handleSwitchResume = () => {
-    // If currently editing, apply those changes before switching templates
-    if (isEditingResume) {
-      handleResumeEdit();
-    } else if (isEditingResumeTwo) {
-      handleResumeTwoEdit();
+  const { toast } = useToast();
+
+  // Function to handle switching between templates
+  // Cycles: Template 2 -> Template 1 -> Template 2
+  const handleSwitchTemplate = () => {
+    if (isEditingResume || isEditingResumeTwo) {
+      toast({
+        title: "Please save or cancel your changes before switching templates",
+        description: "You have unsaved changes that will be lost if you switch templates now.",
+        variant: "destructive",
+      });
+      return;
     }
-    
-    // Switch the visible template
-    setIsFirstResumeVisible(!isFirstResumeVisible);
+
+    setActiveTemplate((prev) => {
+      if (prev === 2) return 1;
+      return 2;
+    });
+  };
+
+  const handleToggleSummary = () => {
+    setShowSummary(prev => !prev);
   };
 
   useEffect(() => {
@@ -186,10 +268,29 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
             const resumeData = JSON.parse(storedResume);
             setResume(storedResume);
             setCvResume(resumeData);
+            
+            // Also update template states for consistency
+            setEditedResume(storedResume);
+            setEditedResumeTwo(storedResume);
+            setEditedResumeThree(storedResume);
           } catch (e) {
-            // If not valid JSON, just use as string
-            setResume(storedResume);
+            console.error("Error parsing resume from localStorage:", e);
+            // If JSON parsing fails, initialize with default structure
+            setCvResume(defaultStructuredResume);
+            const defaultResumeStr = JSON.stringify(defaultStructuredResume);
+            setResume(defaultResumeStr);
+            setEditedResume(defaultResumeStr);
+            setEditedResumeTwo(defaultResumeStr);
+            setEditedResumeThree(defaultResumeStr);
           }
+        } else {
+          // No stored resume, use default
+          setCvResume(defaultStructuredResume);
+          const defaultResumeStr = JSON.stringify(defaultStructuredResume);
+          setResume(defaultResumeStr);
+          setEditedResume(defaultResumeStr);
+          setEditedResumeTwo(defaultResumeStr);
+          setEditedResumeThree(defaultResumeStr);
         }
         if (storedJobTitle) {
           setJobTitle(storedJobTitle);
@@ -337,16 +438,46 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
   };
 
   const handleResumeEdit = () => {
-    // We're just toggling edit mode now - saving is handled by the form component
-    setIsEditingResume(!isEditingResume);
+    // If we're already in edit mode, call the save function
+    if (isEditingResume) {
+      // Submit the form using the ref's submitForm method
+      if (resumeFormRef.current) {
+        resumeFormRef.current.submitForm();
+      }
+    } else {
+      // Otherwise, toggle edit mode
+      setIsEditingResume(true);
+    }
   };
 
   const handleResumeTwoEdit = () => {
-    // We're just toggling edit mode now - saving is handled by the form component
-    setIsEditingResumeTwo(!isEditingResumeTwo);
+    // If we're already in edit mode, call the save function
+    if (isEditingResumeTwo) {
+      // Submit the form using the ref's submitForm method
+      if (resumeTwoFormRef.current) {
+        resumeTwoFormRef.current.submitForm();
+      }
+    } else {
+      // Otherwise, toggle edit mode
+      setIsEditingResumeTwo(true);
+    }
+  };
+
+  const handleResumeThreeEdit = () => {
+    if (isEditingResumeThree) {
+      // If we're already editing, this acts as "Save"
+      if (resumeThreeFormRef.current) {
+        resumeThreeFormRef.current.submitForm();
+      }
+    } else {
+      // Start editing
+      setIsEditingResumeThree(true);
+    }
   };
 
   const handleSaveResumeEdit = (updatedResume: any) => {
+    // We might have already exited edit mode from the button click,
+    // so we need to ensure all data updates still happen
     setCvResume(updatedResume);
     const updatedResumeStr = JSON.stringify(updatedResume);
     setResume(updatedResumeStr);
@@ -355,10 +486,15 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
     // Update both template states with the same data
     setEditedResume(updatedResumeStr);
     setEditedResumeTwo(updatedResumeStr);
+    setEditedResumeThree(updatedResumeStr);
+    
+    // Just in case edit mode is still active, turn it off
     setIsEditingResume(false);
   };
 
   const handleSaveResumeTwoEdit = (updatedResume: any) => {
+    // We might have already exited edit mode from the button click,
+    // so we need to ensure all data updates still happen
     setCvResume(updatedResume);
     const updatedResumeStr = JSON.stringify(updatedResume);
     setResume(updatedResumeStr);
@@ -367,7 +503,25 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
     // Update both template states with the same data
     setEditedResume(updatedResumeStr);
     setEditedResumeTwo(updatedResumeStr);
+    setEditedResumeThree(updatedResumeStr);
+    
+    // Just in case edit mode is still active, turn it off
     setIsEditingResumeTwo(false);
+  };
+
+  const handleSaveResumeThreeEdit = (updatedResume: any) => {
+    try {
+      const resumeString = JSON.stringify(updatedResume);
+      setEditedResumeThree(resumeString);
+      // Also update the global resume state for consistency across templates
+      setEditedResume(resumeString);
+      setEditedResumeTwo(resumeString);
+      localStorage.setItem("resume", resumeString);
+      setCvResume(updatedResume);
+      setIsEditingResumeThree(false);
+    } catch (e) {
+      console.error("Error saving resume edit:", e);
+    }
   };
 
   const handleCancelResumeEdit = () => {
@@ -376,6 +530,10 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
 
   const handleCancelResumeTwoEdit = () => {
     setIsEditingResumeTwo(false);
+  };
+
+  const handleCancelResumeThreeEdit = () => {
+    setIsEditingResumeThree(false);
   };
 
   const handleDownloadResumePdf = async () => {
@@ -398,8 +556,18 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
         margin: [10, 10, 10, 10],
         filename: "resume.pdf",
         image: { type: "jpeg", quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+        html2canvas: { 
+          scale: 2, 
+          useCORS: true,
+          letterRendering: true,
+          logging: false
+        },
+        jsPDF: { 
+          unit: "mm", 
+          format: "a4", 
+          orientation: "portrait",
+          compress: true 
+        },
       };
 
       await html2pdf().set(opt).from(element).save();
@@ -429,11 +597,69 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
       const element = resumeTwoRef.current;
       
       const opt = {
-        margin: [10, 10, 10, 10],
+        margin: [8, 8, 8, 8],
         filename: "resume.pdf",
         image: { type: "jpeg", quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+        html2canvas: { 
+          scale: 2, 
+          useCORS: true,
+          letterRendering: true,
+          logging: false
+        },
+        jsPDF: { 
+          unit: "mm", 
+          format: "a4", 
+          orientation: "portrait",
+          compress: true,
+          hotfixes: ["px_scaling"]
+        },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+      };
+
+      await html2pdf().set(opt).from(element).save();
+
+      // Remove the loading toast after PDF generation is complete
+      document.body.removeChild(loadingToast);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      alert("There was an error generating the PDF. Please try again.");
+    }
+  };
+
+  const handleDownloadResumeThreePdf = async () => {
+    if (!resumeThreeRef.current) return;
+    
+    try {
+      // Add a loading state for PDF generation
+      const loadingToast = document.createElement("div");
+      loadingToast.className =
+        "fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded shadow-lg z-50";
+      loadingToast.innerText = "Generating Resume PDF...";
+      document.body.appendChild(loadingToast);
+
+      // Dynamically import html2pdf only on the client side
+      const html2pdf = (await import("html2pdf.js")).default;
+
+      const element = resumeThreeRef.current;
+      
+      const opt = {
+        margin: [8, 8, 8, 8],
+        filename: `${JSON.parse(editedResumeThree || '{}')?.personalInformation?.name || 'resume'}_template3.pdf`,
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { 
+          scale: 2, 
+          useCORS: true,
+          letterRendering: true,
+          logging: false
+        },
+        jsPDF: { 
+          unit: "mm", 
+          format: "a4", 
+          orientation: "portrait",
+          compress: true,
+          hotfixes: ["px_scaling"]
+        },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
       };
 
       await html2pdf().set(opt).from(element).save();
@@ -526,7 +752,7 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
       }
       
       /* Add more space after greeting */
-      .pdf-content p:nth-of-type(8) {
+      .pdf-content p:nth-child(8) {
         margin-bottom: 30px !important;
       }
       
@@ -747,33 +973,34 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
       </div>
     );
   }
-
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <div className="min-h-screen bg-gray-50 py-10 text-black">
         <div className="max-w-[1600px] mx-auto px-4">
+          {user && (
+            <div className="flex justify-end mb-4">
+              <button
+                onClick={navigateToJobHub}
+                className="flex items-center text-purple-600 hover:text-purple-800 font-medium"
+              >
+                <FaArrowLeft className="mr-2" /> Back to Dashboard
+              </button>
+            </div>
+          )}
           <div className="text-center max-w-3xl mx-auto">
-            {user && (
-              <div className="flex justify-end mb-4">
-                <button
-                  onClick={navigateToJobHub}
-                  className="flex items-center text-purple-600 hover:text-purple-800 font-medium"
-                >
-                  <FaArrowLeft className="mr-2" /> Back to Dashboard
-                </button>
-              </div>
-            )}
-            <h1 className="text-3xl text-black font-bold mb-2">
+            <h1 className="text-3xl text-black font-bold mb-1">
               Here is your Hire-Me Pack!
             </h1>
-            <p className="text-gray-600">
+            <p className="text-gray-600 mb-4">
               Everything you need for your job application
             </p>
           </div>
 
           <div className="bg-white rounded-2xl shadow-lg p-8 mb-10">
             <div className="flex justify-between items-center mb-8">
-              <div className="h-4 w-64 bg-gray-200 rounded-full"></div>
+              <h2 className="text-lg font-medium text-gray-800" style={{ fontFamily: 'Cambria, serif' }}>
+                {company && jobTitle ? `${company}, ${jobTitle}` : 'Your Job Application'}
+              </h2>
               <span className="text-gray-500 text-sm uppercase tracking-wider">
                 HIRE ME PACK
               </span>
@@ -1117,7 +1344,6 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
 
                                   const isDearParagraph =
                                     content?.includes("Dear");
-
                                   // Check if it's a body paragraph (not header info or greeting)
                                   const isBodyParagraph = 
                                     !isDearParagraph && 
@@ -1166,7 +1392,7 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
                   </div>
                 </div>
 
-                {isFirstResumeVisible ? (
+                {activeTemplate === 1 && (
                   <div className="border border-gray-200 rounded-lg p-3">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center">
@@ -1190,11 +1416,28 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
                         <div className="flex justify-end">
                           <button
                             className="text-gray-500 hover:text-gray-700 text-sm hover:underline"
-                            onClick={handleSwitchResume}
+                            onClick={handleSwitchTemplate}
                           >
                             Next Template
                           </button>
                         </div>
+                        {!isEditingResume && (
+                          <button 
+                            onClick={handleToggleSummary}
+                            className="text-gray-500 hover:text-gray-700 flex items-center"
+                          >
+                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                              {showSummary ? (
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                              ) : (
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                              )}
+                            </svg>
+                            <span className="text-sm">
+                              {showSummary ? "Remove Summary" : "Add Summary"}
+                            </span>
+                          </button>
+                        )}
                         <button
                           className="text-gray-500 hover:text-gray-700 flex items-center"
                           onClick={handleCopyResumeToClipboard}
@@ -1272,8 +1515,9 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
                     </div>
                     <div className="h-[700px] bg-white rounded relative overflow-y-auto">
                       {isEditingResume ? (
-                        <div className="p-5 bg-white border rounded h-full overflow-auto">
+                        <div className="p-5 bg-white border rounded h-full overflow-auto resume-edit-form">
                           <ResumeEditForm 
+                            ref={resumeFormRef}
                             resume={editedResume ? JSON.parse(editedResume) : (cvResume || defaultStructuredResume)}
                             onSave={handleSaveResumeEdit}
                             onCancel={handleCancelResumeEdit}
@@ -1281,12 +1525,18 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
                         </div>
                       ) : (
                         <div ref={resumeRef} className="bg-white w-full h-full">
-                          <TemplateOne result={editedResume ? JSON.parse(editedResume) : cvResume} />
+                          {showSummary ? (
+                            <TemplateThree result={cvResume || defaultStructuredResume} />
+                          ) : (
+                            <TemplateOne result={cvResume || defaultStructuredResume} />
+                          )}
                         </div>
                       )}
                     </div>
                   </div>
-                ) : (
+                )}
+
+                {activeTemplate === 2 && (
                   <div className="border border-gray-200 rounded-lg p-3">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center">
@@ -1310,7 +1560,7 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
                         <div className="flex justify-end">
                           <button
                             className="text-gray-500 hover:text-gray-700 text-sm hover:underline"
-                            onClick={handleSwitchResume}
+                            onClick={handleSwitchTemplate}
                           >
                             Next Template
                           </button>
@@ -1392,8 +1642,9 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
                     </div>
                     <div className="h-[700px] bg-white rounded relative overflow-y-auto">
                       {isEditingResumeTwo ? (
-                        <div className="p-5 bg-white border rounded h-full overflow-auto">
+                        <div className="p-5 bg-white border rounded h-full overflow-auto resume-edit-form">
                           <ResumeEditForm 
+                            ref={resumeTwoFormRef}
                             resume={editedResumeTwo ? JSON.parse(editedResumeTwo) : (cvResume || defaultStructuredResume)}
                             onSave={handleSaveResumeTwoEdit}
                             onCancel={handleCancelResumeTwoEdit}
@@ -1401,7 +1652,7 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
                         </div>
                       ) : (
                         <div ref={resumeTwoRef} className="bg-white w-full h-full">
-                          <TemplateTwo result={editedResumeTwo ? JSON.parse(editedResumeTwo) : cvResume} />
+                          <TemplateTwo result={cvResume || defaultStructuredResume} />
                         </div>
                       )}
                     </div>
@@ -1454,3 +1705,5 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
     </Suspense>
   );
 }
+
+

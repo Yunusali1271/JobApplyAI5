@@ -12,7 +12,14 @@ export default function TemplateTwo({ result }: { result: any }) {
   const personalInformation = result?.personalInformation || {};
 
   return (
-    <div className="max-w-4xl mx-auto py-3 px-8 bg-white h-full" style={{ fontFamily: 'Times New Roman, serif', color: '#333333', display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
+    <div className="max-w-4xl mx-auto py-3 px-8 bg-white h-full" style={{ 
+      fontFamily: 'Times New Roman, serif', 
+      color: '#333333', 
+      display: 'flex', 
+      flexDirection: 'column', 
+      minHeight: '100%',
+      height: 'auto'
+    }}>
       {/* Header - More compact name and contact details */}
       <div className="mb-2">
         <Title level={2} style={{ color: '#333333', fontFamily: 'Times New Roman, serif', textAlign: 'center', margin: 0, marginBottom: '4px', fontSize: '32px', fontWeight: 'bold' }}>
@@ -81,27 +88,27 @@ export default function TemplateTwo({ result }: { result: any }) {
       <div className="mb-1">
         <Title
           level={5}
-          style={{ color: '#333333', fontFamily: 'Times New Roman, serif', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '2px', marginTop: '2px', fontWeight: 'bold', fontSize: '16px' }}
+          style={{ color: '#333333', fontFamily: 'Times New Roman, serif', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px', marginTop: '2px', fontWeight: 'bold', fontSize: '16px' }}
         >
           Summary
         </Title>
-        <Divider className="my-0.5" style={{ borderColor: '#333333', backgroundColor: '#333333', height: '1px' }} />
-        <Paragraph style={{ color: '#333333', fontFamily: 'Times New Roman, serif', fontSize: '14px', marginBottom: '6px' }}>{summary}</Paragraph>
+        <Divider className="my-0.5" style={{ borderColor: '#333333', backgroundColor: '#333333', height: '1px', marginTop: '0' }} />
+        <Paragraph style={{ color: '#333333', fontFamily: 'Times New Roman, serif', fontSize: '14px', marginBottom: '4px', marginTop: '6px' }}>{summary}</Paragraph>
       </div>
 
       {/* Experience */}
       <div className="mb-1">
         <Title
           level={5}
-          style={{ color: '#333333', fontFamily: 'Times New Roman, serif', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '2px', marginTop: '2px', fontWeight: 'bold', fontSize: '16px' }}
+          style={{ color: '#333333', fontFamily: 'Times New Roman, serif', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px', marginTop: '2px', fontWeight: 'bold', fontSize: '16px' }}
         >
           Experience
         </Title>
-        <Divider className="my-0.5" style={{ borderColor: '#333333', backgroundColor: '#333333', height: '1px' }} />
+        <Divider className="my-0.5" style={{ borderColor: '#333333', backgroundColor: '#333333', height: '1px', marginTop: '0' }} />
 
         {Array.isArray(professionalExperience) && professionalExperience.length > 0 ? (
           professionalExperience.map((experience: any, index: number) => (
-            <div className={index === professionalExperience.length - 1 ? "mb-1" : "mb-2"} key={index}>
+            <div className={index === professionalExperience.length - 1 ? "mb-1" : "mb-1"} key={index}>
               <div className="flex justify-between items-center">
                 <Text strong style={{ color: '#333333', fontFamily: 'Times New Roman, serif', fontWeight: 'bold' }}>
                   {experience?.company || ""} | {experience?.position || ""}
@@ -111,48 +118,37 @@ export default function TemplateTwo({ result }: { result: any }) {
                 </Text>
               </div>
              
-              <ul style={{ 
-                listStyleType: 'disc', 
-                paddingLeft: '1.5em', 
-                color: '#333333', 
+              <div className="ml-5 text-[14px] text-[#333333]" style={{
                 fontFamily: 'Times New Roman, serif',
-                fontSize: '14px', 
-                marginTop: '0.25em'
+                marginTop: '0.15em'
               }}>
                 {Array.isArray(experience?.responsibilities) && experience.responsibilities.map(
                   (responsibility: any, idx: number) => (
-                    <li key={idx} style={{ 
-                      color: '#333333', 
-                      fontFamily: 'Times New Roman, serif',
-                      marginBottom: '0.25em',
-                      paddingLeft: '0.25em'
-                    }}>
-                      {responsibility?.category || ""} <br />
-                      {Array.isArray(responsibility?.details) && (
-                        <ul style={{ 
-                          listStyleType: 'circle', 
-                          paddingLeft: '1.5em', 
-                          color: '#333333', 
-                          fontFamily: 'Times New Roman, serif',
-                          fontSize: '14px',
-                          marginTop: '0.25em'
-                        }}>
-                          {responsibility.details.map(
-                            (detail: any, detailIdx: number) => (
-                              <li key={detailIdx} style={{ 
-                                color: '#333333', 
-                                fontFamily: 'Times New Roman, serif',
-                                marginBottom: '0.25em',
-                                paddingLeft: '0.25em'
-                              }}>{detail}</li>
-                            )
-                          )}
-                        </ul>
-                      )}
-                    </li>
+                    <div key={idx} className="mb-0.5 flex">
+                      <span className="inline-block mr-2 flex-shrink-0" style={{ marginTop: '0.2em' }}>•</span>
+                      <div className="flex-1">
+                        {responsibility?.category || ""}
+                        
+                        {/* Sub bullet points */}
+                        {Array.isArray(responsibility?.details) && (
+                          <div className="ml-1 mt-0.5">
+                            {responsibility.details.map(
+                              (detail: any, detailIdx: number) => (
+                                <div key={detailIdx} className="mb-0.5 flex">
+                                  <span className="inline-block mr-2 ml-3 flex-shrink-0" style={{ lineHeight: '1.4' }}>○</span>
+                                  <div className="flex-1" style={{ fontSize: '14px', color: '#333333', fontFamily: 'Times New Roman, serif' }}>
+                                    {detail}
+                                  </div>
+                                </div>
+                              )
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   )
                 )}
-              </ul>
+              </div>
             </div>
           ))
         ) : (
@@ -167,26 +163,26 @@ export default function TemplateTwo({ result }: { result: any }) {
       <div className="mb-1">
         <Title
           level={5}
-          style={{ color: '#333333', fontFamily: 'Times New Roman, serif', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '2px', marginTop: '2px', fontWeight: 'bold', fontSize: '16px' }}
+          style={{ color: '#333333', fontFamily: 'Times New Roman, serif', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px', marginTop: '2px', fontWeight: 'bold', fontSize: '16px' }}
         >
           Education
         </Title>
-        <Divider className="my-0.5" style={{ borderColor: '#333333', backgroundColor: '#333333', height: '1px' }} />
+        <Divider className="my-0.5" style={{ borderColor: '#333333', backgroundColor: '#333333', height: '1px', marginTop: '0' }} />
         
         {Array.isArray(education) ? (
           // If education is an array, map through each education item
           education.map((edu: any, index: number) => (
-            <div key={index} className={index === education.length - 1 ? "mb-1" : "mb-2"}>
+            <div key={index} className={index === education.length - 1 ? "mb-1" : "mb-1"}>
               <div className="flex justify-between items-center">
-                <Text strong style={{ color: '#333333', fontFamily: 'Times New Roman, serif', fontWeight: 'bold', fontSize: '15px' }}>
+                <Text strong style={{ color: '#333333', fontFamily: 'Times New Roman, serif', fontWeight: 'bold', fontSize: '14px' }}>
                   {edu?.degree || ""} | {edu?.institution || ""}
                 </Text>
-                <Text style={{ color: '#333333', fontFamily: 'Times New Roman, serif', fontSize: '15px' }}>
+                <Text style={{ color: '#333333', fontFamily: 'Times New Roman, serif', fontSize: '14px' }}>
                   {edu?.duration || edu?.graduationDate || ""}
                 </Text>
               </div>
               
-              <div style={{ color: '#333333', fontFamily: 'Times New Roman, serif', fontSize: '15px' }}>
+              <div style={{ color: '#333333', fontFamily: 'Times New Roman, serif', fontSize: '14px' }}>
                 {edu?.concentrations && Array.isArray(edu.concentrations) && edu.concentrations.length > 0 && (
                   <>Concentrations: {edu.concentrations.join(', ')}</>
                 )}
@@ -195,21 +191,17 @@ export default function TemplateTwo({ result }: { result: any }) {
               </div>
 
               {edu?.achievements && Array.isArray(edu.achievements) && edu.achievements.length > 0 && (
-                <ul style={{ 
-                  listStyleType: 'disc', 
-                  paddingLeft: '1.5em', 
+                <div className="ml-5 text-[14px] mt-1" style={{ 
                   color: '#333333', 
-                  fontFamily: 'Times New Roman, serif',
-                  fontSize: '15px',
-                  marginTop: '0.5em'
+                  fontFamily: 'Times New Roman, serif'
                 }}>
                   {edu.achievements.map((achievement: string, idx: number) => (
-                    <li key={idx} style={{ 
-                      marginBottom: '0.25em',
-                      paddingLeft: '0.25em'
-                    }}>{achievement}</li>
+                    <div key={idx} className="mb-0.5 flex">
+                      <span className="inline-block mr-2 flex-shrink-0" style={{ marginTop: '0.2em' }}>•</span>
+                      <div className="flex-1">{achievement}</div>
+                    </div>
                   ))}
-                </ul>
+                </div>
               )}
             </div>
           ))
@@ -217,15 +209,15 @@ export default function TemplateTwo({ result }: { result: any }) {
           // Fall back to the original behavior if education is a single object
           <div className="mb-1">
             <div className="flex justify-between items-center">
-              <Text strong style={{ color: '#333333', fontFamily: 'Times New Roman, serif', fontWeight: 'bold', fontSize: '15px' }}>
+              <Text strong style={{ color: '#333333', fontFamily: 'Times New Roman, serif', fontWeight: 'bold', fontSize: '14px' }}>
                 {education?.degree || ""} | {education?.institution || ""}
               </Text>
-              <Text style={{ color: '#333333', fontFamily: 'Times New Roman, serif', fontSize: '15px' }}>
+              <Text style={{ color: '#333333', fontFamily: 'Times New Roman, serif', fontSize: '14px' }}>
                 {education?.duration || education?.graduationDate || ""}
               </Text>
             </div>
             
-            <div style={{ color: '#333333', fontFamily: 'Times New Roman, serif', fontSize: '15px' }}>
+            <div style={{ color: '#333333', fontFamily: 'Times New Roman, serif', fontSize: '14px' }}>
               {education?.concentrations && Array.isArray(education.concentrations) && education.concentrations.length > 0 && (
                 <>Concentrations: {education.concentrations.join(', ')}</>
               )}
@@ -239,13 +231,17 @@ export default function TemplateTwo({ result }: { result: any }) {
                 paddingLeft: '1.5em', 
                 color: '#333333', 
                 fontFamily: 'Times New Roman, serif',
-                fontSize: '15px',
-                marginTop: '0.5em'
+                fontSize: '14px',
+                marginTop: '0.5em',
+                position: 'relative',
+                listStylePosition: 'outside'
               }}>
                 {education.achievements.map((achievement: string, idx: number) => (
                   <li key={idx} style={{ 
                     marginBottom: '0.25em',
-                    paddingLeft: '0.25em'
+                    paddingLeft: '0.25em',
+                    display: 'list-item',
+                    position: 'relative'
                   }}>{achievement}</li>
                 ))}
               </ul>
@@ -254,18 +250,18 @@ export default function TemplateTwo({ result }: { result: any }) {
         )}
       </div>
 
-      {/* Skills */}
-      <div>
+      {/* Skills & Interests */}
+      <div className="mb-0">
         <Title
           level={5}
-          style={{ color: '#333333', fontFamily: 'Times New Roman, serif', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '2px', marginTop: '2px', fontWeight: 'bold', fontSize: '16px' }}
+          style={{ color: '#333333', fontFamily: 'Times New Roman, serif', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px', marginTop: '2px', fontWeight: 'bold', fontSize: '16px' }}
         >
           Skills & Interests
         </Title>
-        <Divider className="my-0.5" style={{ borderColor: '#333333', backgroundColor: '#333333', height: '1px' }} />
-
+        <Divider className="my-0.5" style={{ borderColor: '#333333', backgroundColor: '#333333', height: '1px', marginTop: '0' }} />
+        
         {skillsAndInterests?.technical && Array.isArray(skillsAndInterests.technical) && skillsAndInterests.technical.length > 0 && (
-          <Row gutter={[16, 8]} className="mb-3">
+          <Row gutter={[16, 4]} className="mb-2">
             <Col span={8}>
               <Text strong style={{ color: '#333333', fontFamily: 'Times New Roman, serif', fontWeight: 'bold' }}>
                 Technical{" "}
@@ -280,7 +276,7 @@ export default function TemplateTwo({ result }: { result: any }) {
         )}
         
         {skillsAndInterests?.interests && Array.isArray(skillsAndInterests.interests) && skillsAndInterests.interests.length > 0 && (
-          <Row gutter={[16, 8]} className="mb-3">
+          <Row gutter={[16, 4]} className="mb-2">
             <Col span={8}>
               <Text strong style={{ color: '#333333', fontFamily: 'Times New Roman, serif', fontWeight: 'bold' }}>
                 Interests{" "}
@@ -293,9 +289,9 @@ export default function TemplateTwo({ result }: { result: any }) {
             </Col>
           </Row>
         )}
-
+        
         {/* Languages section aligned on same line like other sections */}
-        <Row gutter={[16, 8]} className="mb-3">
+        <Row gutter={[16, 4]} className="mb-2">
           <Col span={8}>
             <Text strong style={{ color: '#333333', fontFamily: 'Times New Roman, serif', fontWeight: 'bold' }}>
               Languages{" "}

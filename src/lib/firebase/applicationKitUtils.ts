@@ -14,7 +14,7 @@ import {
   DocumentData,
   QueryDocumentSnapshot 
 } from "firebase/firestore";
-import { ref, uploadString, getDownloadURL } from "firebase/storage";
+import { ref, uploadString, getDownloadURL, deleteObject } from "firebase/storage";
 
 export interface ApplicationKit {
   id?: string;
@@ -86,6 +86,8 @@ export const saveApplicationKit = async (userId: string, kitData: Omit<Applicati
  */
 export const getUserApplicationKits = async (userId: string) => {
   try {
+    console.log(`Fetching application kits for user: ${userId}`);
+    
     const q = query(
       collection(db, `users/${userId}/applicationKits`),
       orderBy("createdAt", "desc")
@@ -93,13 +95,18 @@ export const getUserApplicationKits = async (userId: string) => {
     
     const snapshot = await getDocs(q);
     
+    // Log the number of documents returned
+    console.log(`Found ${snapshot.docs.length} application kits for user ${userId}`);
+    
+    // Always return an array, even if empty
     return snapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => ({
       id: doc.id,
       ...doc.data()
     }));
   } catch (error) {
     console.error("Error getting application kits:", error);
-    throw error;
+    // Return empty array instead of throwing to prevent UI from crashing
+    return [];
   }
 };
 
@@ -152,11 +159,73 @@ export const updateApplicationKit = async (userId: string, kitId: string, update
  */
 export const deleteApplicationKit = async (userId: string, kitId: string) => {
   try {
+    console.log(`Attempting to delete kit: ${kitId} for user: ${userId}`);
+    
+    // First, get the kit data to ensure it exists
     const kitRef = doc(db, `users/${userId}/applicationKits/${kitId}`);
+    const kitSnap = await getDoc(kitRef);
+    
+    if (!kitSnap.exists()) {
+      console.warn(`Application kit with ID ${kitId} does not exist or was already deleted.`);
+      return true; // Return true since there's nothing to delete
+    }
+    
+    // Delete files from Firebase Storage first to ensure complete cleanup
+    let storageDeleteSuccess = true;
+    try {
+      console.log(`Deleting storage files for kit ID: ${kitId}`);
+      
+      // Define all possible file paths that might exist for this kit
+      const filePaths = [
+        `users/${userId}/applicationKits/${kitId}/coverLetter.txt`,
+        `users/${userId}/applicationKits/${kitId}/resume.txt`, 
+        `users/${userId}/applicationKits/${kitId}/followUpEmail.txt`
+      ];
+      
+      // Create references and delete each file with proper error handling
+      const deletePromises = filePaths.map(async (path) => {
+        try {
+          const fileRef = ref(storage, path);
+          await deleteObject(fileRef);
+          console.log(`Successfully deleted file: ${path}`);
+          return true;
+        } catch (fileError) {
+          // File might not exist, which is okay
+          if (fileError.code === 'storage/object-not-found') {
+            console.log(`File not found (normal): ${path}`);
+            return true;
+          }
+          console.error(`Error deleting file ${path}:`, fileError);
+          return false;
+        }
+      });
+      
+      // Wait for all storage deletions to complete
+      const results = await Promise.all(deletePromises);
+      storageDeleteSuccess = results.every(result => result === true);
+      
+      if (!storageDeleteSuccess) {
+        console.warn(`Some files could not be deleted for kit ID: ${kitId}`);
+      }
+    } catch (storageError) {
+      console.error("Error during storage deletion process:", storageError);
+      storageDeleteSuccess = false;
+    }
+    
+    // Delete the document from Firestore
     await deleteDoc(kitRef);
+    
+    // Verify deletion was successful
+    const verifySnap = await getDoc(kitRef);
+    if (verifySnap.exists()) {
+      console.error(`Failed to delete document for kit ID: ${kitId}`);
+      return false;
+    }
+    
+    console.log(`Successfully deleted kit ID: ${kitId} - Storage cleanup ${storageDeleteSuccess ? 'complete' : 'partial'}`);
     return true;
   } catch (error) {
-    console.error("Error deleting application kit:", error);
-    throw error;
+    console.error(`Error deleting application kit ${kitId}:`, error);
+    return false;
   }
 }; 

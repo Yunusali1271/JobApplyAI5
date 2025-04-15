@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
 
-function TemplateOne({ result }: { result: any }) {
-  const [selectedColor, setSelectedColor] = useState("#10b981"); // Updated to lighter green (green-500)
+function TemplateThree({ result }: { result: any }) {
+  const [selectedColor, setSelectedColor] = useState("#10b981"); // Changed to green (green-500) to match Template 1
   
   useEffect(() => {
-    console.log("TemplateOne received data:", result);
+    console.log("TemplateThree received data:", result);
   }, [result]);
 
   // Create a clean version of the data to render
@@ -56,6 +56,7 @@ function TemplateOne({ result }: { result: any }) {
   const education = cleanResult?.education;
   const skillsAndInterests = cleanResult?.skillsAndInterests;
   const personalInformation = cleanResult?.personalInformation;
+  const summary = cleanResult?.summary || "";
 
   return (
     <div className="bg-white text-black px-6 h-full" style={{ fontFamily: 'Arial, sans-serif', color: '#000000' }}>
@@ -84,51 +85,31 @@ function TemplateOne({ result }: { result: any }) {
           {personalInformation?.name}
         </h1>
 
-        {/* Contact Info - Similar to Jeffrey Su resume */}
-        <div className="flex justify-between text-[13px] mt-0 pb-1">
-          {/* Left Column */}
-          <div>
-            <p>
-              <span style={{ color: selectedColor }} className="font-semibold">Email me:</span>{" "}
-              <span className="font-semibold">{personalInformation?.email}</span>
-            </p>
-            <p>
-              <span style={{ color: selectedColor }} className="font-semibold">Call me:</span>{" "}
-              <span className="font-semibold">{personalInformation?.phone}</span>
-            </p>
-          </div>
-          
-          {/* Right Column */}
-          <div className="text-right">
-            {personalInformation?.linkedin ? (
-              // If LinkedIn exists, show LinkedIn and address on separate lines
-              <>
-                <p>
-                  <span style={{ color: selectedColor }} className="font-semibold">LinkedIn:</span>{" "}
-                  <span className="font-semibold">{personalInformation.linkedin}</span>
-                </p>
-                <p>
-                  <span style={{ color: selectedColor }} className="font-semibold">Address:</span>{" "}
-                  <span className="font-semibold">{personalInformation?.address || ""}</span>
-                </p>
-              </>
-            ) : (
-              // If LinkedIn doesn't exist, show address with two lines
-              <>
-                <p>
-                  <span style={{ color: selectedColor }} className="font-semibold">Address:</span>{" "}
-                  <span className="font-semibold">
-                    {formatAddress(personalInformation?.address || "")}
-                  </span>
-                </p>
-              </>
-            )}
-          </div>
+        {/* Contact Info - Single line like Jeffrey Su resume */}
+        <div className="text-center text-[13px] mt-0 pb-3">
+          <p className="font-regular text-black">
+            {personalInformation?.email && `${personalInformation.email}`}{personalInformation?.email && personalInformation?.linkedin && " | "}
+            {personalInformation?.linkedin && `${personalInformation.linkedin}`}{(personalInformation?.email || personalInformation?.linkedin) && personalInformation?.phone && " | "}
+            {personalInformation?.phone && `${personalInformation.phone}`}{(personalInformation?.email || personalInformation?.linkedin || personalInformation?.phone) && personalInformation?.address && " | "}
+            {personalInformation?.address && `${personalInformation.address}`}
+          </p>
         </div>
 
         {/* Gray divider */}
         <div className="h-[1px] bg-gray-300 w-full mb-2 mt-1"></div>
 
+        {/* ============== Professional Summary Section (from TemplateTwo) ============== */}
+        {summary && (
+          <>
+            <h2 style={{ color: selectedColor }} className="text-[14px] font-bold mb-0.5 uppercase">
+              PROFESSIONAL SUMMARY
+            </h2>
+            <div className="mb-2 text-[13px]">
+              {summary}
+            </div>
+          </>
+        )}
+        
         {/* ============== professional experience ============== */}
         <h2 style={{ color: selectedColor }} className="text-[14px] font-bold mb-0.5 uppercase">
           PROFESSIONAL EXPERIENCE
@@ -274,7 +255,7 @@ function TemplateOne({ result }: { result: any }) {
           SKILLS & INTERESTS
         </h2>
         
-        <div className="ml-2">
+        <div>
           <div className="text-[13px] text-black mb-0.5"> 
             <span className="font-bold">Interests:</span> {skillsAndInterests?.interests?.join(", ")}
           </div>
@@ -298,4 +279,4 @@ function TemplateOne({ result }: { result: any }) {
   );
 }
 
-export default TemplateOne; 
+export default TemplateThree; 

@@ -17,7 +17,7 @@ export default function ApplicationModal({
   onClose,
 }: ApplicationModalProps) {
   const { user } = useAuth();
-  const [formality, setFormality] = useState('informal');
+  const [formality, setFormality] = useState('professional');
   const [cvText, setCvText] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [jobDescription, setJobDescription] = useState('');
@@ -244,9 +244,9 @@ export default function ApplicationModal({
 
           <div className="bg-gray-100 p-4 rounded-lg mb-6">
             <p className="font-medium mb-4">Select formality level</p>
-            <div className="mb-4 relative">
+            <div className="mb-6 relative">
               <div
-                className="w-full bg-gray-200 h-1 rounded-full cursor-pointer"
+                className="w-full bg-gray-200/30 h-0.5 rounded-full cursor-pointer"
                 onClick={(e) => {
                   const rect = e.currentTarget.getBoundingClientRect();
                   const x = e.clientX - rect.left;
@@ -261,7 +261,7 @@ export default function ApplicationModal({
                 }}
               >
                 <div
-                  className="bg-purple-500 h-1 rounded-full transition-all duration-200"
+                  className="bg-purple-500 h-0.5 rounded-full transition-all duration-300 ease-out"
                   style={{
                     width:
                       formality === 'informal'
@@ -272,11 +272,11 @@ export default function ApplicationModal({
                         ? '50%'
                         : formality === 'formal'
                         ? '75%'
-                        : '100%',
+                        : '100%'
                   }}
                 />
                 <div
-                  className="absolute -top-2 left-0 w-full flex justify-between"
+                  className="absolute -top-2 left-0 w-full"
                   onMouseDown={(e) => {
                     if (isProcessing) return;
                     const slider = e.currentTarget.parentElement;
@@ -311,39 +311,46 @@ export default function ApplicationModal({
                     document.body.style.cursor = 'grabbing';
                   }}
                 >
-                  {formalityOptions.map((option) => (
-                    <button
-                      key={option.value}
-                      onClick={() => handleFormalityChange(option.value)}
-                      className={`w-4 h-4 rounded-full transition-all duration-200 transform hover:scale-110 cursor-grab active:cursor-grabbing
-                        ${
-                          formality === option.value
-                            ? 'bg-purple-500 ring-2 ring-purple-200 ring-offset-2'
-                            : 'bg-white border border-gray-300 hover:border-purple-300'
-                        }`}
-                      style={{
-                        transform: 'translateX(-50%)',
-                        left: option.position,
-                      }}
-                      disabled={isProcessing}
+                  <div 
+                    className="absolute top-[-1.5px] w-5 h-5 flex items-center justify-center z-10"
+                    style={{
+                      left: formality === 'informal' 
+                        ? '0%' 
+                        : formality === 'casual' 
+                        ? '25%' 
+                        : formality === 'standard'
+                        ? '50%'
+                        : formality === 'formal'
+                        ? '75%'
+                        : '100%',
+                      transform: 'translateX(-50%)',
+                    }}
+                  >
+                    <div 
+                      className={`w-3 h-3 rounded-full transition-all duration-300 ease-out cursor-grab active:cursor-grabbing bg-purple-500 hover:scale-125`}
                     />
-                  ))}
+                  </div>
                 </div>
               </div>
             </div>
-            <div className="flex justify-between text-sm">
+            <div className="flex justify-between text-xs text-gray-500 -mt-3">
               {formalityOptions.map((option) => (
                 <button
                   key={option.value}
                   onClick={() => handleFormalityChange(option.value)}
-                  className={`transition-colors duration-200 px-2 py-1 rounded hover:bg-purple-50
+                  className={`transition-all duration-200 relative
                     ${
                       formality === option.value
                         ? 'text-purple-600 font-medium'
-                        : 'text-gray-500 hover:text-purple-500'
+                        : 'hover:text-purple-500'
                     }`}
                 >
                   {option.label}
+                  {option.value === 'professional' && (
+                    <span className={`absolute top-4 left-1/2 transform -translate-x-1/2 text-[10px] text-purple-500 font-medium transition-opacity duration-300 ${formality === 'professional' ? 'opacity-100' : 'opacity-0'}`}>
+                      Recommended
+                    </span>
+                  )}
                 </button>
               ))}
             </div>

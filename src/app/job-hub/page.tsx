@@ -9,6 +9,31 @@ import { FaPlus, FaTrash } from "react-icons/fa";
 import Sidebar from "@/app/components/Sidebar";
 import ApplicationModal from "@/components/ApplicationModal";
 
+// Add custom toast implementation
+function useCustomToast() {
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    // Create a div element for the toast
+    const toastEl = document.createElement('div');
+    toastEl.className = `fixed bottom-4 right-4 p-4 rounded shadow-lg z-50 ${
+      type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
+    }`;
+    toastEl.textContent = message;
+    
+    // Add to DOM
+    document.body.appendChild(toastEl);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+      document.body.removeChild(toastEl);
+    }, 3000);
+  };
+  
+  return {
+    success: (message: string) => showToast(message, 'success'),
+    error: (message: string) => showToast(message, 'error')
+  };
+}
+
 interface ApplicationKit {
   id: string;
   jobTitle: string;
@@ -33,31 +58,64 @@ export default function JobHub() {
   const [selectedKits, setSelectedKits] = useState<Set<string>>(new Set());
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [newlyCreatedKitId, setNewlyCreatedKitId] = useState<string | null>(null);
+  const [shouldRefreshData, setShouldRefreshData] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [deletedKitIds, setDeletedKitIds] = useState<Set<string>>(new Set());
+  const [isDeleting, setIsDeleting] = useState(false);
+  
+  // Use custom toast
+  const toast = useCustomToast();
 
-  useEffect(() => {
-    const fetchApplicationKits = async () => {
-      if (!user) {
+  const fetchData = async () => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      setLoadError(null);
+      console.log("Fetching application kits...");
+      const kits = await getUserApplicationKits(user.uid);
+      
+      // Check if we got a valid response
+      if (!Array.isArray(kits)) {
+        console.error("Invalid response from getUserApplicationKits:", kits);
+        setLoadError("Received invalid data from the server");
         setLoading(false);
         return;
       }
-      
-      try {
-        const kits = await getUserApplicationKits(user.uid);
-        const formattedKits = kits.map((kit: any) => ({
-          ...kit,
-          createdAt: kit.createdAt?.toDate() || new Date(),
-        }));
-        
-        setApplicationKits(formattedKits);
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching application kits:", error);
-        setLoading(false);
-      }
-    };
 
-    fetchApplicationKits();
-  }, [user]);
+      // Filter out any kits that were deleted in this session
+      const filteredKits = kits.filter(kit => !deletedKitIds.has(kit.id));
+      
+      const formattedKits = filteredKits.map((kit: any) => ({
+        ...kit,
+        createdAt: kit.createdAt?.toDate() || new Date(),
+      }));
+      
+      setApplicationKits(formattedKits);
+      // Reset refresh flag after successful data load
+      if (shouldRefreshData) {
+        setShouldRefreshData(false);
+      }
+    } catch (error) {
+      console.error("Error fetching application kits:", error);
+      setLoadError("Failed to load your applications. Please try again.");
+    } finally {
+      // Always set loading to false when done
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    // Only fetch if logged in
+    if (user) {
+      fetchData();
+    } else {
+      setLoading(false);
+    }
+  }, [user, shouldRefreshData, deletedKitIds]);
 
   useEffect(() => {
     // Check if user just created a new Hire Me Pack and returned to dashboard
@@ -114,15 +172,26 @@ export default function JobHub() {
   };
 
   const handleDelete = async (kitId: string) => {
-    if (!user) return;
+    setIsDeleting(true);
+    console.log(`Starting deletion process for application kit: ${kitId}`);
     
-    if (window.confirm("Are you sure you want to delete this Hire Me Pack?")) {
-      try {
-        await deleteApplicationKit(user.uid, kitId);
-        setApplicationKits(kits => kits.filter(kit => kit.id !== kitId));
-      } catch (error) {
-        console.error("Error deleting application kit:", error);
+    try {
+      const deleted = await deleteApplicationKit(user?.uid as string, kitId);
+      
+      if (deleted) {
+        console.log(`Successfully deleted application kit: ${kitId}`);
+        toast.success("Application deleted successfully");
+        // Force refresh data after deletion
+        fetchData();
+      } else {
+        console.error(`Failed to delete application kit: ${kitId}`);
+        toast.error("Failed to delete application. Please try again.");
       }
+    } catch (error) {
+      console.error("Error in handleDelete:", error);
+      toast.error("An error occurred while deleting the application");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -170,28 +239,95 @@ export default function JobHub() {
 
     try {
       setDeletingId(kitToDelete.id);
+      setLoading(true); // Show loading state
+      
       if (kitToDelete.id.includes(',')) {
         // Bulk delete
         const ids = kitToDelete.id.split(',');
-        await Promise.all(ids.map(id => deleteApplicationKit(user.uid, id)));
-        setApplicationKits(prev => prev.filter(kit => !ids.includes(kit.id)));
+        const results = await Promise.all(ids.map(async (id) => {
+          try {
+            const result = await deleteApplicationKit(user.uid, id);
+            return { id, success: result };
+          } catch (error) {
+            console.error(`Error deleting kit ID ${id}:`, error);
+            return { id, success: false };
+          }
+        }));
+        
+        // Filter out applications that were successfully deleted
+        const successfullyDeletedIds = results
+          .filter(result => result.success)
+          .map(result => result.id);
+        
+        setApplicationKits(prev => 
+          prev.filter(kit => !successfullyDeletedIds.includes(kit.id))
+        );
+        
+        // Log any failures
+        const failures = results.filter(result => !result.success);
+        if (failures.length > 0) {
+          console.error(`Failed to delete ${failures.length} applications:`, 
+            failures.map(f => f.id).join(', ')
+          );
+          
+          if (failures.length === ids.length) {
+            alert("Failed to delete any applications. Please try again.");
+          } else {
+            alert(`Successfully deleted ${successfullyDeletedIds.length} out of ${ids.length} applications.`);
+          }
+        }
       } else {
         // Single delete
-        await deleteApplicationKit(user.uid, kitToDelete.id);
-        setApplicationKits(prev => prev.filter(kit => kit.id !== kitToDelete.id));
+        const result = await deleteApplicationKit(user.uid, kitToDelete.id);
+        if (result) {
+          setApplicationKits(prev => 
+            prev.filter(kit => kit.id !== kitToDelete.id)
+          );
+        } else {
+          console.error(`Failed to delete application kit: ${kitToDelete.id}`);
+          alert("There was an error deleting the application. Please try again.");
+        }
       }
+      
       setShowDeleteConfirm(false);
       setKitToDelete(null);
       setSelectedKits(new Set());
     } catch (error) {
       console.error("Error deleting application kit(s):", error);
+      alert("There was an error deleting the application(s). Please try again.");
     } finally {
       setDeletingId(null);
+      setLoading(false);
     }
   };
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
+
+  // Add a function to manually retry loading
+  const handleRetryLoad = () => {
+    setLoading(true);
+    setShouldRefreshData(true);
+  };
+
+  useEffect(() => {
+    // Cleanup function to ensure we don't show deleted items
+    const cleanupLocalStorage = () => {
+      // Clear any temporary application data that might be saved in localStorage
+      localStorage.removeItem('tempDeletedItemIds');
+      
+      // Add the current time to localStorage to force a fresh load
+      localStorage.setItem('lastApplicationsRefresh', Date.now().toString());
+    };
+
+    // Run cleanup when component mounts
+    cleanupLocalStorage();
+
+    // Also run cleanup when component unmounts
+    return () => {
+      cleanupLocalStorage();
+    };
+  }, []);
 
   if (!user) {
     return (
@@ -286,7 +422,22 @@ export default function JobHub() {
           
           {loading ? (
             <div className="text-center py-10">
+              <div className="animate-spin rounded-full h-10 w-10 border-4 border-purple-300 border-t-purple-600 mx-auto mb-4"></div>
               <p>Loading your applications...</p>
+            </div>
+          ) : loadError ? (
+            <div className="text-center py-10 bg-white rounded-lg shadow">
+              <svg className="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <h3 className="text-lg font-medium mb-2">Error Loading Applications</h3>
+              <p className="text-gray-600 mb-4">{loadError}</p>
+              <button
+                onClick={handleRetryLoad}
+                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors"
+              >
+                Retry Loading
+              </button>
             </div>
           ) : applicationKits.length === 0 ? (
             <div className="text-center py-10 bg-white rounded-lg shadow">

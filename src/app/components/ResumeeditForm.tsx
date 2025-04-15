@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
 
 interface ResumeEditFormProps {
   resume: any;
@@ -6,12 +6,24 @@ interface ResumeEditFormProps {
   onCancel: () => void;
 }
 
-const ResumeEditForm: React.FC<ResumeEditFormProps> = ({ resume, onSave, onCancel }) => {
+// Define a ref type that exposes a submit method
+export interface ResumeFormRef {
+  submitForm: () => void;
+}
+
+const ResumeEditForm = forwardRef<ResumeFormRef, ResumeEditFormProps>(({ resume, onSave, onCancel }, ref) => {
   const [formData, setFormData] = useState(resume);
 
   useEffect(() => {
     setFormData(resume);
   }, [resume]);
+
+  // Expose the submitForm method to the parent component
+  useImperativeHandle(ref, () => ({
+    submitForm: () => {
+      onSave(formData);
+    }
+  }));
 
   const handlePersonalInfoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -141,8 +153,17 @@ const ResumeEditForm: React.FC<ResumeEditFormProps> = ({ resume, onSave, onCance
     onSave(formData);
   };
 
+  // Handle key press events to submit form on Enter only when within input fields
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    // Allow Enter key to work normally in textarea elements
+    if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
+      e.preventDefault();
+      onSave(formData);
+    }
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 text-sm">
+    <form onSubmit={handleSubmit} className="space-y-4 text-sm" onKeyPress={handleKeyPress}>
       <div className="border-b pb-3">
         <h3 className="font-semibold text-md mb-2 text-gray-800">Personal Information</h3>
         <div className="grid grid-cols-2 gap-4">
@@ -443,6 +464,6 @@ const ResumeEditForm: React.FC<ResumeEditFormProps> = ({ resume, onSave, onCance
       </div>
     </form>
   );
-};
+});
 
 export default ResumeEditForm; 
