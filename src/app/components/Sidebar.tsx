@@ -5,6 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { logoutUser } from "@/lib/firebase/firebaseUtils";
+import { useState } from "react";
 import { 
   FaBriefcase, 
   FaFile, 
@@ -17,6 +18,7 @@ import {
 export default function Sidebar() {
   const pathname = usePathname();
   const { user } = useAuth();
+  const [showSupportPopup, setShowSupportPopup] = useState(false);
 
   const isActive = (path: string) => {
     return pathname === path;
@@ -28,6 +30,10 @@ export default function Sidebar() {
     } catch (error) {
       console.error("Error logging out:", error);
     }
+  };
+
+  const toggleSupportPopup = () => {
+    setShowSupportPopup(!showSupportPopup);
   };
 
   const navItems = [
@@ -111,10 +117,33 @@ export default function Sidebar() {
             <span>Login</span>
           </Link>
         )}
-        <div className="flex items-center py-2 px-4 hover:bg-gray-700 cursor-pointer rounded">
-          <FaQuestionCircle className="mr-3" />
-          <span>Support</span>
+        <div className="relative">
+          <div 
+            className="flex items-center py-2 px-4 hover:bg-gray-700 cursor-pointer rounded"
+            onClick={toggleSupportPopup}
+          >
+            <FaQuestionCircle className="mr-3" />
+            <span>Support</span>
+          </div>
+          
+          {showSupportPopup && (
+            <div className="absolute bottom-full left-0 mb-2 w-60 bg-white text-gray-800 rounded-md shadow-lg p-3 z-10">
+              <p className="text-sm font-medium">Need help? Contact us at:</p>
+              <p className="text-sm mt-1 text-blue-600 break-all">jobapplyAIservice@gmail.com</p>
+              <div 
+                className="absolute top-full left-4 w-3 h-3 bg-white transform rotate-45"
+                style={{ marginTop: '-6px' }}
+              ></div>
+            </div>
+          )}
         </div>
+        
+        <Link 
+          href="/manage-subscription" 
+          className="block text-xs text-gray-500 hover:text-gray-400 mt-3 ml-4"
+        >
+          Manage Subscription
+        </Link>
       </div>
     </div>
   );

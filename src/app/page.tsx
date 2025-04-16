@@ -19,7 +19,7 @@ export default function Home() {
   const [pricingPlan, setPricingPlan] = useState({
     price: "£3.99",
     period: "per month",
-    activeTab: "monthly"
+    activeTab: "quarterly"
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentTemplate, setCurrentTemplate] = useState('steve-jobs');
@@ -39,15 +39,15 @@ export default function Home() {
   const handlePricingTabChange = (plan:any) => {
     if (plan === "monthly") {
       setPricingPlan({
-        price: "£3.99",
+        price: "£7.99",
         period: "per month",
         activeTab: "monthly"
       });
-    } else if (plan === "yearly") {
+    } else if (plan === "quarterly") {
       setPricingPlan({
-        price: "£2.99",
+        price: "£3.99",
         period: "per month",
-        activeTab: "yearly"
+        activeTab: "quarterly"
       });
     }
   };
@@ -881,10 +881,10 @@ export default function Home() {
               Monthly
             </button>
             <button 
-              className={`px-6 py-2 rounded-full text-sm font-medium relative z-10 transition-colors duration-300 ${pricingPlan.activeTab === "yearly" ? "text-white" : "text-gray-600"}`}
-              onClick={() => handlePricingTabChange("yearly")}
+              className={`px-6 py-2 rounded-full text-sm font-medium relative z-10 transition-colors duration-300 ${pricingPlan.activeTab === "quarterly" ? "text-white" : "text-gray-600"}`}
+              onClick={() => handlePricingTabChange("quarterly")}
             >
-              Yearly
+              Quarterly
             </button>
           </div>
         </div>
@@ -902,7 +902,7 @@ export default function Home() {
             <div className="relative z-10">
               <div className="text-center mb-6">
                 <div className="flex items-center justify-center">
-                  <span className="text-gray-400 line-through text-sm mr-2">£9.99</span>
+                  <span className="text-gray-400 line-through text-sm mr-2">£15.99</span>
                   <span className="text-4xl font-bold">{pricingPlan.price}</span>
                 </div>
                 <p className="text-sm text-gray-500 mt-1">{pricingPlan.period}</p>
@@ -985,8 +985,8 @@ export default function Home() {
             © 2023 JobApplyAI. All rights reserved.
           </div>
           <div className="flex gap-4">
-            <Link href="/privacy" className="text-sm text-gray-500 hover:text-gray-700">Privacy</Link>
-            <Link href="/terms" className="text-sm text-gray-500 hover:text-gray-700">Terms</Link>
+            <span className="text-sm text-gray-500 cursor-default">Privacy</span>
+            <span className="text-sm text-gray-500 cursor-default">Terms</span>
           </div>
         </div>
       </footer>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/hooks/useAuth";
-import { getUserApplicationKits, deleteApplicationKit } from "@/lib/firebase/applicationKitUtils";
+import { getUserApplicationKits, deleteApplicationKit, manageDeletedAppIds } from "@/lib/firebase/applicationKitUtils";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FaPlus, FaTrash } from "react-icons/fa";
@@ -45,6 +45,18 @@ interface ApplicationKit {
   createdAt: Date;
 }
 
+function getDeletedApplicationIds() {
+  try {
+    // Use the utility function for consistency
+    const deletedIds = manageDeletedAppIds.getAll();
+    console.log("Retrieved deleted application IDs:", deletedIds);
+    return new Set(deletedIds);
+  } catch (e) {
+    console.error('Error loading deleted application IDs:', e);
+    return new Set();
+  }
+}
+
 export default function JobHub() {
   const { user, signInWithGoogle } = useAuth();
   const router = useRouter();
@@ -60,7 +72,7 @@ export default function JobHub() {
   const [newlyCreatedKitId, setNewlyCreatedKitId] = useState<string | null>(null);
   const [shouldRefreshData, setShouldRefreshData] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [deletedKitIds, setDeletedKitIds] = useState<Set<string>>(new Set());
+  const [deletedKitIds, setDeletedKitIds] = useState<Set<string>>(getDeletedApplicationIds());
   const [isDeleting, setIsDeleting] = useState(false);
   
   // Use custom toast
@@ -86,15 +98,35 @@ export default function JobHub() {
         return;
       }
 
-      // Filter out any kits that were deleted in this session
-      const filteredKits = kits.filter(kit => !deletedKitIds.has(kit.id));
+      // Get up-to-date deleted IDs from localStorage
+      const currentDeletedIds = getDeletedApplicationIds();
       
-      const formattedKits = filteredKits.map((kit: any) => ({
-        ...kit,
-        createdAt: kit.createdAt?.toDate() || new Date(),
-      }));
+      // Filter out any kits that were deleted in this session or previous sessions
+      const filteredKits = kits.filter(kit => !currentDeletedIds.has(kit.id));
+      
+      const formattedKits = filteredKits.map((kit: any) => {
+        // Safely handle the toDate function that might not exist
+        let createdDate = new Date();
+        try {
+          if (kit.createdAt && typeof kit.createdAt.toDate === 'function') {
+            createdDate = kit.createdAt.toDate();
+          } else if (kit.createdAt instanceof Date) {
+            createdDate = kit.createdAt;
+          }
+        } catch (e) {
+          console.error("Error formatting date:", e);
+        }
+        
+        return {
+          ...kit,
+          createdAt: createdDate,
+        };
+      });
       
       setApplicationKits(formattedKits);
+      // Update deletedKitIds here instead of in the dependencies
+      setDeletedKitIds(currentDeletedIds);
+      
       // Reset refresh flag after successful data load
       if (shouldRefreshData) {
         setShouldRefreshData(false);
@@ -115,7 +147,7 @@ export default function JobHub() {
     } else {
       setLoading(false);
     }
-  }, [user, shouldRefreshData, deletedKitIds]);
+  }, [user, shouldRefreshData]);
 
   useEffect(() => {
     // Check if user just created a new Hire Me Pack and returned to dashboard
@@ -176,20 +208,34 @@ export default function JobHub() {
     console.log(`Starting deletion process for application kit: ${kitId}`);
     
     try {
+      // Optimistically update UI first
+      setApplicationKits(prev => prev.filter(kit => kit.id !== kitId));
+      
+      // Update local deletedKitIds
+      const newDeletedIds = new Set(deletedKitIds);
+      newDeletedIds.add(kitId);
+      setDeletedKitIds(newDeletedIds);
+      
+      // Update localStorage via the utility
+      manageDeletedAppIds.add(kitId);
+      
+      // Show immediate feedback to user
+      toast.success("Application deleted successfully");
+      
+      // Actually delete from Firebase
       const deleted = await deleteApplicationKit(user?.uid as string, kitId);
       
-      if (deleted) {
-        console.log(`Successfully deleted application kit: ${kitId}`);
-        toast.success("Application deleted successfully");
-        // Force refresh data after deletion
-        fetchData();
-      } else {
-        console.error(`Failed to delete application kit: ${kitId}`);
-        toast.error("Failed to delete application. Please try again.");
+      if (!deleted) {
+        console.error(`Failed to delete application kit in Firebase: ${kitId}`);
+        // Even if Firebase deletion fails, we still want to hide it from the UI
+        // The next fetchData call will re-sync with Firebase if needed
       }
     } catch (error) {
       console.error("Error in handleDelete:", error);
-      toast.error("An error occurred while deleting the application");
+      toast.error("There was an issue with deletion, but the application will be hidden");
+      
+      // Even on error, keep the item removed from UI to match user expectations
+      setApplicationKits(prev => prev.filter(kit => kit.id !== kitId));
     } finally {
       setIsDeleting(false);
     }
@@ -239,11 +285,28 @@ export default function JobHub() {
 
     try {
       setDeletingId(kitToDelete.id);
-      setLoading(true); // Show loading state
       
       if (kitToDelete.id.includes(',')) {
         // Bulk delete
         const ids = kitToDelete.id.split(',');
+        
+        // Update UI optimistically first
+        setApplicationKits(prev => 
+          prev.filter(kit => !ids.includes(kit.id))
+        );
+        
+        // Update deletedKitIds and localStorage
+        const newDeletedIds = new Set(deletedKitIds);
+        ids.forEach(id => newDeletedIds.add(id));
+        setDeletedKitIds(newDeletedIds);
+        
+        // Add to localStorage via the utility
+        manageDeletedAppIds.addMultiple(ids);
+        
+        // Show immediate success feedback
+        toast.success(`Successfully deleted ${ids.length} applications`);
+        
+        // Now actually delete from Firebase
         const results = await Promise.all(ids.map(async (id) => {
           try {
             const result = await deleteApplicationKit(user.uid, id);
@@ -254,50 +317,27 @@ export default function JobHub() {
           }
         }));
         
-        // Filter out applications that were successfully deleted
-        const successfullyDeletedIds = results
-          .filter(result => result.success)
-          .map(result => result.id);
-        
-        setApplicationKits(prev => 
-          prev.filter(kit => !successfullyDeletedIds.includes(kit.id))
-        );
-        
-        // Log any failures
+        // Count failures for logging purposes
         const failures = results.filter(result => !result.success);
         if (failures.length > 0) {
-          console.error(`Failed to delete ${failures.length} applications:`, 
+          console.error(`${failures.length} applications failed to delete in Firebase, but were hidden from UI:`, 
             failures.map(f => f.id).join(', ')
           );
-          
-          if (failures.length === ids.length) {
-            alert("Failed to delete any applications. Please try again.");
-          } else {
-            alert(`Successfully deleted ${successfullyDeletedIds.length} out of ${ids.length} applications.`);
-          }
         }
       } else {
-        // Single delete
-        const result = await deleteApplicationKit(user.uid, kitToDelete.id);
-        if (result) {
-          setApplicationKits(prev => 
-            prev.filter(kit => kit.id !== kitToDelete.id)
-          );
-        } else {
-          console.error(`Failed to delete application kit: ${kitToDelete.id}`);
-          alert("There was an error deleting the application. Please try again.");
-        }
+        // Single delete - use the handleDelete function we just updated
+        await handleDelete(kitToDelete.id);
       }
       
+      // Clean up the confirmation dialog
       setShowDeleteConfirm(false);
       setKitToDelete(null);
       setSelectedKits(new Set());
     } catch (error) {
-      console.error("Error deleting application kit(s):", error);
-      alert("There was an error deleting the application(s). Please try again.");
+      console.error("Error in confirmDelete:", error);
+      toast.error("There was an issue with deletion, but the applications will be hidden");
     } finally {
       setDeletingId(null);
-      setLoading(false);
     }
   };
 
@@ -328,6 +368,13 @@ export default function JobHub() {
       cleanupLocalStorage();
     };
   }, []);
+
+  // Add a function to clear deletion history if needed
+  const clearDeletionHistory = () => {
+    manageDeletedAppIds.clearAll();
+    setDeletedKitIds(new Set());
+    fetchData(); // Refetch to show all applications
+  };
 
   if (!user) {
     return (

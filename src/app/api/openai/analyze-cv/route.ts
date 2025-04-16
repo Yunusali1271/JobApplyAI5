@@ -277,7 +277,10 @@ Return response strictly in the following JSON structure:
 `;
 
     // Call the OpenAI API for CV/resume
-    const cvResumeResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+    console.log('Calling OpenAI APIs in parallel...');
+    
+    // Prepare all three API calls without awaiting them individually
+    const cvResumePromise = fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -300,25 +303,6 @@ Return response strictly in the following JSON structure:
       }),
     });
 
-    if (!cvResumeResponse.ok) {
-      const errorData = await cvResumeResponse.json();
-      console.error('OpenAI API error (CV/resume):', errorData);
-      throw new Error(`OpenAI API error: ${errorData.error?.message || 'Unknown error'}`);
-    }
-
-    const cvResumeData = await cvResumeResponse.json();
-    
-    if (!cvResumeData.choices || !cvResumeData.choices[0] || !cvResumeData.choices[0].message) {
-      console.error('Invalid response format from OpenAI (CV/resume):', cvResumeData);
-      throw new Error('Invalid response format from OpenAI for CV/resume');
-    }
-    
-    // Clean up the resume content before using it
-    const cvResumeContent = cleanResumeContent(cvResumeData.choices[0].message.content);
-    console.log('CV/resume content length:', cvResumeContent?.length || 0);
-    
-    console.log('Calling OpenAI API for cover letter...');
-    
     // Create the system prompt for cover letter generation with updated instructions
     const coverLetterSystemPrompt = `# CV/Resume and Job Description Analysis for Tailored Cover Letter Generation
 
@@ -429,8 +413,8 @@ Formality Level: ${formalityLevel}
 Please create a personalized cover letter that highlights the most relevant qualifications from the CV that match the job requirements. The cover letter should use a ${formalityLevel} tone.
 `;
 
-    // Call the OpenAI API for cover letter
-    const coverLetterResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+    // Prepare the cover letter API call
+    const coverLetterPromise = fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -453,25 +437,6 @@ Please create a personalized cover letter that highlights the most relevant qual
       }),
     });
 
-    if (!coverLetterResponse.ok) {
-      const errorData = await coverLetterResponse.json();
-      console.error('OpenAI API error (cover letter):', errorData);
-      throw new Error(`OpenAI API error: ${errorData.error?.message || 'Unknown error'}`);
-    }
-
-    const coverLetterData = await coverLetterResponse.json();
-    
-    if (!coverLetterData.choices || !coverLetterData.choices[0] || !coverLetterData.choices[0].message) {
-      console.error('Invalid response format from OpenAI (cover letter):', coverLetterData);
-      throw new Error('Invalid response format from OpenAI for cover letter');
-    }
-    
-    const coverLetterContent = coverLetterData.choices[0].message.content;
-    console.log('Cover letter content length:', coverLetterContent?.length || 0);
-
-    // Now call OpenAI API for follow-up email with updated instructions
-    console.log('Calling OpenAI API for follow-up email...');
-    
     // Create the system prompt for follow-up email
     const followUpEmailSystemPrompt = `# Brief Follow-Up Email Generation Instructions
 ## CONTEXT
@@ -512,8 +477,8 @@ Formality Level: ${formalityLevel}
 Please create a personalized follow-up email that reinforces the candidate's key qualifications that match the job requirements and demonstrates continued interest in the position. The follow-up email should use a ${formalityLevel} tone.
 `;
 
-    // Call the OpenAI API for follow-up email
-    const followUpEmailResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+    // Prepare the follow-up email API call
+    const followUpEmailPromise = fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -536,6 +501,49 @@ Please create a personalized follow-up email that reinforces the candidate's key
       }),
     });
 
+    // Execute all three API calls in parallel and wait for all to complete
+    const [cvResumeResponse, coverLetterResponse, followUpEmailResponse] = await Promise.all([
+      cvResumePromise,
+      coverLetterPromise,
+      followUpEmailPromise
+    ]);
+
+    // Process CV/resume response
+    if (!cvResumeResponse.ok) {
+      const errorData = await cvResumeResponse.json();
+      console.error('OpenAI API error (CV/resume):', errorData);
+      throw new Error(`OpenAI API error: ${errorData.error?.message || 'Unknown error'}`);
+    }
+
+    const cvResumeData = await cvResumeResponse.json();
+    
+    if (!cvResumeData.choices || !cvResumeData.choices[0] || !cvResumeData.choices[0].message) {
+      console.error('Invalid response format from OpenAI (CV/resume):', cvResumeData);
+      throw new Error('Invalid response format from OpenAI for CV/resume');
+    }
+    
+    // Clean up the resume content before using it
+    const cvResumeContent = cleanResumeContent(cvResumeData.choices[0].message.content);
+    console.log('CV/resume content length:', cvResumeContent?.length || 0);
+    
+    // Process cover letter response
+    if (!coverLetterResponse.ok) {
+      const errorData = await coverLetterResponse.json();
+      console.error('OpenAI API error (cover letter):', errorData);
+      throw new Error(`OpenAI API error: ${errorData.error?.message || 'Unknown error'}`);
+    }
+
+    const coverLetterData = await coverLetterResponse.json();
+    
+    if (!coverLetterData.choices || !coverLetterData.choices[0] || !coverLetterData.choices[0].message) {
+      console.error('Invalid response format from OpenAI (cover letter):', coverLetterData);
+      throw new Error('Invalid response format from OpenAI for cover letter');
+    }
+    
+    const coverLetterContent = coverLetterData.choices[0].message.content;
+    console.log('Cover letter content length:', coverLetterContent?.length || 0);
+
+    // Process follow-up email response
     if (!followUpEmailResponse.ok) {
       const errorData = await followUpEmailResponse.json();
       console.error('OpenAI API error (follow-up email):', errorData);

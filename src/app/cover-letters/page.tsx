@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/hooks/useAuth";
-import { getUserApplicationKits } from "@/lib/firebase/applicationKitUtils";
+import { getUserApplicationKits, manageDeletedAppIds } from "@/lib/firebase/applicationKitUtils";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FaPlus, FaDownload, FaEdit, FaEllipsisV } from "react-icons/fa";
@@ -22,6 +22,9 @@ export default function CoverLettersPage() {
   const router = useRouter();
   const [coverLetters, setCoverLetters] = useState<CoverLetterItem[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // Add state to track if we need to refresh the data
+  const [shouldRefresh, setShouldRefresh] = useState(false);
 
   useEffect(() => {
     const fetchCoverLetters = async () => {
@@ -31,31 +34,72 @@ export default function CoverLettersPage() {
       }
       
       try {
+        setLoading(true);
         // Get application kits which contain cover letters
         const kits = await getUserApplicationKits(user.uid);
         
-        // Filter out kits without cover letter content and map to cover letter format
+        // Get the list of deleted application IDs
+        const deletedIds = manageDeletedAppIds.getAll();
+        console.log("Filtering cover letters with deleted IDs:", deletedIds);
+        
+        // Filter out kits without cover letter content, deleted kits, and map to cover letter format
         const coverLetterList = kits
           .filter((kit: any) => kit.coverLetter && kit.coverLetter.trim() !== '')
-          .map((kit: any) => ({
-            id: kit.id,
-            title: `${kit.jobTitle} - ${kit.company}`,
-            content: kit.coverLetter,
-            createdAt: kit.createdAt?.toDate() || new Date(),
-            jobTitle: kit.jobTitle,
-            company: kit.company
-          }));
+          .filter((kit: any) => !deletedIds.includes(kit.id)) // Filter out deleted applications
+          .map((kit: any) => {
+            // Safely handle date conversion
+            let createdDate = new Date();
+            try {
+              if (kit.createdAt && typeof kit.createdAt.toDate === 'function') {
+                createdDate = kit.createdAt.toDate();
+              } else if (kit.createdAt instanceof Date) {
+                createdDate = kit.createdAt;
+              }
+            } catch (e) {
+              console.error("Error formatting date:", e);
+            }
+            
+            return {
+              id: kit.id,
+              title: `${kit.jobTitle} - ${kit.company}`,
+              content: kit.coverLetter,
+              createdAt: createdDate,
+              jobTitle: kit.jobTitle,
+              company: kit.company
+            };
+          });
         
         setCoverLetters(coverLetterList);
-        setLoading(false);
+        
+        // Reset the refresh flag
+        if (shouldRefresh) {
+          setShouldRefresh(false);
+        }
       } catch (error) {
         console.error("Error fetching cover letters from application kits:", error);
+      } finally {
         setLoading(false);
       }
     };
 
     fetchCoverLetters();
-  }, [user]);
+    
+    // Set up a listener for localStorage changes to detect when applications are deleted
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'deletedApplicationIds') {
+        console.log("Detected deletedApplicationIds change, refreshing cover letters");
+        setShouldRefresh(true);
+      }
+    };
+    
+    // Add event listener for storage changes
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Clean up event listener on unmount
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [user, shouldRefresh]);
 
   const handleNewCoverLetter = () => {
     router.push("/");
@@ -158,4 +202,4 @@ export default function CoverLettersPage() {
       </div>
     </div>
   );
-} 
+}

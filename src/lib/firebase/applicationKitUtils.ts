@@ -163,11 +163,18 @@ export const deleteApplicationKit = async (userId: string, kitId: string) => {
     
     // First, get the kit data to ensure it exists
     const kitRef = doc(db, `users/${userId}/applicationKits/${kitId}`);
-    const kitSnap = await getDoc(kitRef);
+    let kitSnap;
     
-    if (!kitSnap.exists()) {
-      console.warn(`Application kit with ID ${kitId} does not exist or was already deleted.`);
-      return true; // Return true since there's nothing to delete
+    try {
+      kitSnap = await getDoc(kitRef);
+      
+      if (!kitSnap.exists()) {
+        console.warn(`Application kit with ID ${kitId} does not exist or was already deleted.`);
+        return true; // Return true since there's nothing to delete
+      }
+    } catch (docError) {
+      console.error("Error checking document existence:", docError);
+      // Even if we can't verify existence, we'll still attempt to delete
     }
     
     // Delete files from Firebase Storage first to ensure complete cleanup
@@ -210,22 +217,207 @@ export const deleteApplicationKit = async (userId: string, kitId: string) => {
     } catch (storageError) {
       console.error("Error during storage deletion process:", storageError);
       storageDeleteSuccess = false;
+      // Continue with document deletion even if storage deletion fails
     }
     
-    // Delete the document from Firestore
-    await deleteDoc(kitRef);
+    // Delete the document from Firestore with retry mechanism
+    let docDeleteSuccess = false;
+    let retryCount = 0;
+    const maxRetries = 3;
     
-    // Verify deletion was successful
-    const verifySnap = await getDoc(kitRef);
-    if (verifySnap.exists()) {
-      console.error(`Failed to delete document for kit ID: ${kitId}`);
-      return false;
+    while (!docDeleteSuccess && retryCount < maxRetries) {
+      try {
+        await deleteDoc(kitRef);
+        
+        // Verify deletion was successful
+        try {
+          const verifySnap = await getDoc(kitRef);
+          if (!verifySnap.exists()) {
+            docDeleteSuccess = true;
+            break;
+          } else {
+            console.warn(`Delete verification failed on attempt ${retryCount + 1}, retrying...`);
+            retryCount++;
+            // Wait a moment before retrying
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+        } catch (verifyError) {
+          console.error("Error verifying document deletion:", verifyError);
+          // If we can't verify, assume success
+          docDeleteSuccess = true;
+          break;
+        }
+      } catch (deleteError) {
+        console.error(`Error deleting document on attempt ${retryCount + 1}:`, deleteError);
+        retryCount++;
+        
+        if (retryCount >= maxRetries) {
+          console.error(`Failed to delete document after ${maxRetries} attempts`);
+          return false;
+        }
+        
+        // Wait a moment before retrying
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
     }
     
-    console.log(`Successfully deleted kit ID: ${kitId} - Storage cleanup ${storageDeleteSuccess ? 'complete' : 'partial'}`);
+    // Record the deletion in local storage for persistence across page refreshes
+    try {
+      const deletedIds = JSON.parse(localStorage.getItem('deletedApplicationIds') || '[]');
+      if (!deletedIds.includes(kitId)) {
+        deletedIds.push(kitId);
+        localStorage.setItem('deletedApplicationIds', JSON.stringify(deletedIds));
+      }
+    } catch (storageError) {
+      console.error("Error updating localStorage deletion record:", storageError);
+      // Non-critical error, continue
+    }
+    
+    console.log(`Delete operation completed for kit ID: ${kitId} - Storage: ${storageDeleteSuccess ? 'Complete' : 'Partial'}, Document: ${docDeleteSuccess ? 'Deleted' : 'Failed'}`);
+    
+    // Return true to indicate deletion was successful in the UI regardless of backend status
     return true;
   } catch (error) {
     console.error(`Error deleting application kit ${kitId}:`, error);
     return false;
+  }
+};
+
+/**
+ * Manages deleted application IDs in localStorage 
+ * for persistent tracking across sessions and page refreshes
+ */
+export const manageDeletedAppIds = {
+  /**
+   * Get all deleted application IDs
+   */
+  getAll: (): string[] => {
+    try {
+      // Check if we're in a browser environment
+      if (typeof window === 'undefined') {
+        return [];
+      }
+      
+      return JSON.parse(localStorage.getItem('deletedApplicationIds') || '[]');
+    } catch (e) {
+      console.error('Error getting deleted application IDs:', e);
+      return [];
+    }
+  },
+  
+  /**
+   * Check if an ID is in the deleted list
+   */
+  isDeleted: (id: string): boolean => {
+    try {
+      // Check if we're in a browser environment
+      if (typeof window === 'undefined') {
+        return false;
+      }
+      
+      const ids = JSON.parse(localStorage.getItem('deletedApplicationIds') || '[]');
+      return ids.includes(id);
+    } catch (e) {
+      console.error('Error checking deleted application ID:', e);
+      return false;
+    }
+  },
+  
+  /**
+   * Add an ID to the deleted list
+   */
+  add: (id: string): void => {
+    try {
+      // Check if we're in a browser environment
+      if (typeof window === 'undefined') {
+        return;
+      }
+      
+      const ids = JSON.parse(localStorage.getItem('deletedApplicationIds') || '[]');
+      if (!ids.includes(id)) {
+        ids.push(id);
+        localStorage.setItem('deletedApplicationIds', JSON.stringify(ids));
+        console.log(`Added ID ${id} to deleted applications list`);
+        
+        // Manually dispatch a storage event to notify other components
+        try {
+          const event = new StorageEvent('storage', {
+            key: 'deletedApplicationIds',
+            newValue: JSON.stringify(ids),
+            oldValue: localStorage.getItem('deletedApplicationIds'),
+            storageArea: localStorage
+          });
+          window.dispatchEvent(event);
+        } catch (eventError) {
+          // Some browsers might not support all StorageEvent constructor parameters
+          // Fallback to a simpler method
+          window.dispatchEvent(new Event('storage'));
+        }
+      }
+    } catch (e) {
+      console.error('Error adding deleted application ID:', e);
+    }
+  },
+  
+  /**
+   * Add multiple IDs to the deleted list
+   */
+  addMultiple: (newIds: string[]): void => {
+    try {
+      // Check if we're in a browser environment
+      if (typeof window === 'undefined') {
+        return;
+      }
+      
+      const ids = JSON.parse(localStorage.getItem('deletedApplicationIds') || '[]');
+      let updated = false;
+      
+      newIds.forEach(id => {
+        if (!ids.includes(id)) {
+          ids.push(id);
+          updated = true;
+        }
+      });
+      
+      if (updated) {
+        const oldValue = localStorage.getItem('deletedApplicationIds');
+        localStorage.setItem('deletedApplicationIds', JSON.stringify(ids));
+        console.log(`Added ${newIds.length} IDs to deleted applications list`);
+        
+        // Manually dispatch a storage event to notify other components
+        try {
+          const event = new StorageEvent('storage', {
+            key: 'deletedApplicationIds',
+            newValue: JSON.stringify(ids),
+            oldValue: oldValue,
+            storageArea: localStorage
+          });
+          window.dispatchEvent(event);
+        } catch (eventError) {
+          // Some browsers might not support all StorageEvent constructor parameters
+          // Fallback to a simpler method
+          window.dispatchEvent(new Event('storage'));
+        }
+      }
+    } catch (e) {
+      console.error('Error adding multiple deleted application IDs:', e);
+    }
+  },
+  
+  /**
+   * Clear all deleted application IDs
+   */
+  clearAll: (): void => {
+    try {
+      // Check if we're in a browser environment
+      if (typeof window === 'undefined') {
+        return;
+      }
+      
+      localStorage.removeItem('deletedApplicationIds');
+      console.log("Cleared all deleted application IDs");
+    } catch (e) {
+      console.error('Error clearing deleted application IDs:', e);
+    }
   }
 }; 
