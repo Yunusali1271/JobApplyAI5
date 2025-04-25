@@ -72,7 +72,7 @@ export default function JobHub() {
   const [newlyCreatedKitId, setNewlyCreatedKitId] = useState<string | null>(null);
   const [shouldRefreshData, setShouldRefreshData] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [deletedKitIds, setDeletedKitIds] = useState<Set<string>>(getDeletedApplicationIds());
+  const [deletedKitIds, setDeletedKitIds] = useState<Set<string>>(getDeletedApplicationIds() as Set<string>);
   const [isDeleting, setIsDeleting] = useState(false);
   
   // Use custom toast
@@ -125,7 +125,7 @@ export default function JobHub() {
       
       setApplicationKits(formattedKits);
       // Update deletedKitIds here instead of in the dependencies
-      setDeletedKitIds(currentDeletedIds);
+      setDeletedKitIds(currentDeletedIds as Set<string>);
       
       // Reset refresh flag after successful data load
       if (shouldRefreshData) {
