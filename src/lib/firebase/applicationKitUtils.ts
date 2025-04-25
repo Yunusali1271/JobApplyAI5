@@ -1,3 +1,4 @@
+import { FirebaseError } from "firebase/app";
 import { db, storage } from "./firebase";
 import { 
   collection, 
@@ -196,9 +197,9 @@ export const deleteApplicationKit = async (userId: string, kitId: string) => {
           await deleteObject(fileRef);
           console.log(`Successfully deleted file: ${path}`);
           return true;
-        } catch (fileError) {
+        } catch (fileError:unknown) {
           // File might not exist, which is okay
-          if (fileError.code === 'storage/object-not-found') {
+          if (fileError instanceof FirebaseError && fileError.code === 'storage/object-not-found') {
             console.log(`File not found (normal): ${path}`);
             return true;
           }

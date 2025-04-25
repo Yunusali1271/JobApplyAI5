@@ -465,5 +465,6 @@ const ResumeEditForm = forwardRef<ResumeFormRef, ResumeEditFormProps>(({ resume,
     </form>
   );
 });
+ResumeEditForm.displayName = 'ResumeEditForm'
 
 export default ResumeEditForm; 
