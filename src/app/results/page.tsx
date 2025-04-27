@@ -1117,12 +1117,12 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
                         )}
                       </div>
                     </div>
-                    <div className="relative h-[300px] w-full overflow-hidden rounded">
+                    <div className="relative h-[300px] w-full overflow-hidden rounded bg-[#f3f4f6]">
                       <div className="absolute inset-0 grid grid-cols-2 grid-rows-2">
+                        {/* <div className="bg-gradient-to-br from-white to-gray-200" />
                         <div className="bg-gradient-to-br from-white to-gray-200" />
                         <div className="bg-gradient-to-br from-white to-gray-200" />
-                        <div className="bg-gradient-to-br from-white to-gray-200" />
-                        <div className="bg-gradient-to-br from-white to-gray-200" />
+                        <div className="bg-gradient-to-br from-white to-gray-200" /> */}
                       </div>
                       <div className="relative z-10 h-full p-3 text-sm overflow-y-auto">
                         {isEditingCoverLetter ? (
@@ -1394,7 +1394,7 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
 
                 {activeTemplate === 1 && (
                   <div className="border border-gray-200 rounded-lg p-3">
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center justify-center gap-4 sm:gap-0 sm:justify-between mb-4 flex-wrap">
                       <div className="flex items-center">
                         <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mr-2">
                           <svg
@@ -1412,8 +1412,8 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
                         </div>
                         <span className="font-medium">Resume</span>
                       </div>
-                      <div className="flex space-x-3">
-                        <div className="flex justify-end">
+                      <div className="flex flex-wrap justify-around items-center max-sm:gap-y-2 sm:space-x-3">
+                        <div className="flex justify-center sm:justify-end max-sm:w-1/2 max-sm:ml-auto">
                           <button
                             className="text-gray-500 hover:text-gray-700 text-sm hover:underline"
                             onClick={handleSwitchTemplate}
@@ -1424,7 +1424,7 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
                         {!isEditingResume && (
                           <button 
                             onClick={handleToggleSummary}
-                            className="text-gray-500 hover:text-gray-700 flex items-center"
+                            className="text-gray-500 hover:text-gray-700 flex items-center max-sm:w-1/2 max-sm:mr-auto"
                           >
                             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                               {showSummary ? (
@@ -1538,9 +1538,9 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
 
                 {activeTemplate === 2 && (
                   <div className="border border-gray-200 rounded-lg p-3">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center">
-                        <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mr-2">
+                    <div className="flex items-center justify-center gap-2 sm:gap-0 sm:justify-between mb-4 flex-wrap">
+                      <div className="flex items-center max-sm:w-full max-sm:text-center">
+                        <div className="max-sm:ml-auto w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mr-2">
                           <svg
                             className="w-4 h-4 text-blue-500"
                             fill="currentColor"
@@ -1554,7 +1554,7 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
                             ></path>
                           </svg>
                         </div>
-                        <span className="font-medium">Resume</span>
+                        <span className="font-medium max-sm:mr-auto">Resume</span>
                       </div>
                       <div className="flex space-x-3">
                         <div className="flex justify-end">

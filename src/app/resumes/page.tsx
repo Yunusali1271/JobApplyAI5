@@ -118,10 +118,10 @@ export default function ResumesPage() {
     return (
       <div className="flex min-h-screen">
         <Sidebar />
-        <div className="flex-1 p-8 bg-gray-50">
+        <div className="flex-1 px-8 py-16 lg:py-8 bg-gray-50 text-[#363636]">
           <div className="max-w-6xl mx-auto">
             <h1 className="text-2xl font-bold mb-4">My Resumes</h1>
-            <p>Please sign in to view your resumes.</p>
+            <p className="text-gray-600">Please sign in to view your resumes.</p>
           </div>
         </div>
       </div>
@@ -131,8 +131,8 @@ export default function ResumesPage() {
   return (
     <div className="flex min-h-screen">
       <Sidebar />
-      <div className="flex-1 p-8 bg-gray-50">
-        <div className="max-w-6xl mx-auto">
+      <div className="flex-1 px-8 py-16 lg:py-8 bg-gray-50">
+        <div className="max-w-6xl mx-auto text-[#363636]">
           <div className="flex justify-between items-center mb-6">
             <div>
               <h1 className="text-2xl font-bold">My Resumes</h1>
