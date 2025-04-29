@@ -12,6 +12,8 @@ import { FaUser } from "react-icons/fa";
 import styles from './styles/rocket.module.css';
 import ApplicationModal from "@/components/ApplicationModal";
 
+import NavBar from "@/app/components/Navbar"
+
 export default function Home() {
   const { user } = useAuth();
   const { hasCreatedPack, isLoading: checkingIpStatus } = useIpLimits();
@@ -87,77 +89,13 @@ export default function Home() {
       `}</style>
       
       {/* Navigation */}
-      <nav className="flex items-center justify-between px-6 py-4 max-w-7xl mx-auto">
-        <div className="flex items-center">
-          <Image
-            src="/jobapply-logo.jpg"
-            alt="JobApply Logo"
-            width={450}
-            height={99}
-            priority
-            className="h-auto w-auto"
-            style={{ 
-              objectFit: "contain",
-              maxWidth: "450px",
-              maxHeight: "99px"
-            }}
-            quality={100}
-            unoptimized
-          />
-        </div>
-        <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-8">
-          <button onClick={(e) => {
-            e.preventDefault();
-            scrollToSection('pricing');
-          }} className="text-gray-600 hover:text-gray-900 cursor-pointer">Pricing</button>
-          <button onClick={(e) => {
-            e.preventDefault();
-            scrollToSection('features');
-          }} className="text-gray-600 hover:text-gray-900 cursor-pointer">Features</button>
-          <button onClick={(e) => {
-            e.preventDefault();
-            scrollToSection('about');
-          }} className="text-gray-600 hover:text-gray-900 cursor-pointer">About</button>
-          <Link href="/blog" className="text-gray-600 hover:text-gray-900 cursor-pointer">Blog</Link>
-        </div>
-        <div className="flex items-center gap-4">
-          {user ? (
-            <>
-              <Link href="/job-hub" className="text-gray-600 hover:text-gray-900 flex items-center">
-                <FaUser className="mr-2" /> My Dashboard
-              </Link>
-              <button
-                onClick={openModal}
-                className="bg-[#7046EC] text-white px-4 py-2 rounded-lg hover:bg-[#5e3bc4] transition-colors"
-              >
-                Create Hire Me Pack
-              </button>
-            </>
-          ) : (
-            <>
-              <Link href="/login" className="text-gray-600 hover:text-gray-900">Log in</Link>
-              {hasCreatedPack ? (
-                <Link href="/login" className="bg-[#7046EC] text-white px-4 py-2 rounded-lg hover:bg-[#5e3bc4] transition-colors">
-                  Log in to create more
-                </Link>
-              ) : (
-                <button 
-                  onClick={openModal}
-                  className="bg-[#7046EC] text-white px-4 py-2 rounded-lg hover:bg-[#5e3bc4] transition-colors"
-                >
-                  Start now
-                </button>
-              )}
-            </>
-          )}
-        </div>
-      </nav>
+      <NavBar/>
 
       {/* Hero Section */}
       <div className="max-w-7xl mx-auto px-6 pt-16 pb-24 text-center">
         <h1 className="text-[56px] leading-[1.1] tracking-[-0.002em]">
           <span className="block text-[#6e6e73] font-[510] mb-1">Your Automated AI-Powered</span>
-          <span className="block text-[#1d1d1f] font-[600]">Job Search Assistant</span>
+          <span className="block text-[#7046EC] filter brightness-110 font-[600]">Job Search Assistant</span>
         </h1>
         <div className="mt-12 flex flex-col items-center">
           <p className="text-[#6e6e73] text-[21px] leading-[1.4] max-w-[600px] mx-auto">
@@ -407,7 +345,7 @@ export default function Home() {
       </div>
 
       {/* Example Output Section */}
-      <div id="about" className="bg-[#f5f5f7] py-20 relative overflow-hidden">
+      <div id="about" className="bg-[#f5f5f7] py-20 relative overflow-hidden text-[#363636]">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-24">
             <div className="mb-16">
@@ -421,12 +359,12 @@ export default function Home() {
               </p>
             </div>
           </div>
-          <div className="flex justify-center items-start gap-20">
+          <div className="flex flex-col justify-start items-center lg:flex-row lg:justify-center lg:items-start gap-20">
             {/* Cover Letter */}
-            <div className="relative">
+            <div className="relative max-w-full break-words text-wrap">
               <h3 className="text-xl font-semibold text-center absolute -top-10 left-0 right-0">Job-specific cover letter</h3>
-              <div className="bg-white shadow-xl transform hover:scale-[1.02] transition-transform rotate-[-2deg] origin-top overflow-hidden rounded-lg">
-                <div className="bg-white p-6" style={{ width: '450px', height: '550px' }}>
+              <div className="max-w-full bg-white shadow-xl transform hover:scale-[1.02] transition-transform lg:rotate-[-2deg] origin-top overflow-hidden rounded-lg">
+                <div className="bg-white p-6 border overflow-y-auto" style={{ width: '450px', height: '550px', maxWidth:"100%" }}>
                   <div className="space-y-3">
                     <p className="text-gray-800 text-sm font-medium">Dear HR Manager,</p>
                     <p className="text-gray-800 leading-tight text-xs">
@@ -462,7 +400,7 @@ export default function Home() {
             <div className="relative">
               <h3 className="text-xl font-semibold text-center absolute -top-10 left-0 right-0">Job-specific resume</h3>
               <div className="flex items-center">
-                <div className="relative w-[450px] h-[550px]">
+                <div className="relative max-w-full">
                   {currentTemplate === 'steve-jobs' && (
                     <Image
                       src="/steve-jobs.jpg"
@@ -470,12 +408,10 @@ export default function Home() {
                       width={450}
                       height={550}
                       style={{ 
-                        width: '450px', 
-                        height: '550px', 
                         objectFit: 'contain',
                         backgroundColor: 'white'
                       }}
-                      className="shadow-xl transform hover:scale-[1.02] transition-transform rotate-[2deg] origin-top rounded-lg object-contain bg-white"
+                      className="h-auto max-h-[550px] w-[450px] max-w-full shadow-xl transform hover:scale-[1.02] transition-transform lg:rotate-[2deg] origin-top rounded-lg object-contain bg-white"
                       priority
                     />
                   )}
@@ -486,12 +422,10 @@ export default function Home() {
                       width={450}
                       height={550}
                       style={{ 
-                        width: '450px', 
-                        height: '550px', 
                         objectFit: 'contain',
                         backgroundColor: 'white'
                       }}
-                      className="shadow-xl transform hover:scale-[1.02] transition-transform rotate-[2deg] origin-top rounded-lg object-contain bg-white"
+                      className="h-auto max-h-[550px] w-[450px] max-w-full shadow-xl transform hover:scale-[1.02] transition-transform lg:rotate-[2deg] origin-top rounded-lg object-contain bg-white"
                       priority
                       unoptimized
                     />
@@ -509,12 +443,12 @@ export default function Home() {
                           objectFit: 'contain',
                           backgroundColor: 'white'
                         }}
-                        className="shadow-xl transform hover:scale-[1.02] transition-transform rotate-[2deg] origin-top rounded-lg object-contain bg-white"
+                        className="h-auto max-h-[550px] w-[450px] max-w-full shadow-xl transform hover:scale-[1.02] transition-transform lg:rotate-[2deg] origin-top rounded-lg object-contain bg-white"
                         priority
                         unoptimized
                       />
-                      <div className="absolute -bottom-8 left-0 right-0">
-                        <p className="text-emerald-500 text-sm font-medium transform rotate-[2deg] origin-top w-[450px] mx-auto whitespace-nowrap">
+                      <div className="absolute -bottom-12 lg:-bottom-8 left-0 right-0">
+                        <p className="text-emerald-500 text-sm font-medium transform lg:rotate-[2deg] origin-top w-[450px] mx-auto max-lg:max-w-full max-lg:text-center lg:whitespace-nowrap">
                           Best Results: Industry Recommended with Highest Success Rate!
                         </p>
                       </div>
@@ -523,7 +457,7 @@ export default function Home() {
                 </div>
                 {/* Right Arrow */}
                 <button 
-                  className="ml-8 cursor-pointer"
+                  className="absolute right-0 max-lg:translate-x-1/2 lg:inline-block ml-8 cursor-pointer"
                   onClick={handleTemplateSwitch}
                   aria-label="Switch template"
                 >
@@ -563,7 +497,7 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="grid grid-cols-3 gap-8 relative mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8 relative mb-12">
           {/* AI Resume Builder */}
           <div className="bg-white rounded-xl p-6 border border-[#7046EC] transition-all duration-300 hover:shadow-[0_0_15px_rgba(112,70,236,0.3)] relative z-10">
             <h3 className="text-xl font-semibold mb-3">AI Resume Builder</h3>
@@ -634,7 +568,7 @@ export default function Home() {
           </div>
 
           {/* Auto Apply */}
-          <div className="bg-white rounded-xl p-6 border border-[#7046EC] transition-all duration-300 hover:shadow-[0_0_15px_rgba(112,70,236,0.3)] relative z-10">
+          <div className="col-span-1 sm:col-span-2 sm:w-1/2 sm:mx-auto xl:w-auto xl:mx-0 xl:col-span-1 bg-white rounded-xl p-6 border border-[#7046EC] transition-all duration-300 hover:shadow-[0_0_15px_rgba(112,70,236,0.3)] relative z-10">
             <h3 className="text-xl font-semibold mb-3">Auto Apply</h3>
             <p className="text-gray-600 mb-6">Let AI streamline your job hunt—apply more, save time, get hired.</p>
             <div className="space-y-3">
@@ -708,7 +642,7 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="grid grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* First Row */}
           <div className="bg-white rounded-xl p-6 shadow-sm border border-[#7046EC] transition-all duration-300 hover:shadow-[0_0_15px_rgba(112,70,236,0.3)]">
             <div className="flex items-center gap-3 mb-4">
@@ -723,7 +657,7 @@ export default function Home() {
                 />
               </div>
               <div>
-                <h3 className="font-medium">Sarah Wilson</h3>
+                <h3 className="font-medium text-black">Sarah Wilson</h3>
                 <p className="text-gray-500 text-sm">@sarahw • 2d ago</p>
               </div>
             </div>
@@ -745,7 +679,7 @@ export default function Home() {
                 />
               </div>
               <div>
-                <h3 className="font-medium">Michael Chen</h3>
+                <h3 className="font-medium text-black">Michael Chen</h3>
                 <p className="text-gray-500 text-sm">@mchen • 1w ago</p>
               </div>
             </div>
@@ -767,7 +701,7 @@ export default function Home() {
                 />
               </div>
               <div>
-                <h3 className="font-medium">Emily Rodriguez</h3>
+                <h3 className="font-medium text-black">Emily Rodriguez</h3>
                 <p className="text-gray-500 text-sm">@emrodriguez • 3d ago</p>
               </div>
             </div>
@@ -791,7 +725,7 @@ export default function Home() {
                 />
               </div>
               <div>
-                <h3 className="font-medium">James Thompson</h3>
+                <h3 className="font-medium text-black">James Thompson</h3>
                 <p className="text-gray-500 text-sm">@jamest • 5d ago</p>
               </div>
             </div>
@@ -814,7 +748,7 @@ export default function Home() {
                 />
               </div>
               <div>
-                <h3 className="font-medium">Lisa Patel</h3>
+                <h3 className="font-medium text-black">Lisa Patel</h3>
                 <p className="text-gray-500 text-sm">@lisap • 1d ago</p>
               </div>
             </div>
@@ -837,7 +771,7 @@ export default function Home() {
                 />
               </div>
               <div>
-                <h3 className="font-medium">David Kim</h3>
+                <h3 className="font-medium text-black">David Kim</h3>
                 <p className="text-gray-500 text-sm">@davidk • 4d ago</p>
               </div>
             </div>
@@ -903,7 +837,7 @@ export default function Home() {
               <div className="text-center mb-6">
                 <div className="flex items-center justify-center">
                   <span className="text-gray-400 line-through text-sm mr-2">£15.99</span>
-                  <span className="text-4xl font-bold">{pricingPlan.price}</span>
+                  <span className="text-4xl font-bold text-[#363636]">{pricingPlan.price}</span>
                 </div>
                 <p className="text-sm text-gray-500 mt-1">{pricingPlan.period}</p>
                 <p className="text-green-500 text-sm font-medium mt-2">Limited time 50% discount</p>
@@ -973,18 +907,18 @@ export default function Home() {
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-gray-200 py-8">
-        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
-          <div className="flex items-center">
+      <footer className="w-full border-t border-gray-200 py-8">
+        <div className="w-full max-w-7xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-3 justify-items-center gap-6">
+          <div className="flex items-center sm:justify-self-start">
             <svg className="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
             </svg>
             <span className="text-gray-500">jobapplyai</span>
           </div>
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-gray-500 sm:justify-self-center text-center">
             © 2023 JobApplyAI. All rights reserved.
           </div>
-          <div className="flex gap-4">
+          <div className="flex gap-4 sm:justify-self-end">
             <span className="text-sm text-gray-500 cursor-default">Privacy</span>
             <span className="text-sm text-gray-500 cursor-default">Terms</span>
           </div>

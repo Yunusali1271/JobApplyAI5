@@ -258,10 +258,10 @@ export default function ApplicationKitDetail() {
     return (
       <div className="flex min-h-screen">
         <Sidebar />
-        <div className="flex-1 p-8 bg-gray-50">
-          <div className="max-w-6xl mx-auto">
+        <div className="flex-1 px-8 py-16 lg:py-8  bg-gray-50">
+          <div className="max-w-6xl mx-auto text-[#363636]">
             <h1 className="text-2xl font-bold mb-4">Hire Me Pack</h1>
-            <p>Please sign in to view this Hire Me Pack.</p>
+            <p className="text-gray-600">Please sign in to view this Hire Me Pack.</p>
           </div>
         </div>
       </div>
@@ -271,8 +271,8 @@ export default function ApplicationKitDetail() {
   return (
     <div className="flex min-h-screen">
       <Sidebar />
-      <div className="flex-1 p-8 bg-gray-50">
-        <div className="max-w-6xl mx-auto">
+      <div className="flex-1 px-8 py-16 lg:py-8 bg-gray-50">
+        <div className="max-w-6xl mx-auto text-[#363636]">
           {loading ? (
             <div className="text-center py-10">
               <p>Loading Hire Me Pack...</p>
@@ -384,7 +384,7 @@ export default function ApplicationKitDetail() {
 
                   {activeTab === "resume" && (
                     <div>
-                      <div className="flex justify-between mb-4">
+                      <div className="flex flex-col justify-start items-center sm:flex-row sm:justify-between gap-4  mb-4">
                         <h3 className="text-lg font-medium">Resume</h3>
                         <div className="flex space-x-3">
                           <div className="flex bg-gray-100 rounded-lg p-1">
