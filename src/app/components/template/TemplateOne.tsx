@@ -58,14 +58,14 @@ function TemplateOne({ result }: { result: any }) {
   const personalInformation = cleanResult?.personalInformation;
 
   return (
-    <div className="bg-white text-black px-6 h-full" style={{ fontFamily: 'Arial, sans-serif', color: '#000000' }}>
-      <div className="fixed right-2 top-32 flex flex-col items-center space-y-2 z-50" style={{ marginRight: '10px' }}>
-        <div className="text-[11px] font-semibold text-gray-600 mb-1">Color Theme</div>
-        <div className="flex flex-col gap-2">
+    <div className="relative bg-white text-black px-6 h-full" style={{ fontFamily: 'Arial, sans-serif', color: '#000000' }}>
+      <div className="sticky xl:fixed right=1/2 top-0 xl:right-2 xl:top-32 flex justify-center  xl:flex-col xl:justify-start items-center max-xl:space-x-2 space-y-2 z-50" style={{ marginRight: '10px' }} data-html2canvas-ignore="true">
+        <div className="text-[11px] font-semibold text-gray-600 xl:mb-1 text-center">Color Theme</div>
+        <div className="flex flex-row xl:flex-col gap-2">
           {colorOptions.map((color) => (
             <button
               key={color.value}
-              className={`w-8 h-8 rounded-full border-2 shadow-md transition-all ${selectedColor === color.value ? 'ring-2 ring-offset-2 scale-110' : 'hover:scale-105'}`}
+              className={`w-4 h-4 sm:w-6 sm:h-6 xl:w-8 xl:h-8 rounded-full border-2 shadow-md transition-all ${selectedColor === color.value ? 'ring-2 ring-offset-2 scale-110' : 'hover:scale-105'}`}
               style={{ 
                 backgroundColor: color.value,
                 borderColor: selectedColor === color.value ? color.value : 'transparent' 
