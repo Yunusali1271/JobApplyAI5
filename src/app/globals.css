@@ -36,24 +36,33 @@ body {
   .text-balance {
     text-wrap: balance;
   }
-
+  
   .animate-scroll {
-    animation: scroll 30s linear infinite;
+    animation: scroll 20s linear infinite;
+  }
+
+  @media screen and (max-width: 640px) {
+    .animate-scroll {
+      animation: scroll 7s linear infinite;
+    }
   }
 
   .animate-gradient-shift {
     animation: gradient-shift 3s ease infinite;
   }
 }
-
 @keyframes scroll {
   0% {
     transform: translateX(0);
   }
   100% {
-    transform: translateX(-50%);
+    transform: translateX(-100%);
   }
 }
+
+
+
+
 
 @keyframes gradient-shift {
   0% {

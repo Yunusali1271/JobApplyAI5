@@ -71,23 +71,7 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen">
-      <style jsx global>{`
-        @keyframes scroll {
-          0% {
-            transform: translateX(0);
-          }
-          100% {
-            transform: translateX(-50%);
-          }
-        }
-
-        .animate-scroll {
-          animation: scroll 30s linear infinite;
-          pointer-events: none;
-        }
-      `}</style>
-      
+    <main className="min-h-screen">      
       {/* Navigation */}
       <NavBar/>
 
@@ -339,6 +323,271 @@ export default function Home() {
                   />
                 </div>
               </div>
+              {/* Fourth set of logos for smoother transition */}
+              <div className="flex justify-evenly items-center shrink-0 w-full" style={{ minWidth: "1000px" }}>
+                <div className="relative w-[150px] h-[90px] flex items-center justify-center">
+                  <Image 
+                    src="/logos/spotify.svg"
+                    alt="Spotify"
+                    width={80}
+                    height={24}
+                    style={{ objectFit: "contain" }}
+                    className="opacity-60"
+                  />
+                </div>
+                <div className="relative w-[150px] h-[90px] flex items-center justify-center">
+                  <Image 
+                    src="/logos/microsoft.svg"
+                    alt="Microsoft"
+                    width={80}
+                    height={24}
+                    style={{ objectFit: "contain" }}
+                    className="opacity-60"
+                  />
+                </div>
+                <div className="relative w-[150px] h-[90px] flex items-center justify-center">
+                  <Image 
+                    src="/logos/instagram.svg"
+                    alt="Instagram"
+                    width={80}
+                    height={24}
+                    style={{ objectFit: "contain" }}
+                    className="opacity-60"
+                  />
+                </div>
+                <div className="relative w-[150px] h-[90px] flex items-center justify-center">
+                  <Image 
+                    src="/logos/google.svg"
+                    alt="Google"
+                    width={100}
+                    height={30}
+                    style={{ objectFit: "contain" }}
+                    className="opacity-60"
+                  />
+                </div>
+                <div className="relative w-[150px] h-[90px] flex items-center justify-center">
+                  <Image 
+                    src="/logos/x.svg"
+                    alt="X"
+                    width={80}
+                    height={24}
+                    style={{ objectFit: "contain" }}
+                    className="opacity-60"
+                  />
+                </div>
+              </div>
+              {/* Fourth set of logos for smoother transition */}
+              <div className="flex justify-evenly items-center shrink-0 w-full" style={{ minWidth: "1000px" }}>
+                <div className="relative w-[150px] h-[90px] flex items-center justify-center">
+                  <Image 
+                    src="/logos/spotify.svg"
+                    alt="Spotify"
+                    width={80}
+                    height={24}
+                    style={{ objectFit: "contain" }}
+                    className="opacity-60"
+                  />
+                </div>
+                <div className="relative w-[150px] h-[90px] flex items-center justify-center">
+                  <Image 
+                    src="/logos/microsoft.svg"
+                    alt="Microsoft"
+                    width={80}
+                    height={24}
+                    style={{ objectFit: "contain" }}
+                    className="opacity-60"
+                  />
+                </div>
+                <div className="relative w-[150px] h-[90px] flex items-center justify-center">
+                  <Image 
+                    src="/logos/instagram.svg"
+                    alt="Instagram"
+                    width={80}
+                    height={24}
+                    style={{ objectFit: "contain" }}
+                    className="opacity-60"
+                  />
+                </div>
+                <div className="relative w-[150px] h-[90px] flex items-center justify-center">
+                  <Image 
+                    src="/logos/google.svg"
+                    alt="Google"
+                    width={100}
+                    height={30}
+                    style={{ objectFit: "contain" }}
+                    className="opacity-60"
+                  />
+                </div>
+                <div className="relative w-[150px] h-[90px] flex items-center justify-center">
+                  <Image 
+                    src="/logos/x.svg"
+                    alt="X"
+                    width={80}
+                    height={24}
+                    style={{ objectFit: "contain" }}
+                    className="opacity-60"
+                  />
+                </div>
+              </div>
+              {/* Fifth set of logos for smoother transition */}
+              <div className="flex justify-evenly items-center shrink-0 w-full" style={{ minWidth: "1000px" }}>
+                <div className="relative w-[150px] h-[90px] flex items-center justify-center">
+                  <Image 
+                    src="/logos/spotify.svg"
+                    alt="Spotify"
+                    width={80}
+                    height={24}
+                    style={{ objectFit: "contain" }}
+                    className="opacity-60"
+                  />
+                </div>
+                <div className="relative w-[150px] h-[90px] flex items-center justify-center">
+                  <Image 
+                    src="/logos/microsoft.svg"
+                    alt="Microsoft"
+                    width={80}
+                    height={24}
+                    style={{ objectFit: "contain" }}
+                    className="opacity-60"
+                  />
+                </div>
+                <div className="relative w-[150px] h-[90px] flex items-center justify-center">
+                  <Image 
+                    src="/logos/instagram.svg"
+                    alt="Instagram"
+                    width={80}
+                    height={24}
+                    style={{ objectFit: "contain" }}
+                    className="opacity-60"
+                  />
+                </div>
+                <div className="relative w-[150px] h-[90px] flex items-center justify-center">
+                  <Image 
+                    src="/logos/google.svg"
+                    alt="Google"
+                    width={100}
+                    height={30}
+                    style={{ objectFit: "contain" }}
+                    className="opacity-60"
+                  />
+                </div>
+                <div className="relative w-[150px] h-[90px] flex items-center justify-center">
+                  <Image 
+                    src="/logos/x.svg"
+                    alt="X"
+                    width={80}
+                    height={24}
+                    style={{ objectFit: "contain" }}
+                    className="opacity-60"
+                  />
+                </div>
+              </div>
+              {/* Sixth set of logos for smoother transition */}
+              <div className="flex justify-evenly items-center shrink-0 w-full" style={{ minWidth: "1000px" }}>
+                <div className="relative w-[150px] h-[90px] flex items-center justify-center">
+                  <Image 
+                    src="/logos/spotify.svg"
+                    alt="Spotify"
+                    width={80}
+                    height={24}
+                    style={{ objectFit: "contain" }}
+                    className="opacity-60"
+                  />
+                </div>
+                <div className="relative w-[150px] h-[90px] flex items-center justify-center">
+                  <Image 
+                    src="/logos/microsoft.svg"
+                    alt="Microsoft"
+                    width={80}
+                    height={24}
+                    style={{ objectFit: "contain" }}
+                    className="opacity-60"
+                  />
+                </div>
+                <div className="relative w-[150px] h-[90px] flex items-center justify-center">
+                  <Image 
+                    src="/logos/instagram.svg"
+                    alt="Instagram"
+                    width={80}
+                    height={24}
+                    style={{ objectFit: "contain" }}
+                    className="opacity-60"
+                  />
+                </div>
+                <div className="relative w-[150px] h-[90px] flex items-center justify-center">
+                  <Image 
+                    src="/logos/google.svg"
+                    alt="Google"
+                    width={100}
+                    height={30}
+                    style={{ objectFit: "contain" }}
+                    className="opacity-60"
+                  />
+                </div>
+                <div className="relative w-[150px] h-[90px] flex items-center justify-center">
+                  <Image 
+                    src="/logos/x.svg"
+                    alt="X"
+                    width={80}
+                    height={24}
+                    style={{ objectFit: "contain" }}
+                    className="opacity-60"
+                  />
+                </div>
+              </div>
+              {/* Seventh set of logos for smoother transition */}
+              <div className="flex justify-evenly items-center shrink-0 w-full" style={{ minWidth: "1000px" }}>
+                <div className="relative w-[150px] h-[90px] flex items-center justify-center">
+                  <Image 
+                    src="/logos/spotify.svg"
+                    alt="Spotify"
+                    width={80}
+                    height={24}
+                    style={{ objectFit: "contain" }}
+                    className="opacity-60"
+                  />
+                </div>
+                <div className="relative w-[150px] h-[90px] flex items-center justify-center">
+                  <Image 
+                    src="/logos/microsoft.svg"
+                    alt="Microsoft"
+                    width={80}
+                    height={24}
+                    style={{ objectFit: "contain" }}
+                    className="opacity-60"
+                  />
+                </div>
+                <div className="relative w-[150px] h-[90px] flex items-center justify-center">
+                  <Image 
+                    src="/logos/instagram.svg"
+                    alt="Instagram"
+                    width={80}
+                    height={24}
+                    style={{ objectFit: "contain" }}
+                    className="opacity-60"
+                  />
+                </div>
+                <div className="relative w-[150px] h-[90px] flex items-center justify-center">
+                  <Image 
+                    src="/logos/google.svg"
+                    alt="Google"
+                    width={100}
+                    height={30}
+                    style={{ objectFit: "contain" }}
+                    className="opacity-60"
+                  />
+                </div>
+                <div className="relative w-[150px] h-[90px] flex items-center justify-center">
+                  <Image 
+                    src="/logos/x.svg"
+                    alt="X"
+                    width={80}
+                    height={24}
+                    style={{ objectFit: "contain" }}
+                    className="opacity-60"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -497,7 +746,7 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8 relative mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8 relative mb-12 text-[#363636]">
           {/* AI Resume Builder */}
           <div className="bg-white rounded-xl p-6 border border-[#7046EC] transition-all duration-300 hover:shadow-[0_0_15px_rgba(112,70,236,0.3)] relative z-10">
             <h3 className="text-xl font-semibold mb-3">AI Resume Builder</h3>
