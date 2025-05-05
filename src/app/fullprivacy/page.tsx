@@ -13,7 +13,7 @@ const FullPrivacyPolicy = () => {
         <p>Last Updated: May 1, 2025</p>
 
         <p className="mt-4">
-          At JobApplyAI ("we", "our", or "us"), we are committed to protecting your privacy. This Privacy Policy outlines how we collect, use, disclose, and safeguard your personal information when you visit our website https://jobapplyai.io and use our services.
+          At JobApplyAI (&quot;we&quot;, &quot;our&quot;, or &quot;us&quot;), we are committed to protecting your privacy. This Privacy Policy outlines how we collect, use, disclose, and safeguard your personal information when you visit our website https://jobapplyai.io and use our services.
         </p>
 
         <h2 className="text-2xl font-semibold mt-6 mb-3">1. Information We Collect</h2>
@@ -37,7 +37,7 @@ const FullPrivacyPolicy = () => {
         <p>We use the collected information to:</p>
         <ul className="list-disc list-inside ml-4">
           <li><strong>Provide Services:</strong> Facilitate the creation and management of your account, process transactions, and deliver our services.</li>
-          <li><strong>Improve Services:</strong> Analyze usage to enhance our platform's functionality and user experience.</li>
+          <li><strong>Improve Services:</strong> Analyze usage to enhance our platform&apos;s functionality and user experience.</li>
           <li><strong>Communicate:</strong> Send administrative information, respond to inquiries, and provide customer support.</li>
           <li><strong>Security:</strong> Detect and prevent fraudulent activities and ensure the security of our services.</li>
         </ul>
@@ -81,11 +81,11 @@ const FullPrivacyPolicy = () => {
         <h2 className="text-2xl font-semibold mt-6 mb-3">7. International Data Transfers</h2>
         <p>Your information may be transferred to and maintained on servers located outside your country of residence. We ensure that such transfers comply with applicable data protection laws.</p>
 
-        <h2 className="text-2xl font-semibold mt-6 mb-3">8. Children's Privacy</h2>
+        <h2 className="text-2xl font-semibold mt-6 mb-3">8. Children&apos;s Privacy</h2>
         <p>Our services are not intended for individuals under the age of 16. We do not knowingly collect personal information from children under 16.</p>
 
         <h2 className="text-2xl font-semibold mt-6 mb-3">9. Changes to This Privacy Policy</h2>
-        <p>We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last Updated" date.</p>
+        <p>We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the &quot;Last Updated&quot; date.</p>
       </div>
       <Footer />
     </>
