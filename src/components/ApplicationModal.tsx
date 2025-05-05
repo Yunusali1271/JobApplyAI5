@@ -32,6 +32,13 @@ export default function ApplicationModal({
     null
   );
 
+// Function to check if the user has permission to open the modal
+const hasPermissionToOpen = (): boolean => {
+  // TODO: Implement actual permission check logic here
+  // For now, hardcode return true
+  return false;
+};
+
   useEffect(() => {
     const extractJobDetails = async () => {
       if (!jobDescription.trim()) {
@@ -217,6 +224,8 @@ export default function ApplicationModal({
       setIsProcessing(false);
     }
   };
+
+if (!isOpen || !hasPermissionToOpen()) return null;
 
   return (
     <div className="fixed inset-0 text-black bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
