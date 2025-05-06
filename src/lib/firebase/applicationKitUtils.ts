@@ -103,7 +103,7 @@ export const getUserApplicationKits = async (userId: string) => {
     return snapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => ({
       id: doc.id,
       ...doc.data()
-    }));
+    })) as ApplicationKit[]; // Explicitly cast to ApplicationKit[]
   } catch (error) {
     console.error("Error getting application kits:", error);
     // Return empty array instead of throwing to prevent UI from crashing
