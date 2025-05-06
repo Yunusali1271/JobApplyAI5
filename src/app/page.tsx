@@ -38,7 +38,13 @@ export default function Home() {
       section.scrollIntoView({ behavior: 'smooth' });
     }
   };
-
+  const handleStartNowClick = () => {
+    if (user) {
+      openModal();
+    } else {
+      router.push('/login');
+    }
+  };
   const handlePricingTabChange = (plan:any) => {
     if (plan === "monthly") {
       setPricingPlan({
@@ -113,7 +119,7 @@ export default function Home() {
             </div>
           ) : (
             <button 
-              onClick={openModal}
+              onClick={handleStartNowClick}
               className="mt-8 bg-[#7046EC] text-white px-10 py-3.5 rounded-full text-[17px] font-medium hover:bg-[#5e3bc4] transition-colors"
             >
               Start now - it&apos;s free
@@ -871,7 +877,7 @@ export default function Home() {
           You are <span className="text-[#7046EC]">78%</span> more likely to get hired using JobApplyAI
         </h2>
         <button 
-          onClick={openModal}
+          onClick={handleStartNowClick}
           className="inline-block bg-[#7046EC] text-white px-10 py-4 rounded-full text-lg font-medium hover:bg-[#5e3bc4] transition-colors"
         >
           Start now

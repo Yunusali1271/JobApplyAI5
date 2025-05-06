@@ -1,7 +1,6 @@
-/* eslint-disable react/no-unescaped-entities */
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/hooks/useAuth";
-import { saveApplicationKit } from "@/lib/firebase/applicationKitUtils";
+import { getUserApplicationKits, saveApplicationKit, ApplicationKit } from "@/lib/firebase/applicationKitUtils";
 import { Upload } from "antd";
 import CvText from "./CvText";
 import JobDescription from "./JobDescription";
@@ -13,10 +12,15 @@ interface ApplicationModalProps {
   onClose: () => void;
 }
 
+interface PermissionStatus {
+  lastJobPack: Date | null;
+  numJobPacksSinceLastSubscription: number;
+  hasActiveSubscription: boolean; // Added
+}
 export default function ApplicationModal({
   isOpen,
   onClose,
-}: ApplicationModalProps) {
+}: ApplicationModalProps): JSX.Element | null {
   const { user } = useAuth();
   const [formality, setFormality] = useState("professional");
   const [cvText, setCvText] = useState("");
@@ -31,6 +35,60 @@ export default function ApplicationModal({
   const [jobDescriptionFile, setJobDescriptionFile] = useState<File | null>(
     null
   );
+  
+  // New state for permission status, including subscription derived from claims
+  const [permissionStatus, setPermissionStatus] = useState<PermissionStatus>({
+    lastJobPack: null,
+    numJobPacksSinceLastSubscription: 0,
+    hasActiveSubscription: false, // Default
+  });
+  const [isLoadingPermissions, setIsLoadingPermissions] = useState(true);
+  
+  useEffect(() => {
+    const fetchPermissions = async () => {
+      if (isOpen && user) {
+        setIsLoadingPermissions(true);
+        try {
+          const idTokenResult = await user.getIdTokenResult(true); // Force refresh
+          const hasActiveSubscription = idTokenResult.claims.activeSubscription === true;
+          
+          // Fetch the most recent application kit to get the lastJobPack date
+          const userKits: ApplicationKit[] = await getUserApplicationKits(user.uid);
+          const mostRecentKit = userKits.length > 0 ? userKits[0] : null;
+          const lastJobPack = mostRecentKit?.createdAt?.toDate() || null; // Convert Firestore Timestamp to Date
+          console.log(lastJobPack);
+          // TODO: Implement actual fetching of numJobPacksLastMonth
+          const numJobPacksSinceLastSubscription = 5; // Placeholder
+  
+          setPermissionStatus({
+            hasActiveSubscription: hasActiveSubscription,
+            lastJobPack: lastJobPack, // Use fetched/determined value
+            numJobPacksSinceLastSubscription: numJobPacksSinceLastSubscription, // Use fetched/determined value
+          });
+  
+        } catch (error) {
+          console.error("Error fetching user permissions:", error);
+          setPermissionStatus({ // Reset or set a default permission status on error
+            hasActiveSubscription: false,
+            lastJobPack: null,
+            numJobPacksSinceLastSubscription: 0,
+          });
+        } finally {
+          setIsLoadingPermissions(false);
+        }
+      } else if (!isOpen) {
+          // Reset state when modal closes
+          setPermissionStatus({
+              hasActiveSubscription: false,
+              lastJobPack: null,
+              numJobPacksSinceLastSubscription: 0,
+          });
+          setIsLoadingPermissions(true); // Reset loading state
+      }
+    };
+  
+    fetchPermissions();
+  }, [isOpen, user]); // Rerun when modal opens/closes or user changes
 
   useEffect(() => {
     const extractJobDetails = async () => {
@@ -71,6 +129,26 @@ export default function ApplicationModal({
   }, [jobDescription]);
 
   if (!isOpen) return null;
+
+  if (isLoadingPermissions) {
+    return (
+        <div className="fixed inset-0 text-black bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="relative bg-white rounded-lg w-full max-w-lg p-6 text-center">
+                <p className="text-lg mb-4">Checking permissions...</p>
+            </div>
+        </div>
+    );
+  }
+
+  if (isLoadingPermissions) {
+    return (
+        <div className="fixed inset-0 text-black bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="relative bg-white rounded-lg w-full max-w-lg p-6 text-center">
+                <p className="text-lg mb-4">Checking permissions...</p>
+            </div>
+        </div>
+    );
+  }
 
   const formalityOptions = [
     { value: "informal", label: "Informal", position: "0%" },
@@ -217,6 +295,34 @@ export default function ApplicationModal({
       setIsProcessing(false);
     }
   };
+
+if (!isOpen) return null;
+
+  if (!permissionStatus.hasActiveSubscription && permissionStatus.lastJobPack !== null && permissionStatus.lastJobPack.getTime() > (Date.now() - (24 * 60 * 60 * 1000))) {
+    return (
+      <div className="fixed inset-0 text-black bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="relative bg-white rounded-lg w-full max-w-lg p-6 text-center">
+          <button className="absolute top-0 right-0 bg-white rounded-full -translate-y-1/3 translate-x-1/3" onClick={onClose}>
+            <AiFillCloseCircle size={36}/>
+          </button>
+          <p className="text-lg mb-4">You have used your free Job Pack for today. <a href="/manage-subscription" className="text-purple-600 hover:underline">Subscribe now</a> to generate more Job Packs!</p>    
+        </div>
+      </div>
+    );
+  }
+else if (permissionStatus.hasActiveSubscription && permissionStatus.numJobPacksSinceLastSubscription > 100) {
+  return (
+    <div className="fixed inset-0 text-black bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="relative bg-white rounded-lg w-full max-w-lg p-6 text-center">
+        <button className="absolute top-0 right-0 bg-white rounded-full -translate-y-1/3 translate-x-1/3" onClick={onClose}>
+          <AiFillCloseCircle size={36}/>
+        </button>
+        <p className="text-lg mb-4">You have used all of your alloted Job Packs for this month</p>
+      </div>
+    </div>
+  );
+}
+  
 
   return (
     <div className="fixed inset-0 text-black bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
