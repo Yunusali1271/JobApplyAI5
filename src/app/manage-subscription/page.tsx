@@ -85,14 +85,13 @@ export default function ManageSubscriptionPage() {
         return;
       }
 
-      // TODO: Implement this backend API route
       const response = await fetch('/api/stripe/create-checkout-session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${await user.getIdToken()}`
         },
-        body: JSON.stringify({ priceId }),
+        body: JSON.stringify({ lineItems: [{ price: priceId, quantity: 1 }] }),
       });
 
       const session = await response.json();
@@ -101,6 +100,7 @@ export default function ManageSubscriptionPage() {
         const result = await stripe.redirectToCheckout({ sessionId: session.id });
 
         if (result.error) {
+          console.log(result);
           setError(result.error.message || 'Failed to redirect to checkout');
         }
       } else {
@@ -169,7 +169,7 @@ export default function ManageSubscriptionPage() {
               <p>You do not have an active subscription. Choose a plan to subscribe:</p>
               <div className="mt-4 flex space-x-4">
                 <button
-                  onClick={() => handleCheckout('price_1RMSmwRrPJHoSJ7dWGJyVXVw ')}
+                  onClick={() => handleCheckout('price_1RMSmwRrPJHoSJ7dWGJyVXVw')}
                   className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
                 >
                   Subscribe Monthly
