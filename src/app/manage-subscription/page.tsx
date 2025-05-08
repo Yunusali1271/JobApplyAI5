@@ -12,6 +12,7 @@ export default function ManageSubscriptionPage() {
           <p>This is a placeholder for the subscription management content.</p>
         </main>
       </div>
+      <Footer />
     </div>
   );
 }
