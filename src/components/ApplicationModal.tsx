@@ -140,16 +140,6 @@ export default function ApplicationModal({
     );
   }
 
-  if (isLoadingPermissions) {
-    return (
-        <div className="fixed inset-0 text-black bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="relative bg-white rounded-lg w-full max-w-lg p-6 text-center">
-                <p className="text-lg mb-4">Checking permissions...</p>
-            </div>
-        </div>
-    );
-  }
-
   const formalityOptions = [
     { value: "informal", label: "Informal", position: "0%" },
     { value: "casual", label: "Casual", position: "25%" },
