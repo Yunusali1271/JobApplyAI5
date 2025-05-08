@@ -1695,6 +1695,11 @@
 "@rushstack/eslint-patch@^1.3.3":
   version "1.10.4"
 
+"@stripe/stripe-js@^7.3.0":
+  version "7.3.0"
+  resolved "https://registry.npmjs.org/@stripe/stripe-js/-/stripe-js-7.3.0.tgz"
+  integrity sha512-xnCyFIEI5SQnQrKkCxVj7nS5fWTZap+zuIGzmmxLMdlmgahFJaihK4zogqE8YyKKTLtrp/EldkEijSgtXsRVDg==
+
 "@svgr/babel-plugin-add-jsx-attribute@8.0.0":
   version "8.0.0"
   resolved "https://registry.npmjs.org/@svgr/babel-plugin-add-jsx-attribute/-/babel-plugin-add-jsx-attribute-8.0.0.tgz"

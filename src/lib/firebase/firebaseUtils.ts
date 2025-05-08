@@ -8,6 +8,7 @@ import {
   collection,
   addDoc,
   getDocs,
+  getDoc,
   doc,
   updateDoc,
   deleteDoc,
@@ -45,6 +46,26 @@ export const updateDocument = (collectionName: string, id: string, data: any) =>
 
 export const deleteDocument = (collectionName: string, id: string) =>
   deleteDoc(doc(db, collectionName, id));
+
+// Subscription functions
+export const getUserSubscriptionStatus = async (uid: string) => {
+  try {
+    const subscriptionDoc = await getDoc(doc(db, 'users', uid, 'subscription'));
+    console.log('got sub');
+    if (subscriptionDoc.exists()) {
+      console.log('exists');
+      const subscriptionData = subscriptionDoc.data();
+      return { hasSubscription: true, subscription: subscriptionData };
+    } else {
+      console.log('not exist');
+      return { hasSubscription: false, subscription: null };
+    }
+  } catch (error) {
+    console.error("Error fetching subscription status: assuming no subscription", error);
+    return { hasSubscription: false, subscription: null };
+  }
+};
+
 
 // Storage functions
 export const uploadFile = async (file: File, path: string) => {
