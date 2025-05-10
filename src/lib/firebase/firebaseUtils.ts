@@ -50,14 +50,11 @@ export const deleteDocument = (collectionName: string, id: string) =>
 // Subscription functions
 export const getUserSubscriptionStatus = async (uid: string) => {
   try {
-    const subscriptionDoc = await getDoc(doc(db, 'users', uid, 'subscription'));
-    console.log('got sub');
+    const subscriptionDoc = await getDoc(doc(db, 'users', uid, 'subscriptions', 'subscription'));
     if (subscriptionDoc.exists()) {
-      console.log('exists');
       const subscriptionData = subscriptionDoc.data();
       return { hasSubscription: true, subscription: subscriptionData };
     } else {
-      console.log('not exist');
       return { hasSubscription: false, subscription: null };
     }
   } catch (error) {
