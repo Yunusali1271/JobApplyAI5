@@ -1885,6 +1885,20 @@
   dependencies:
     "@types/unist" "*"
 
+"@types/micro-cors@^0.1.5":
+  version "0.1.5"
+  resolved "https://registry.npmjs.org/@types/micro-cors/-/micro-cors-0.1.5.tgz"
+  integrity sha512-BTHpXEz+yC/7/Jv2BfDFbGtgnwdKUDVX2PY+Cd2k4Jx9+uUfVooAxhlGEy6p0Uvm0+yM5FgSyc1n2tdVHyCDbw==
+  dependencies:
+    "@types/micro" "^7.3.7"
+
+"@types/micro@^7.3.7":
+  version "7.3.7"
+  resolved "https://registry.npmjs.org/@types/micro/-/micro-7.3.7.tgz"
+  integrity sha512-MFsX7eCj0Tg3TtphOQvANNvNtFpya+s/rYOCdV6o+DFjOQPFi2EVRbBALjbbgZTXUaJP1Q281MJiJOD40d0UxQ==
+  dependencies:
+    "@types/node" "*"
+
 "@types/ms@*":
   version "0.7.34"
 
