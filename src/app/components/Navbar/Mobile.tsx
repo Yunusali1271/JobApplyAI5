@@ -3,10 +3,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { FaBars, FaTimes, FaUser } from "react-icons/fa";
 import { useAuth } from "@/lib/hooks/useAuth";
+import { useRouter } from "next/navigation";
 //import { useIpLimits } from "@/lib/hooks/useIpLimits";
 
 const Mobile = () => {
   const { user } = useAuth();
+    const router = useRouter();
   //const { hasCreatedPack } = useIpLimits();
   const [menuOpen, setMenuOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -26,6 +28,11 @@ const Mobile = () => {
       section.scrollIntoView({ behavior: "smooth" });
       setMenuOpen(false);
     }
+  };
+
+  const handleStartNowClick = () => {
+    router.push('/job-hub');
+    setMenuOpen(false);
   };
 
   return (
@@ -114,12 +121,12 @@ const Mobile = () => {
                 >
                   Log in
                 </Link>
-                (<button
-                    onClick={openModal}
+                <button
+                    onClick={handleStartNowClick}
                     className="bg-[#7046EC] text-white px-4 py-2 rounded-lg hover:bg-[#5e3bc4] transition-colors"
                   >
                     Start now
-                  </button>)
+                  </button>
               </>
             )}
           </div>
