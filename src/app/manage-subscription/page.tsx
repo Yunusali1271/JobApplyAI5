@@ -2,7 +2,7 @@
 
 import Footer from '../components/Footer';
 import Sidebar from '../components/Sidebar';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react'; // Import Suspense
 import { useAuth } from '@/lib/hooks/useAuth';
 import { loadStripe } from '@stripe/stripe-js';
 import { getUserSubscriptionStatus } from '@/lib/firebase/firebaseUtils';
@@ -11,7 +11,7 @@ import { useSearchParams } from 'next/navigation'; // Import useSearchParams
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
-export default function ManageSubscriptionPage() {
+function SubscriptionManagerContent() {
   const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [hasSubscription, setHasSubscription] = useState<boolean | null>(null);
@@ -318,5 +318,13 @@ useEffect(() => {
       </div>
       <Footer />
     </div>
+  );
+}
+
+export default function ManageSubscriptionPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SubscriptionManagerContent />
+    </Suspense>
   );
 }
