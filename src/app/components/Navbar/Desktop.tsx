@@ -3,11 +3,11 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { FaUser } from "react-icons/fa";
-import { useIpLimits } from "@/lib/hooks/useIpLimits";
+//import { useIpLimits } from "@/lib/hooks/useIpLimits";
 
 const Desktop = () => {
   const { user } = useAuth();
-  const { hasCreatedPack, isLoading: checkingIpStatus } = useIpLimits();
+  //const { hasCreatedPack, isLoading: checkingIpStatus } = useIpLimits();
   const [isModalOpen, setIsModalOpen] = useState(false);
   // Add scroll to section functionality
   const scrollToSection = (sectionId: any) => {
@@ -99,21 +99,12 @@ const Desktop = () => {
             <Link href="/login" className="text-gray-600 hover:text-gray-900">
               Log in
             </Link>
-            {hasCreatedPack ? (
-              <Link
-                href="/login"
-                className="bg-[#7046EC] text-white px-4 py-2 rounded-lg hover:bg-[#5e3bc4] transition-colors"
-              >
-                Log in to create more
-              </Link>
-            ) : (
-              <button
+            (<button
                 onClick={openModal}
                 className="bg-[#7046EC] text-white px-4 py-2 rounded-lg hover:bg-[#5e3bc4] transition-colors"
               >
                 Start now
-              </button>
-            )}
+              </button>)
           </>
         )}
       </div>
