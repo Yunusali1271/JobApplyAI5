@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/hooks/useAuth';
 import { loadStripe } from '@stripe/stripe-js';
 import { getUserSubscriptionStatus } from '@/lib/firebase/firebaseUtils';
 import { StripeElementsOptionsClientSecret } from '@stripe/stripe-js';
+import { useSearchParams } from 'next/navigation'; // Import useSearchParams
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
@@ -18,8 +19,11 @@ export default function ManageSubscriptionPage() {
   const [error, setError] = useState<string | null>(null);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [portalClientSecret, setPortalClientSecret] = useState<string | null>(null);
+  const [showSuccessNotification, setShowSuccessNotification] = useState(false); // State for notification visibility
 
   const checkoutRef = useRef<any>(null); // Ref to store the embedded checkout instance
+
+  const searchParams = useSearchParams(); // Get search params
 
   useEffect(() => {
     const fetchSubscriptionStatus = async () => {
@@ -48,6 +52,21 @@ export default function ManageSubscriptionPage() {
 
     fetchSubscriptionStatus();
   }, [user, authLoading]); // Re-run effect if user or authLoading changes
+
+  // Effect to check for success query parameter and show notification
+  useEffect(() => {
+    const successParam = searchParams.get('success');
+    if (successParam === 'true') {
+      setShowSuccessNotification(true);
+      // Hide notification after 3 seconds
+      const timer = setTimeout(() => {
+        setShowSuccessNotification(false);
+      }, 3000); // 3000 milliseconds = 3 seconds
+
+      // Cleanup the timer
+      return () => clearTimeout(timer);
+    }
+  }, [searchParams]); // Re-run effect when searchParams change
 
   const handleManageSubscription = async () => {
     if (!user) {
@@ -247,6 +266,14 @@ useEffect(() => {
         <Sidebar />
         <main className="flex-grow p-8">
           <h1 className="text-2xl font-bold mb-4">Manage Subscription</h1>
+
+          {/* Success Notification */}
+          {showSuccessNotification && (
+            <div className="fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded shadow-lg z-50">
+              You have successful Subscribed!
+            </div>
+          )}
+
           {hasSubscription ? (
             <div>
               <p>You currently have a subscription.</p>

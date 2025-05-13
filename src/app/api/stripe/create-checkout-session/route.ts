@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
       mode: 'subscription',
       customer_email : email,
       metadata : { id : uid },
-      return_url: `${req.nextUrl.origin}/manage-subscription&success=true`,
+      return_url: `${req.nextUrl.origin}/manage-subscription?success=true`,
     });
     return NextResponse.json({ clientSecret: session.client_secret });
   } catch (error: any) {
