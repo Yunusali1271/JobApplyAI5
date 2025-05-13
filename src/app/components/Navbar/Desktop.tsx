@@ -3,10 +3,12 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { FaUser } from "react-icons/fa";
+import { useRouter } from "next/navigation";
 //import { useIpLimits } from "@/lib/hooks/useIpLimits";
 
 const Desktop = () => {
   const { user } = useAuth();
+  const router = useRouter();
   //const { hasCreatedPack, isLoading: checkingIpStatus } = useIpLimits();
   const [isModalOpen, setIsModalOpen] = useState(false);
   // Add scroll to section functionality
@@ -99,17 +101,21 @@ const Desktop = () => {
             <Link href="/login" className="text-gray-600 hover:text-gray-900">
               Log in
             </Link>
-            (<button
-                onClick={openModal}
+            <button
+                onClick={handleStartNowClick}
                 className="bg-[#7046EC] text-white px-4 py-2 rounded-lg hover:bg-[#5e3bc4] transition-colors"
               >
                 Start now
-              </button>)
+              </button>
           </>
         )}
       </div>
     </nav>
   );
+
+  function handleStartNowClick() {
+    router.push("/login");
+  }
 };
 
 export default Desktop;
