@@ -3,11 +3,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { FaBars, FaTimes, FaUser } from "react-icons/fa";
 import { useAuth } from "@/lib/hooks/useAuth";
-import { useIpLimits } from "@/lib/hooks/useIpLimits";
+//import { useIpLimits } from "@/lib/hooks/useIpLimits";
 
 const Mobile = () => {
   const { user } = useAuth();
-  const { hasCreatedPack } = useIpLimits();
+  //const { hasCreatedPack } = useIpLimits();
   const [menuOpen, setMenuOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -114,22 +114,12 @@ const Mobile = () => {
                 >
                   Log in
                 </Link>
-                {hasCreatedPack ? (
-                  <Link
-                    href="/login"
-                    className="bg-[#7046EC] text-white px-4 py-2 rounded-lg hover:bg-[#5e3bc4] transition-colors"
-                    onClick={() => setMenuOpen(false)}
-                  >
-                    Log in to create more
-                  </Link>
-                ) : (
-                  <button
+                (<button
                     onClick={openModal}
                     className="bg-[#7046EC] text-white px-4 py-2 rounded-lg hover:bg-[#5e3bc4] transition-colors"
                   >
                     Start now
-                  </button>
-                )}
+                  </button>)
               </>
             )}
           </div>
