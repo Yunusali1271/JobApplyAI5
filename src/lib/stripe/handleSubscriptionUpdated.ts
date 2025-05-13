@@ -1,9 +1,8 @@
 import Stripe from "stripe";
 import { getFirestore, collection, doc, updateDoc } from "firebase/firestore";
 
-const db = getFirestore();
-
 export async function handleSubscriptionUpdated(event: Stripe.Event) {
+  const db = getFirestore();
   const subscription = event.data.object as Stripe.Subscription;
   const customerId = subscription.customer as string;
 
