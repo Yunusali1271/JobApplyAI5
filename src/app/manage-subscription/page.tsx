@@ -8,7 +8,6 @@ import { loadStripe } from '@stripe/stripe-js';
 import { getUserSubscriptionStatus } from '@/lib/firebase/firebaseUtils';
 import { StripeElementsOptionsClientSecret } from '@stripe/stripe-js';
 
-// Replace with your Stripe publishable key
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 export default function ManageSubscriptionPage() {
@@ -197,6 +196,21 @@ export default function ManageSubscriptionPage() {
     };
   }, [clientSecret]); // Re-run effect when clientSecret changes
 
+useEffect(() => {
+    // If user has no subscription and no checkout session is initiated,
+    // immediately trigger the monthly checkout.
+    if (hasSubscription === false && clientSecret === null && !loading && !authLoading) {
+      // Check if the environment variable is defined before calling handleCheckout
+      const monthlyPriceId = process.env.NEXT_PUBLIC_STRIPE_MONTHLY_SUBSCRIPTION_PRICE_ID;
+      if (monthlyPriceId) {
+        handleCheckout(monthlyPriceId);
+      } else {
+        console.error("NEXT_PUBLIC_STRIPE_MONTHLY_SUBSCRIPTION_PRICE_ID is not defined.");
+        // Optionally, set an error state to inform the user
+        // setError("Configuration error: Monthly subscription price ID is missing.");
+      }
+    }
+  }, [hasSubscription, clientSecret, loading, authLoading, handleCheckout]); // Dependencies
   if (authLoading || loading) {
     return (
       <div>
@@ -268,23 +282,8 @@ export default function ManageSubscriptionPage() {
                   </div>
                 </>
               ) : (
-                <>
-                  <p>You do not have an active subscription. Choose a plan to subscribe:</p>
-                  <div className="mt-4 flex space-x-4">
-                    <button
-                      onClick={() => handleCheckout('price_1RMSmwRrPJHoSJ7dWGJyVXVw')}
-                      className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-                    >
-                      Subscribe Monthly
-                    </button>
-                    <button
-                      onClick={() => handleCheckout('price_1RMPumRrPJHoSJ7dNJazA1bl')}
-                      className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600"
-                    >
-                      Subscribe Quarterly
-                    </button>
-                  </div>
-                </>
+                // Immediately trigger monthly checkout
+                <p>Redirecting to checkout...</p>
               )}
             </div>
           )}
