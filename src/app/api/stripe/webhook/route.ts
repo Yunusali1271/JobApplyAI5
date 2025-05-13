@@ -1,12 +1,6 @@
 import Stripe from 'stripe';
-//import Cors from 'micro-cors';
 import { NextRequest, NextResponse } from 'next/server';
 import { handleSubscriptionUpdated } from '@/lib/stripe/handleSubscriptionUpdated';
-
-/*
-const cors = Cors({
-  allowMethods: ['POST', 'HEAD'],
-});*/
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-04-30.basil' as any,
@@ -19,7 +13,11 @@ export async function POST(req: NextRequest) {
   const signature = req.headers.get('stripe-signature');
 
   if (!signature) {
-    return NextResponse.json({ received: false, error: 'No signature header' }, { status: 400 });
+    const response = NextResponse.json({ received: false, error: 'No signature header' }, { status: 400 });
+    response.headers.set('Access-Control-Allow-Origin', '*');
+    response.headers.set('Access-Control-Allow-Methods', 'POST, HEAD');
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, Stripe-Signature');
+    return response;
   }
 
   let event: Stripe.Event;
@@ -28,7 +26,11 @@ export async function POST(req: NextRequest) {
     event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
   } catch (err: any) {
     console.error(`Webhook signature verification failed: ${err.message}`);
-    return NextResponse.json({ received: false, error: `Webhook Error: ${err.message}` }, { status: 400 });
+    const response = NextResponse.json({ received: false, error: `Webhook Error: ${err.message}` }, { status: 400 });
+    response.headers.set('Access-Control-Allow-Origin', '*');
+    response.headers.set('Access-Control-Allow-Methods', 'POST, HEAD');
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, Stripe-Signature');
+    return response;
   }
 
   console.log(event);
@@ -45,5 +47,17 @@ export async function POST(req: NextRequest) {
       console.log(`Unhandled event type ${event.type}`);
   }
   // Return a 200 response to acknowledge receipt of the event
-  return NextResponse.json({ received: true }, { status: 200 });
+  const response = NextResponse.json({ received: true }, { status: 200 });
+  response.headers.set('Access-Control-Allow-Origin', '*');
+  response.headers.set('Access-Control-Allow-Methods', 'POST, HEAD');
+  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, Stripe-Signature');
+  return response;
+}
+
+export async function HEAD(req: NextRequest) {
+  const response = NextResponse.json({}, { status: 200 });
+  response.headers.set('Access-Control-Allow-Origin', '*');
+  response.headers.set('Access-Control-Allow-Methods', 'POST, HEAD');
+  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, Stripe-Signature');
+  return response;
 }
