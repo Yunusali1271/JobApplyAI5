@@ -2,12 +2,12 @@
 
 import Footer from '../components/Footer';
 import Sidebar from '../components/Sidebar';
-import { useState, useEffect, useRef, Suspense } from 'react'; // Import Suspense
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { loadStripe } from '@stripe/stripe-js';
 import { getUserSubscriptionStatus } from '@/lib/firebase/firebaseUtils';
 import { StripeElementsOptionsClientSecret } from '@stripe/stripe-js';
-import { useSearchParams } from 'next/navigation'; // Import useSearchParams
+import { useSearchParams } from 'next/navigation';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
@@ -69,11 +69,10 @@ function SubscriptionManagerContent() {
   }, [searchParams]); // Re-run effect when searchParams change
 
   const handleManageSubscription = async () => {
-    if (!user) {
-      setError('User not authenticated.');
+    if (!user || !user.uid) {
+      setError('User not authenticated or UID not available.');
       return;
     }
-    // Create Stripe customer portal session for embedding
     setLoading(true); // Set loading state while creating portal session
     try {
       const response = await fetch('/api/stripe/manage-subscription', {
@@ -82,14 +81,14 @@ function SubscriptionManagerContent() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${await user.getIdToken()}`
         },
-        // Assuming the backend now returns a clientSecret for the embedded portal
-        body: JSON.stringify({ returnUrl: window.location.href }), // Pass current URL as return URL
+        // Pass customerId and returnUrl to the server
+        body: JSON.stringify({ customerId: subscriptionDetails?.customer, returnUrl: window.location.href }),
       });
       const data = await response.json();
 
-      if (response.ok && data?.clientSecret) {
-        setPortalClientSecret(data.clientSecret);
-        // No redirect here, the useEffect will handle rendering the embedded portal
+      if (response.ok && data?.url) {
+        // Redirect to the Stripe hosted customer portal URL
+        window.location.href = data.url;
       } else {
         setError(data?.error || 'Failed to create customer portal session');
       }
@@ -99,37 +98,6 @@ function SubscriptionManagerContent() {
       setLoading(false); // Unset loading state
     }
   };
-
-  useEffect(() => {
-    const loadEmbeddedPortal = async () => {
-      if (portalClientSecret) {
-        const stripe = await stripePromise;
-        if (!stripe) {
-          setError('Stripe failed to load');
-          return;
-        }
-
-        const options: StripeElementsOptionsClientSecret = {
-          clientSecret: portalClientSecret,
-          // Apply your styling here
-          appearance: {
-            theme: 'stripe',
-          },
-        };
-
-        // TODO fix this code
-        // Use StripeCustomerPortal to create and mount the portal
-        /*const portal = await StripeCustomerPortal.create({
-          clientSecret: portalClientSecret,
-          // You can add appearance options here if needed, similar to Elements
-          // appearance: { theme: 'stripe' },
-        });
-        portal.mount('#portal-element'); // Mount to the div with id 'portal-element'*/
-      }
-    };
-
-    loadEmbeddedPortal();
-  }, [portalClientSecret]); // Re-run effect when portalClientSecret changes
 
   const handleCheckout = async (priceId: string) => {
     if (!user) {
@@ -148,10 +116,6 @@ function SubscriptionManagerContent() {
       });
 
       const session = await response.json();
-
-      console.log(response);
-      console.log(session);
-
       if (response.ok && session?.clientSecret) {
         setClientSecret(session.clientSecret);
         // No redirect here, the useEffect will handle rendering the embedded form
@@ -277,19 +241,14 @@ useEffect(() => {
           {hasSubscription ? (
             <div>
               <p>You currently have a subscription.</p>
-              {/* This is where the embedded subscription management component will be mounted */}
-              {portalClientSecret ? (
-                <div id="portal-element" className="mt-4">
-                  {/* Stripe Customer Portal Element will be inserted here */}
-                </div>
-              ) : (
-                <button
-                  onClick={handleManageSubscription}
-                  className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                >
-                  Manage Subscription
-                </button>
-              )}
+              {/* Button to redirect to Stripe hosted customer portal */}
+              <button
+                onClick={handleManageSubscription}
+                className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                disabled={loading} // Disable button while loading
+              >
+                {loading ? 'Loading...' : 'Manage Subscription'}
+              </button>
               {subscriptionDetails && (
                 <div className="mt-4 p-4 border rounded">
                   <h2 className="text-xl font-semibold">Subscription Details</h2>

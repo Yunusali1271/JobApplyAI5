@@ -1,3 +1,4 @@
+import { metadata } from '@/app/layout';
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
@@ -19,7 +20,8 @@ export async function POST(req: NextRequest) {
       line_items: lineItems,
       mode: 'subscription',
       customer_email : email,
-      metadata : { id : uid },
+      subscription_data : { metadata : {'firebaseUid' : uid}} ,
+      metadata : { 'firebaseUid' : uid },
       return_url: `${req.nextUrl.origin}/manage-subscription?success=true`,
     });
     return NextResponse.json({ clientSecret: session.client_secret });
