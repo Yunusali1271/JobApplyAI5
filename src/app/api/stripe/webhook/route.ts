@@ -33,7 +33,6 @@ export async function POST(req: NextRequest) {
     return response;
   }
 
-  console.log(event);
   // Handle the event
   switch (event.type) {
     case "customer.subscription.created":
@@ -42,6 +41,7 @@ export async function POST(req: NextRequest) {
     case "customer.subscription.paused":
     case "customer.subscription.resumed":
       await handleSubscriptionUpdated(event);
+      console.log(`handled event type ${event.type}`);
       break;
     default:
       console.log(`Unhandled event type ${event.type}`);
