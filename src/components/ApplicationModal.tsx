@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { getUserApplicationKits, saveApplicationKit, ApplicationKit } from "@/lib/firebase/applicationKitUtils";
+import { getUserSubscriptionStatus } from "@/lib/firebase/firebaseUtils";
 import { Upload } from "antd";
 import CvText from "./CvText";
 import JobDescription from "./JobDescription";
@@ -15,7 +16,8 @@ interface ApplicationModalProps {
 interface PermissionStatus {
   lastJobPack: Date | null;
   numJobPacksSinceLastSubscription: number;
-  hasActiveSubscription: boolean; // Added
+  type: string;
+  hasActiveSubscription: boolean;
 }
 export default function ApplicationModal({
   isOpen,
@@ -40,6 +42,7 @@ export default function ApplicationModal({
   const [permissionStatus, setPermissionStatus] = useState<PermissionStatus>({
     lastJobPack: null,
     numJobPacksSinceLastSubscription: 0,
+    type: 'free',
     hasActiveSubscription: false, // Default
   });
   const [isLoadingPermissions, setIsLoadingPermissions] = useState(true);
@@ -50,19 +53,20 @@ export default function ApplicationModal({
         setIsLoadingPermissions(true);
         try {
           const idTokenResult = await user.getIdTokenResult(true); // Force refresh
-          const hasActiveSubscription = idTokenResult.claims.activeSubscription === true;
-          
+          const { hasSubscription, subscription } = await getUserSubscriptionStatus(user.uid);
+
           // Fetch the most recent application kit to get the lastJobPack date
           const userKits: ApplicationKit[] = await getUserApplicationKits(user.uid);
           const mostRecentKit = userKits.length > 0 ? userKits[0] : null;
-          const lastJobPack = mostRecentKit?.createdAt?.toDate() || null; // Convert Firestore Timestamp to Date
-          console.log(lastJobPack);
-          // TODO: Implement actual fetching of numJobPacksLastMonth
-          const numJobPacksSinceLastSubscription = 5; // Placeholder
-  
+          const lastJobPack = mostRecentKit?.createdAt?.toDate() || null;
+          const numJobPacksSinceLastSubscription = subscription?.currentPeriodStart ? userKits.filter(kit => kit.createdAt?.toDate() > new Date(subscription.currentPeriodStart)).length : 0;
+          console.log(numJobPacksSinceLastSubscription);
+
+
           setPermissionStatus({
-            hasActiveSubscription: hasActiveSubscription,
-            lastJobPack: lastJobPack, // Use fetched/determined value
+            hasActiveSubscription: hasSubscription && subscription?.status == 'active',
+            lastJobPack: lastJobPack,
+            type: subscription?.interval || 'free',
             numJobPacksSinceLastSubscription: numJobPacksSinceLastSubscription, // Use fetched/determined value
           });
   
@@ -71,6 +75,7 @@ export default function ApplicationModal({
           setPermissionStatus({ // Reset or set a default permission status on error
             hasActiveSubscription: false,
             lastJobPack: null,
+            type: '',
             numJobPacksSinceLastSubscription: 0,
           });
         } finally {
@@ -81,6 +86,7 @@ export default function ApplicationModal({
           setPermissionStatus({
               hasActiveSubscription: false,
               lastJobPack: null,
+              type: '',
               numJobPacksSinceLastSubscription: 0,
           });
           setIsLoadingPermissions(true); // Reset loading state
@@ -300,19 +306,19 @@ if (!isOpen) return null;
       </div>
     );
   }
-else if (permissionStatus.hasActiveSubscription && permissionStatus.numJobPacksSinceLastSubscription > 100) {
+else if (permissionStatus.hasActiveSubscription && permissionStatus.type == 'month' && permissionStatus.numJobPacksSinceLastSubscription >= 100 ||
+  (permissionStatus.hasActiveSubscription && permissionStatus.type == 'quarter' && permissionStatus.numJobPacksSinceLastSubscription >= 300)) {
   return (
     <div className="fixed inset-0 text-black bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="relative bg-white rounded-lg w-full max-w-lg p-6 text-center">
         <button className="absolute top-0 right-0 bg-white rounded-full -translate-y-1/3 translate-x-1/3" onClick={onClose}>
           <AiFillCloseCircle size={36}/>
         </button>
-        <p className="text-lg mb-4">You have used all of your alloted Job Packs for this month</p>
+        <p className="text-lg mb-4">You have used all of your alloted Job Packs for this subscription period</p>
       </div>
     </div>
   );
 }
-  
 
   return (
     <div className="fixed inset-0 text-black bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
