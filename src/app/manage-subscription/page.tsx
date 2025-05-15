@@ -42,6 +42,7 @@ function SubscriptionManagerContent() {
         const { hasSubscription, subscription } = await getUserSubscriptionStatus(user.uid);
         setHasSubscription(hasSubscription);
         setSubscriptionDetails(subscription);
+        console.log(subscription);
       } catch (err: any) {
         setError(err.message || 'An error occurred while fetching subscription status');
         setHasSubscription(false); // Assume no subscription on error
@@ -88,7 +89,7 @@ function SubscriptionManagerContent() {
 
       if (response.ok && data?.url) {
         // Redirect to the Stripe hosted customer portal URL
-        window.location.href = data.url;
+        window.open(data.url, '_blank');
       } else {
         setError(data?.error || 'Failed to create customer portal session');
       }
@@ -253,7 +254,7 @@ useEffect(() => {
                 <div className="mt-4 p-4 border rounded">
                   <h2 className="text-xl font-semibold">Subscription Details</h2>
                   <p>Status: {subscriptionDetails.status}</p>
-                  {/* Add more subscription details as needed */}
+                  <p>Current Period Ends: {new Date(subscriptionDetails.currentPeriodEnd).toLocaleDateString()}</p>
                 </div>
               )}
             </div>

@@ -50,10 +50,20 @@ export const deleteDocument = (collectionName: string, id: string) =>
 // Subscription functions
 export const getUserSubscriptionStatus = async (uid: string) => {
   try {
-    const subscriptionDoc = await getDoc(doc(db, 'users', uid, 'subscriptions', 'subscription'));
+    const subscriptionDoc = await getDoc(doc(db, 'subscriptions', uid));
     if (subscriptionDoc.exists()) {
       const subscriptionData = subscriptionDoc.data();
-      return { hasSubscription: true, subscription: subscriptionData };
+      // Convert any Timestamp objects to ISO strings for React compatibility
+      const processedSubscription = Object.keys(subscriptionData).reduce((acc: Record<string, any>, key) => {
+        const value = subscriptionData[key];
+        if (value && typeof value.toDate === 'function') { // Check if it's a Timestamp
+          acc[key] = value.toDate().toISOString();
+        } else {
+          acc[key] = value;
+        }
+        return acc;
+      }, {});
+      return { hasSubscription: true, subscription: processedSubscription };
     } else {
       return { hasSubscription: false, subscription: null };
     }

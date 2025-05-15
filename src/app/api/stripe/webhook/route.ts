@@ -1,6 +1,7 @@
 import Stripe from 'stripe';
 import { NextRequest, NextResponse } from 'next/server';
 import { handleSubscriptionUpdated } from '@/lib/stripe/handleSubscriptionUpdated';
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-04-30.basil' as any,
@@ -40,7 +41,10 @@ export async function POST(req: NextRequest) {
     case "customer.subscription.deleted":
     case "customer.subscription.paused":
     case "customer.subscription.resumed":
-      await handleSubscriptionUpdated(event);
+      const auth = getAuth();
+      signInWithEmailAndPassword(auth, process.env.ADMIN_EMAIL!, process.env.ADMIN_PASSWORD!)
+        .then(() => {handleSubscriptionUpdated(event); 
+      });
       console.log(`handled event type ${event.type}`);
       break;
     default:
