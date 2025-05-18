@@ -6,8 +6,6 @@ import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/hooks/useAuth";
-import { useIpLimits } from "@/lib/hooks/useIpLimits";
-// import ApplicationModal from "@/components/ApplicationModal";
 import { FaUser } from "react-icons/fa";
 import styles from './styles/rocket.module.css';
 import ApplicationModal from "@/components/ApplicationModal";
@@ -17,7 +15,6 @@ import Footer from "@/app/components/Footer";
 
 export default function Home() {
   const { user } = useAuth();
-  const { hasCreatedPack, isLoading: checkingIpStatus } = useIpLimits();
   const router = useRouter();
   const [pricingPlan, setPricingPlan] = useState({
     price: "£7.99",
@@ -94,37 +91,12 @@ export default function Home() {
             letters and resumes with ease.
           </p>
           
-          {!user && hasCreatedPack ? (
-            <div className="mt-8 flex flex-col items-center">
-              <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 mb-4 max-w-md">
-                <p className="text-sm">
-                  You've already created one Hire Me Pack. 
-                  <a href="/login" className="font-medium underline ml-1">Log in</a> to create more.
-                </p>
-              </div>
-              <div className="flex gap-4">
-                <a 
-                  href="/login"
-                  className="bg-[#7046EC] text-white px-8 py-3 rounded-full text-[17px] font-medium hover:bg-[#5e3bc4] transition-colors"
-                >
-                  Log in
-                </a>
-                <a 
-                  href="/register"
-                  className="border border-[#7046EC] text-[#7046EC] px-8 py-3 rounded-full text-[17px] font-medium hover:bg-[#f5f2ff] transition-colors"
-                >
-                  Sign up
-                </a>
-              </div>
-            </div>
-          ) : (
-            <button 
-              onClick={handleStartNowClick}
-              className="mt-8 bg-[#7046EC] text-white px-10 py-3.5 rounded-full text-[17px] font-medium hover:bg-[#5e3bc4] transition-colors"
-            >
-              Start now - it&apos;s free
-            </button>
-          )}
+          <button 
+            onClick={handleStartNowClick}
+            className="mt-8 bg-[#7046EC] text-white px-10 py-3.5 rounded-full text-[17px] font-medium hover:bg-[#5e3bc4] transition-colors"
+          >
+            Start now - it&apos;s free
+          </button>
           
           <div className="mt-12 flex items-center justify-center gap-2 text-[#6e6e73]">
             <div className="flex -space-x-2">
