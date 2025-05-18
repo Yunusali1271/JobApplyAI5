@@ -43,7 +43,9 @@ export async function POST(req: NextRequest) {
     case "customer.subscription.resumed":
       const auth = getAuth();
       signInWithEmailAndPassword(auth, process.env.ADMIN_EMAIL!, process.env.ADMIN_PASSWORD!)
-        .then(() => {handleSubscriptionUpdated(event); 
+        .then(() => {
+          console.log(`handling event type ${event.type}`)
+          handleSubscriptionUpdated(event); 
       });
       console.log(`handled event type ${event.type}`);
       break;
