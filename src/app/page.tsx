@@ -20,7 +20,7 @@ export default function Home() {
   const { hasCreatedPack, isLoading: checkingIpStatus } = useIpLimits();
   const router = useRouter();
   const [pricingPlan, setPricingPlan] = useState({
-    price: "£3.99",
+    price: "£7.99",
     period: "per month",
     activeTab: "quarterly"
   });
@@ -48,13 +48,13 @@ export default function Home() {
   const handlePricingTabChange = (plan:any) => {
     if (plan === "monthly") {
       setPricingPlan({
-        price: "£7.99",
+        price: "£15.99",
         period: "per month",
         activeTab: "monthly"
       });
     } else if (plan === "quarterly") {
       setPricingPlan({
-        price: "£3.99",
+        price: "£7.99",
         period: "per month",
         activeTab: "quarterly"
       });
