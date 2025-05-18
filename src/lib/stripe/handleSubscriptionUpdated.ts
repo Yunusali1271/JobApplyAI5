@@ -6,6 +6,8 @@ export async function handleSubscriptionUpdated(event: Stripe.Event) {
   const subscription = event.data.object as Stripe.Subscription;
   const firebaseUid = subscription.metadata.firebaseUid;
 
+  console.log('userId:'+firebaseUid);
+  console.log(subscription);
   if (!firebaseUid) {
     console.error("No Firebase UID found in subscription metadata");
     return;
