@@ -41,12 +41,19 @@ export async function POST(req: NextRequest) {
     case "customer.subscription.deleted":
     case "customer.subscription.paused":
     case "customer.subscription.resumed":
-      const auth = getAuth();
-      signInWithEmailAndPassword(auth, process.env.ADMIN_EMAIL!, process.env.ADMIN_PASSWORD!)
-        .then(() => {
-          console.log(`handling event type ${event.type}`)
-          handleSubscriptionUpdated(event); 
-      });
+      try{
+        const auth = getAuth();
+        signInWithEmailAndPassword(auth, process.env.ADMIN_EMAIL!, process.env.ADMIN_PASSWORD!)
+          .then(() => {
+            console.log(`handling event type ${event.type}`)
+            handleSubscriptionUpdated(event); 
+        });
+      }
+      catch(err: any)
+      {
+        console.log(`failed to handleSubscriptionUpdated`);
+        console.log(err);
+      }
       console.log(`handled event type ${event.type}`);
       break;
     default:
