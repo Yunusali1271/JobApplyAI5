@@ -28,12 +28,12 @@ async function syncSubscription(event : Stripe.Event)
         status: subscription.status,
         priceId: subscription.items.data[0].price.id,
         productId: subscription.items.data[0].price.product,
-        currentPeriodEnd: admin.firestore.Timestamp.fromMillis((subscription as any).current_period_end).toDate,
-        currentPeriodStart: admin.firestore.Timestamp.fromMillis((subscription as any).current_period_start).toDate,
+        currentPeriodEnd: new Date(subscription.items.data[0].current_period_end * 1000),
+        currentPeriodStart: new Date(subscription.items.data[0].current_period_start * 1000),
         cancelAtPeriodEnd: subscription.cancel_at_period_end,
         customer: subscription.customer,
         interval: subscription.items.data[0].plan.interval,
-        createdAt: admin.firestore.Timestamp.fromMillis(subscription.created).toDate,
+        createdAt: new Date (subscription.items.data[0].created * 1000),
         updatedAt: admin.firestore.Timestamp.fromDate(new Date()),
       }, { merge: true });
       console.log(`Updated subscription for user ${firebaseUid}`);
