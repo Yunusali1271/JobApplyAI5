@@ -18,6 +18,7 @@
     "antd": "^5.24.6",
     "date-fns": "^3.6.0",
     "firebase": "^10.13.0",
+    "firebase-admin": "^13.4.0",
     "framer-motion": "^11.3.31",
     "html2pdf.js": "^0.10.3",
     "jspdf-html2canvas": "^1.5.2",
