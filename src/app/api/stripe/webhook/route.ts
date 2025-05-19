@@ -1,15 +1,47 @@
 import Stripe from 'stripe';
 import { NextRequest, NextResponse } from 'next/server';
-import { handleSubscriptionUpdated } from '@/lib/stripe/handleSubscriptionUpdated';
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
-import { collection, doc, updateDoc, setDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase/firebase";
+import * as admin from 'firebase-admin';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-04-30.basil' as any,
 });
 
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert({
+      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+      clientEmail: process.env.FIREBASE_SERVICE_ACCT_EMAIL,
+      privateKey: (process.env.FIREBASE_SERVICE_ACCT_PRIVATE_KEY!).replace(/\\n/g, '\n'),
+    })
+  });
+}
+
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+async function syncSubscription(event : Stripe.Event)
+{
+    const subscription = event.data.object as Stripe.Subscription;
+    const firebaseUid = subscription.metadata.firebaseUid;
+    try{
+      const userRef = admin.firestore().collection("subscriptions").doc(firebaseUid);
+      await userRef.set({
+        id: subscription.id,
+        status: subscription.status,
+        priceId: subscription.items.data[0].price.id,
+        productId: subscription.items.data[0].price.product,
+        currentPeriodEnd: new Date((subscription as any).current_period_end * 1000),
+        currentPeriodStart: new Date((subscription as any).current_period_start * 1000),
+        cancelAtPeriodEnd: subscription.cancel_at_period_end,
+        customer: subscription.customer,
+        interval: subscription.items.data[0].plan.interval,
+        createdAt: new Date(subscription.created * 1000),
+        updatedAt: new Date(),
+      }, { merge: true });
+      console.log(`Updated subscription for user ${firebaseUid}`);
+    }
+    catch (err: any){
+      console.error(`Failed to update subscription for user ${firebaseUid}:`, err);
+    }
+}
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
@@ -43,53 +75,8 @@ export async function POST(req: NextRequest) {
     case "customer.subscription.deleted":
     case "customer.subscription.paused":
     case "customer.subscription.resumed":
-      console.log(event);
-      
-      const subscription = event.data.object as Stripe.Subscription;
-      const firebaseUid = subscription.metadata.firebaseUid;
-
-      console.log('userId:'+firebaseUid);
-      console.log(subscription);
-
-      try{
-        const userRef = doc(db, "subscriptions", firebaseUid);
-        await setDoc(userRef, {
-          id: subscription.id,
-          status: subscription.status,
-          priceId: subscription.items.data[0].price.id,
-          productId: subscription.items.data[0].price.product,
-          currentPeriodEnd: new Date(subscription.items.data[0].current_period_end * 1000),
-          currentPeriodStart: new Date(subscription.items.data[0].current_period_start * 1000),
-          cancelAtPeriodEnd: subscription.cancel_at_period_end,
-          customer: subscription.customer,
-          interval: subscription.items.data[0].plan.interval,
-          createdAt: new Date(subscription.created * 1000),
-          updatedAt: new Date(),
-        }, { merge: true });
-        console.log(`Updated subscription for user ${firebaseUid}`);
-      }
-      catch (err: any){
-        console.error(`Failed to update subscription for user ${firebaseUid}:`, err);
-      }
-
-
-
-
-      //handleSubscriptionUpdated(event);
-      /*try{
-        const auth = getAuth();
-        signInWithEmailAndPassword(auth, process.env.ADMIN_EMAIL!, process.env.ADMIN_PASSWORD!)
-          .then(() => {
-            console.log(`handling event type ${event.type}`)
-            handleSubscriptionUpdated(event); 
-        });
-      }
-      catch(err: any)
-      {
-        console.log(`failed to handleSubscriptionUpdated`);
-        console.log(err);
-      }*/
-      console.log(`handled event type ${event.type}`);
+      console.log(`handling event type ${event.type}`);
+      await syncSubscription(event);
       break;
     default:
       console.log(`Unhandled event type ${event.type}`);
