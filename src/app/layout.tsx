@@ -1,6 +1,7 @@
 import "./globals.css";
 import { Metadata } from "next";
 import AuthWrapper from "@/lib/components/AuthWrapper";
+import { Analytics } from '@vercel/analytics/next';
 
 export const metadata: Metadata = {
   title: "JobApplyAI - AI-Powered Job Search Assistant",
@@ -18,6 +19,7 @@ export default function RootLayout({
         <AuthWrapper>
           {children}
         </AuthWrapper>
+        <Analytics />
       </body>
     </html>
   );

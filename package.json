@@ -14,6 +14,7 @@
     "@ai-sdk/openai": "^0.0.54",
     "@deepgram/sdk": "^3.6.0",
     "@stripe/stripe-js": "^7.3.0",
+    "@vercel/analytics": "^1.5.0",
     "ai": "^3.3.20",
     "antd": "^5.24.6",
     "date-fns": "^3.6.0",
