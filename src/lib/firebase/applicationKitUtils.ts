@@ -26,6 +26,7 @@ export interface ApplicationKit {
   coverLetter: string;
   resume: string;
   followUpEmail: string;
+  sessionId?: string; // Unique session identifier for duplicate prevention
   original?: {
     cv: string;
     jobDescription: string;
@@ -40,6 +41,23 @@ export interface ApplicationKit {
  */
 export const saveApplicationKit = async (userId: string, kitData: Omit<ApplicationKit, "id" | "userId" | "createdAt" | "updatedAt">) => {
   try {
+    // Check for duplicates if sessionId is provided
+    if (kitData.sessionId) {
+      const duplicateQuery = query(
+        collection(db, `users/${userId}/applicationKits`),
+        where("sessionId", "==", kitData.sessionId)
+      );
+      const duplicateSnapshot = await getDocs(duplicateQuery);
+      
+      if (!duplicateSnapshot.empty) {
+        console.log("Application kit with this sessionId already exists, skipping save");
+        return {
+          id: duplicateSnapshot.docs[0].id,
+          ...duplicateSnapshot.docs[0].data()
+        };
+      }
+    }
+
     // Create a reference to the application kit document
     const kitRef = await addDoc(collection(db, `users/${userId}/applicationKits`), {
       userId,

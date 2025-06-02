@@ -69,6 +69,19 @@ export default function ApplicationModal({
             type: subscription?.interval || 'free',
             numJobPacksSinceLastSubscription: numJobPacksSinceLastSubscription, // Use fetched/determined value
           });
+
+          // Debug logging
+          console.log('Permission Status Debug:', {
+            hasActiveSubscription: hasSubscription && subscription?.status == 'active',
+            lastJobPack: lastJobPack,
+            lastJobPackTime: lastJobPack?.getTime(),
+            currentTime: Date.now(),
+            timeDifference: lastJobPack ? (Date.now() - lastJobPack.getTime()) : null,
+            twentyFourHours: 24 * 60 * 60 * 1000,
+            shouldBlock: lastJobPack ? lastJobPack.getTime() > (Date.now() - (24 * 60 * 60 * 1000)) : false,
+            userKitsCount: userKits.length,
+            type: subscription?.interval || 'free',
+          });
   
         } catch (error) {
           console.error("Error fetching user permissions:", error);
@@ -294,6 +307,15 @@ export default function ApplicationModal({
 
 if (!isOpen) return null;
 
+  // Job pack limit check - reactivated
+  console.log('Checking job pack limit:', {
+    hasActiveSubscription: permissionStatus.hasActiveSubscription,
+    lastJobPack: permissionStatus.lastJobPack,
+    lastJobPackExists: permissionStatus.lastJobPack !== null,
+    timeCheck: permissionStatus.lastJobPack ? permissionStatus.lastJobPack.getTime() > (Date.now() - (24 * 60 * 60 * 1000)) : false,
+    shouldBlock: !permissionStatus.hasActiveSubscription && permissionStatus.lastJobPack !== null && permissionStatus.lastJobPack.getTime() > (Date.now() - (24 * 60 * 60 * 1000))
+  });
+
   if (!permissionStatus.hasActiveSubscription && permissionStatus.lastJobPack !== null && permissionStatus.lastJobPack.getTime() > (Date.now() - (24 * 60 * 60 * 1000))) {
     return (
       <div className="fixed inset-0 text-black bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -306,19 +328,19 @@ if (!isOpen) return null;
       </div>
     );
   }
-else if (permissionStatus.hasActiveSubscription && permissionStatus.type == 'month' && permissionStatus.numJobPacksSinceLastSubscription >= 100 ||
-  (permissionStatus.hasActiveSubscription && permissionStatus.type == 'quarter' && permissionStatus.numJobPacksSinceLastSubscription >= 300)) {
-  return (
-    <div className="fixed inset-0 text-black bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="relative bg-white rounded-lg w-full max-w-lg p-6 text-center">
-        <button className="absolute top-0 right-0 bg-white rounded-full -translate-y-1/3 translate-x-1/3" onClick={onClose}>
-          <AiFillCloseCircle size={36}/>
-        </button>
-        <p className="text-lg mb-4">You have used all of your alloted Job Packs for this subscription period</p>
+  else if (permissionStatus.hasActiveSubscription && permissionStatus.type == 'month' && permissionStatus.numJobPacksSinceLastSubscription >= 100 ||
+    (permissionStatus.hasActiveSubscription && permissionStatus.type == 'quarter' && permissionStatus.numJobPacksSinceLastSubscription >= 300)) {
+    return (
+      <div className="fixed inset-0 text-black bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="relative bg-white rounded-lg w-full max-w-lg p-6 text-center">
+          <button className="absolute top-0 right-0 bg-white rounded-full -translate-y-1/3 translate-x-1/3" onClick={onClose}>
+            <AiFillCloseCircle size={36}/>
+          </button>
+          <p className="text-lg mb-4">You have used all of your alloted Job Packs for this subscription period</p>
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
   return (
     <div className="fixed inset-0 text-black bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">

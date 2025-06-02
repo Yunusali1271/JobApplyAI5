@@ -26,7 +26,18 @@ const nextConfig = {
       test: /\.svg$/,
       use: ['@svgr/webpack']
     });
+    
+    // Handle html2pdf.js dynamic imports
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      fs: false,
+      path: false,
+    };
+    
     return config;
+  },
+  experimental: {
+    esmExternals: 'loose'
   }
 };
 

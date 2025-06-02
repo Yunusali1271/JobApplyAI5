@@ -9,6 +9,7 @@ import { FaArrowLeft } from "react-icons/fa";
 import TemplateOne from "@/app/components/template/TemplateOne";
 import TemplateTwo from "@/app/components/template/TemplateTwo";
 import TemplateThree from "@/app/components/template/TemplateThree";
+import TemplateFour from "@/app/components/template/TemplateFour";
 
 interface ApplicationKit {
   id: string;
@@ -30,7 +31,7 @@ export default function ApplicationKitDetail() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"coverLetter" | "resume" | "followUp">("coverLetter");
   const [status, setStatus] = useState("");
-  const [activeTemplate, setActiveTemplate] = useState<1 | 2 | 3>(2);
+  const [activeTemplate, setActiveTemplate] = useState<1 | 2 | 3 | 4>(2);
   const [resumeData, setResumeData] = useState<any>(null);
   const resumeRef = useRef<HTMLDivElement>(null);
 
@@ -418,6 +419,16 @@ export default function ApplicationKitDetail() {
                             >
                               Template 3
                             </button>
+                            <button
+                              onClick={() => setActiveTemplate(4)}
+                              className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                                activeTemplate === 4
+                                  ? "bg-white shadow-sm text-indigo-600"
+                                  : "text-gray-600 hover:text-gray-900"
+                              }`}
+                            >
+                              Template 4
+                            </button>
                           </div>
                           <button
                             onClick={handleDownloadResumePdf}
@@ -452,6 +463,9 @@ export default function ApplicationKitDetail() {
                             )}
                             {activeTemplate === 3 && (
                               <TemplateThree result={resumeData} />
+                            )}
+                            {activeTemplate === 4 && (
+                              <TemplateFour result={resumeData} />
                             )}
                           </div>
                         ) : (

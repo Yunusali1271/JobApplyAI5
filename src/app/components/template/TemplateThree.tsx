@@ -1,282 +1,254 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useState } from "react";
 
 function TemplateThree({ result }: { result: any }) {
-  const [selectedColor, setSelectedColor] = useState("#10b981"); // Changed to green (green-500) to match Template 1
-  
-  useEffect(() => {
-    console.log("TemplateThree received data:", result);
-  }, [result]);
+  const [selectedColor, setSelectedColor] = useState("#374151"); // Default to gray-700
 
-  // Create a clean version of the data to render
-  const cleanResult = useMemo(() => {
-    if (!result) return {};
-    
-    // Create a copy without the timestamp property
-    const { _timestamp, ...cleanData } = result;
-    return cleanData;
-  }, [result]);
-
-  // Helper function for color palette
+  // Color options
   const colorOptions = [
-    { name: "Green", value: "#10b981" }, // green-500 (lighter)
-    { name: "Blue", value: "#3b82f6" },  // blue-500 (lighter)
-    { name: "Purple", value: "#8b5cf6" }, // violet-500 (lighter)
-    { name: "Red", value: "#ef4444" },    // red-500 (lighter)
-    { name: "Amber", value: "#f59e0b" },  // amber-500 (lighter)
-    { name: "Teal", value: "#14b8a6" },   // teal-500 (lighter)
-    { name: "Indigo", value: "#6366f1" }, // indigo-500 (lighter)
-    { name: "Cyan", value: "#06b6d4" },   // cyan-500 (lighter)
+    { name: "Gray", value: "#374151" }, // gray-700
+    { name: "Blue", value: "#3b82f6" }, // blue-500
+    { name: "Purple", value: "#8b5cf6" }, // violet-500
+    { name: "Teal", value: "#14b8a6" }, // teal-500
+    { name: "Green", value: "#22c55e" }, // green-500
+    { name: "Red", value: "#ef4444" }, // red-500
+    { name: "Amber", value: "#f59e0b" }, // amber-500
+    { name: "Indigo", value: "#6366f1" }, // indigo-500
   ];
 
-  // Helper function to format address into multiple lines
-  const formatAddress = (address: string) => {
-    if (!address) return "";
-    
-    // Try to split the address into parts
-    const parts = address.split(',').map(part => part.trim());
-    
-    if (parts.length >= 2) {
-      // Assume first part is street, remaining parts are city, postal code, etc.
-      const streetAddress = parts[0];
-      const cityPostalParts = parts.slice(1).join(', ');
-      
-      return (
-        <span>
-          {streetAddress}<br/>
-          {cityPostalParts}
-        </span>
-      );
-    }
-    
-    // If we can't split nicely, just return the original
-    return address;
-  };
-
-  const professionalExperience = cleanResult?.professionalExperience;
-  const education = cleanResult?.education;
-  const skillsAndInterests = cleanResult?.skillsAndInterests;
-  const personalInformation = cleanResult?.personalInformation;
-  const summary = cleanResult?.summary || "";
+  // Extract data from result
+  const personalInformation = result?.personalInformation || {};
+  const professionalExperience = result?.professionalExperience || [];
+  const education = result?.education || {};
+  const skillsAndInterests = result?.skillsAndInterests || {};
+  const summary = result?.summary || "";
 
   return (
-    <div className="relative bg-white text-black px-6 h-full" style={{ fontFamily: 'Arial, sans-serif', color: '#000000' }}>
-      <div className="sticky xl:fixed right=1/2 top-0 xl:right-2 xl:top-32 flex justify-center  xl:flex-col xl:justify-start items-center max-xl:space-x-2 space-y-2 z-50" style={{ marginRight: '10px' }} data-html2canvas-ignore="true">
-        <div className="text-[11px] font-semibold text-gray-600 xl:mb-1 text-center">Color Theme</div>
-        <div className="flex flex-row xl:flex-col gap-2">
-          {colorOptions.map((color) => (
-            <button
-              key={color.value}
-              className={`w-4 h-4 sm:w-6 sm:h-6 xl:w-8 xl:h-8 rounded-full border-2 shadow-md transition-all ${selectedColor === color.value ? 'ring-2 ring-offset-2 scale-110' : 'hover:scale-105'}`}
-              style={{ 
-                backgroundColor: color.value,
-                borderColor: selectedColor === color.value ? color.value : 'transparent' 
-              }}
-              title={color.name}
-              aria-label={`Set ${color.name} theme`}
-              onClick={() => setSelectedColor(color.value)}
-            />
-          ))}
-        </div>
-      </div>
-
-      <div className="w-full py-3 flex flex-col h-full" style={{ minHeight: '100%' }}>
-        {/* Name - Bold uppercase centered */}
-        <h1 className="text-[28px] font-bold text-center mb-1">
-          {personalInformation?.name}
+    <div className="relative bg-white text-black px-8 py-6 h-full" style={{ fontFamily: 'Times New Roman, serif' }}>
+      {/* Resume Content */}
+      <div className="w-full flex flex-col items-center">
+        {/* Name Header */}
+        <h1 className="text-3xl uppercase tracking-widest font-normal mb-2 text-center" style={{ letterSpacing: '0.25em' }}>
+          {personalInformation?.name || "AVA MORRISON"}
         </h1>
-
-        {/* Contact Info - Single line like Jeffrey Su resume */}
-        <div className="text-center text-[13px] mt-0 pb-3">
-          <p className="font-regular text-black">
-            {personalInformation?.email && `${personalInformation.email}`}{personalInformation?.email && personalInformation?.linkedin && " | "}
-            {personalInformation?.linkedin && `${personalInformation.linkedin}`}{(personalInformation?.email || personalInformation?.linkedin) && personalInformation?.phone && " | "}
-            {personalInformation?.phone && `${personalInformation.phone}`}{(personalInformation?.email || personalInformation?.linkedin || personalInformation?.phone) && personalInformation?.address && " | "}
-            {personalInformation?.address && `${personalInformation.address}`}
-          </p>
+        
+        {/* Divider Line */}
+        <div className="w-full h-px bg-gray-300 my-2"></div>
+        
+        {/* Contact Information */}
+        <div className="text-center text-sm mb-4">
+          {personalInformation?.phone && (
+            <span>{personalInformation.phone}</span>
+          )}
+          {personalInformation?.phone && personalInformation?.email && (
+            <span> | </span>
+          )}
+          {personalInformation?.email && (
+            <span>{personalInformation.email}</span>
+          )}
+          {(personalInformation?.phone || personalInformation?.email) && personalInformation?.address && (
+            <span> | </span>
+          )}
+          {personalInformation?.address && (
+            <span>{personalInformation.address}</span>
+          )}
+          {(personalInformation?.phone || personalInformation?.email || personalInformation?.address) && personalInformation?.linkedin && (
+            <span> | </span>
+          )}
+          {personalInformation?.linkedin && (
+            <span>{personalInformation.linkedin}</span>
+          )}
         </div>
-
-        {/* Gray divider */}
-        <div className="h-[1px] bg-gray-300 w-full mb-2 mt-1"></div>
-
-        {/* ============== Professional Summary Section (from TemplateTwo) ============== */}
-        {summary && (
-          <>
-            <h2 style={{ color: selectedColor }} className="text-[14px] font-bold mb-0.5 uppercase">
-              PROFESSIONAL SUMMARY
+        
+        {/* Professional Summary Section */}
+        <div className="w-full mb-4">
+          <div className="bg-gray-200 py-2 px-2 text-center mb-2 flex items-center justify-center">
+            <h2 className="uppercase font-semibold tracking-wider m-0" style={{ color: selectedColor }}>
+              Professional Summary
             </h2>
-            <div className="mb-2 text-[13px]">
-              {summary}
-            </div>
-          </>
-        )}
-        
-        {/* ============== professional experience ============== */}
-        <h2 style={{ color: selectedColor }} className="text-[14px] font-bold mb-0.5 uppercase">
-          PROFESSIONAL EXPERIENCE
-        </h2>
-
-        {professionalExperience?.map((experience: any, index: any) => (
-          <div key={index} className="mb-2 w-full">
-            <div className="flex w-full justify-between items-baseline mb-0.5">
-              <h3 className="text-[14px] font-bold">
-                {experience?.company} - {experience?.position}
-                {experience?.location ? '; ' + experience?.location : ''}
-              </h3>
-              <span className="italic text-[13px]">{experience?.duration}</span>
-            </div>
-            
-            {/* Main bullet points - using a styled list for proper PDF alignment */}
-            <div className="ml-5 text-[13px] text-black">
-              {experience?.responsibilities?.map(
-                (responsibility: any, Idx: any) => (
-                  <div key={Idx} className="mb-0.5 flex">
-                    <span className="inline-block mr-2 flex-shrink-0" style={{ 
-                      lineHeight: '1.5',
-                      marginTop: '0.15em' 
-                    }}>•</span>
-                    <div className="flex-1">
-                      {responsibility?.category}
-                      
-                      {/* Sub bullet points (hollow circles) */}
-                      {responsibility?.details && Array.isArray(responsibility.details) && (
-                        <ul className="list-none ml-1 mt-0.5">
-                          {responsibility.details.map(
-                            (detail: any, detailIdx: any) => (
-                              <li key={detailIdx} className="mb-0.5 flex" style={{ 
-                                position: 'relative',
-                                paddingLeft: '1.2em'
-                              }}>
-                                <span style={{ 
-                                  position: 'absolute', 
-                                  left: 0,
-                                  top: '0.15em',
-                                  display: 'inline-block'
-                                }}>○</span>
-                                <span style={{ flex: 1, fontSize: '13px' }}>{detail}</span>
-                              </li>
-                            )
-                          )}
-                        </ul>
-                      )}
-                    </div>
-                  </div>
-                )
-              )}
-            </div>
           </div>
-        ))}
-
-        {/* ============== education ============== */}
-        <h2 style={{ color: selectedColor }} className="text-[14px] font-bold mb-0.5 uppercase">
-          EDUCATION
-        </h2>
+          <div className="px-1 text-sm">
+            {summary ? (
+              <p>{summary}</p>
+            ) : (
+              <ul className="list-disc ml-5 space-y-1">
+                <li>Use this section to highlight your strongest accomplishments right off the bat — and be sure to include numbers or metrics where you can.</li>
+                <li>You can choose bullet points or a short paragraph format, whichever feels natural.</li>
+                <li>Skip the outdated objective statement — instead, focus on showing how you'll make an impact and bring value to the company from day one.</li>
+              </ul>
+            )}
+          </div>
+        </div>
         
-        {/* Handle education as either an array or a single object */}
-        {Array.isArray(education) ? (
-          // If education is an array, map through each education item
-          education.map((edu: any, index: number) => (
-            <div key={index} className="mb-2 w-full">
-              <div className="flex w-full justify-between items-baseline mb-0.5">
-                <h3 className="max-w-[70%] text-[14px] font-bold">
-                  {edu?.institution}, {edu?.degree}
-                  {edu?.location ? ' | ' + edu?.location : ''}
-                </h3>
-                <span className="italic text-[13px]">
-                  {edu?.duration || edu?.graduationDate}
-                </span>
-              </div>
-              <div className="text-[13px] mt-0.5 ml-4">
-                {edu?.concentrations && edu.concentrations.length > 0 && (
-                  <>
-                    <span className="font-medium">Concentrations:</span> {edu.concentrations.join(", ")}
-                    {edu?.minor ? '; Minor in ' + edu?.minor : ''}
-                    {edu?.gpa ? ' | GPA: ' + edu?.gpa : ''}
-                  </>
+        {/* Experience Section */}
+        <div className="w-full mb-4">
+          <div className="bg-gray-200 py-2 px-2 text-center mb-2 flex items-center justify-center">
+            <h2 className="uppercase font-semibold tracking-wider m-0" style={{ color: selectedColor }}>
+              Experience
+            </h2>
+          </div>
+          
+          {professionalExperience && professionalExperience.length > 0 ? (
+            professionalExperience.map((exp: any, index: number) => (
+              <div key={index} className="mb-4">
+                <div className="flex justify-between items-baseline mb-1">
+                  <h3 className="font-bold text-sm uppercase">{exp?.position || "POSITION TITLE HERE"}</h3>
+                  <span className="text-sm">{exp?.duration || "Date – Present"}</span>
+                </div>
+                <p className="text-sm mb-1">{exp?.company}{exp?.location ? `, ${exp?.location}` : ""}</p>
+                
+                {exp?.responsibilities && exp.responsibilities.length > 0 ? (
+                  <ul className="list-disc ml-5 text-sm space-y-1">
+                    {exp.responsibilities.flatMap((resp: any, idx: number) => {
+                      // Handle both string and object formats
+                      if (typeof resp === 'string') {
+                        return <li key={idx}>{resp}</li>;
+                      } else if (resp.category) {
+                        // Create a list item for the category
+                        const items = [<li key={`${idx}-cat`}>{resp.category}</li>];
+                        
+                        // If there are details, add them as sub-items
+                        if (resp.details && Array.isArray(resp.details)) {
+                          resp.details.forEach((detail: string, detailIdx: number) => {
+                            items.push(
+                              <li key={`${idx}-det-${detailIdx}`} className="ml-4">
+                                {detail}
+                              </li>
+                            );
+                          });
+                        }
+                        return items;
+                      }
+                      return null;
+                    }).filter(Boolean)}
+                  </ul>
+                ) : (
+                  <div className="text-sm px-1">
+                    <p className="mb-1">This opening section is a great spot to briefly summarize your role, highlight key contributions, or explain how you arrived in the position—such as through a promotion or internal transfer.</p>
+                    <ul className="list-disc ml-5 space-y-1">
+                      <li>List your most impressive and relevant achievements first. If you can add specific numbers or results to back them up — even better.</li>
+                      <li>Use strong action verbs like "managed," "led," or "spearheaded" instead of passive phrases like "responsible for."</li>
+                      <li>Think about how your work helped the company: Did you increase revenue, cut costs, or save time? That's what employers care about.</li>
+                    </ul>
+                  </div>
                 )}
               </div>
-              
-              {/* Style achievements like bullet points */}
-              {edu?.achievements && edu.achievements.length > 0 && (
-                <div className="text-[13px] mt-2 ml-4">
-                  {edu.achievements.map((achievement: string, idx: number) => (
-                    <div key={idx} className="mb-1 flex">
-                      <span className="inline-block mr-2 flex-shrink-0" style={{ 
-                        lineHeight: '1.5',
-                        marginTop: '0.15em' 
-                      }}>○</span>
-                      <div className="flex-1">{achievement}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))
-        ) : (
-          // Fall back to the original behavior if education is a single object
-          <div className="mb-2 w-full">
-            <div className="flex w-full justify-between items-baseline mb-0.5">
-              <h3 className="max-w-[70%] text-[14px] font-bold">
-                {education?.institution}, {education?.degree}
-                {education?.location ? ' | ' + education?.location : ''}
-              </h3>
-              <span className="italic text-[13px]">
-                {education?.duration || education?.graduationDate}
-              </span>
-            </div>
-            <div className="text-[13px] mt-0.5 ml-4">
-              {education?.concentrations && (
-                <>
-                  <span className="font-medium">Concentrations:</span> {education.concentrations.join(", ")}
-                  {education?.minor ? '; Minor in ' + education?.minor : ''}
-                  {education?.gpa ? ' | GPA: ' + education?.gpa : ''}
-                </>
-              )}
-            </div>
-            
-            {/* Style achievements like bullet points */}
-            {education?.achievements && education.achievements.length > 0 && (
-              <div className="text-[13px] mt-2 ml-4">
-                {education.achievements.map((achievement: string, idx: number) => (
-                  <div key={idx} className="mb-1 flex">
-                    <span className="inline-block mr-2 flex-shrink-0" style={{ 
-                      lineHeight: '1.5',
-                      marginTop: '0.15em' 
-                    }}>○</span>
-                    <div className="flex-1">{achievement}</div>
-                  </div>
-                ))}
+            ))
+          ) : (
+            <div className="mb-4">
+              <div className="flex justify-between items-baseline mb-1">
+                <h3 className="font-bold text-sm uppercase">POSITION TITLE HERE</h3>
+                <span className="text-sm">Date – Present</span>
               </div>
-            )}
-          </div>
-        )}
-
-        {/* ============== skills ============== */}
-        <h2 style={{ color: selectedColor }} className="text-[14px] font-bold mb-0.5 uppercase">
-          SKILLS & INTERESTS
-        </h2>
+              <p className="text-sm mb-1">Company, Location</p>
+              <div className="text-sm px-1">
+                <p className="mb-1">This opening section is a great spot to briefly summarize your role, highlight key contributions, or explain how you arrived in the position.</p>
+                <ul className="list-disc ml-5 space-y-1">
+                  <li>List your most impressive and relevant achievements first.</li>
+                  <li>Use strong action verbs like "managed," "led," or "spearheaded".</li>
+                  <li>Think about how your work helped the company.</li>
+                </ul>
+              </div>
+            </div>
+          )}
+        </div>
         
-        <div>
-          <div className="text-[13px] text-black mb-0.5"> 
-            <span className="font-bold">Interests:</span> {skillsAndInterests?.interests?.join(", ")}
+        {/* Education Section */}
+        <div className="w-full">
+          <div className="bg-gray-200 py-2 px-2 text-center mb-2 flex items-center justify-center">
+            <h2 className="uppercase font-semibold tracking-wider m-0" style={{ color: selectedColor }}>
+              Education & Certifications
+            </h2>
           </div>
-          <div className="text-[13px] text-black mb-0.5">
-            <span className="font-bold">Languages:</span>{" "}
-            {skillsAndInterests?.languages?.native && skillsAndInterests.languages.native.length > 0 ? (
-              <>Native {skillsAndInterests.languages.native.join(", ")}</>
+          
+          {/* Display education - handle both object and array format */}
+          {education ? (
+            Array.isArray(education) ? (
+              education.map((edu: any, index: number) => (
+                <div key={index} className="mb-3">
+                  <div className="flex justify-between mb-1">
+                    <div className="text-sm">
+                      <span className="font-bold">{edu?.degree}</span>
+                      {edu?.institution ? <span className="font-bold"> / {edu.institution}</span> : ""}
+                      {edu?.location ? <span className="font-bold">, {edu.location}</span> : ""}
+                    </div>
+                    <span className="text-sm">{edu?.duration || edu?.graduationDate || "Date"}</span>
+                  </div>
+                  
+                  {/* Additional education details */}
+                  <div className="text-sm ml-2">
+                    {edu?.concentrations && Array.isArray(edu.concentrations) && edu.concentrations.length > 0 && (
+                      <>
+                        <span className="font-medium">Concentrations:</span> {edu.concentrations.join(", ")}
+                        {edu?.minor ? '; Minor in ' + edu?.minor : ''}
+                        {edu?.gpa ? ' | GPA: ' + edu?.gpa : ''}
+                      </>
+                    )}
+                  </div>
+                  
+                  {/* Education achievements */}
+                  {edu?.achievements && Array.isArray(edu.achievements) && edu.achievements.length > 0 && (
+                    <ul className="list-disc ml-5 text-sm space-y-1 mt-1">
+                      {edu.achievements.map((achievement: string, idx: number) => (
+                        <li key={idx}>{achievement}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ))
             ) : (
-              <>Native English</>
-            )}
-            {skillsAndInterests?.languages?.fluent && skillsAndInterests.languages.fluent.length > 0 && (
-              <>; Fluent in {skillsAndInterests.languages.fluent.join(", ")}</>
-            )}
-          </div>
-          <div className="text-[13px] text-black">
-            <span className="font-bold">Technical:</span> {skillsAndInterests?.technical?.join(", ")}
-          </div>
+              <div className="mb-3">
+                <div className="flex justify-between mb-1">
+                  <div className="text-sm">
+                    <span className="font-bold">{education?.degree}</span>
+                    {education?.institution ? <span className="font-bold"> / {education.institution}</span> : ""}
+                    {education?.location ? <span className="font-bold">, {education.location}</span> : ""}
+                  </div>
+                  <span className="text-sm">{education?.duration || education?.graduationDate || "Date"}</span>
+                </div>
+                
+                {/* Additional education details */}
+                <div className="text-sm ml-2">
+                  {education?.concentrations && Array.isArray(education.concentrations) && education.concentrations.length > 0 && (
+                    <>
+                      <span className="font-medium">Concentrations:</span> {education.concentrations.join(", ")}
+                      {education?.minor ? '; Minor in ' + education?.minor : ''}
+                      {education?.gpa ? ' | GPA: ' + education?.gpa : ''}
+                    </>
+                  )}
+                </div>
+                
+                {/* Education achievements */}
+                {education?.achievements && Array.isArray(education.achievements) && education.achievements.length > 0 && (
+                  <ul className="list-disc ml-5 text-sm space-y-1 mt-1">
+                    {education.achievements.map((achievement: string, idx: number) => (
+                      <li key={idx}>{achievement}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )
+          ) : (
+            <div>
+              <div className="flex justify-between mb-1">
+                <div className="text-sm">
+                  <span className="font-bold">Master of Business Administration</span> / Your University, City, State
+                </div>
+                <span className="text-sm">Date</span>
+              </div>
+              <div className="text-sm italic mb-2">Summa cum laude, President of XYZ Club</div>
+              
+              <div className="flex justify-between mb-1">
+                <div className="text-sm">
+                  <span className="font-bold">Certification Here</span> / Organization
+                </div>
+                <span className="text-sm">Date</span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 }
 
-export default TemplateThree; 
+export default TemplateThree;

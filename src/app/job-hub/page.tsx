@@ -578,7 +578,6 @@ export default function JobHub() {
                   <div className="hidden md:block border-b">
                     <div className="grid grid-cols-[40px_1fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-4 px-6 py-3">
                       <div className="flex items-center">
-                        Empty div to maintain spacing
                       </div>
                       <div className="flex items-center">
                         <span className="text-sm font-medium text-gray-600">

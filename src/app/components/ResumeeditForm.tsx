@@ -148,6 +148,13 @@ const ResumeEditForm = forwardRef<ResumeFormRef, ResumeEditFormProps>(({ resume,
     }
   };
 
+  const handleSummaryChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setFormData({
+      ...formData,
+      summary: e.target.value
+    });
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave(formData);
@@ -217,6 +224,21 @@ const ResumeEditForm = forwardRef<ResumeFormRef, ResumeEditFormProps>(({ resume,
               className="w-full p-2 border rounded"
             />
           </div>
+        </div>
+      </div>
+
+      {/* Professional Summary/Overview Section */}
+      <div className="border-b pb-3">
+        <h3 className="font-semibold text-md mb-2 text-gray-800">Professional Summary / Overview</h3>
+        <div>
+          <label className="block text-gray-700 mb-1">Summary</label>
+          <textarea
+            value={formData.summary || ''}
+            onChange={handleSummaryChange}
+            rows={4}
+            className="w-full p-2 border rounded resize-vertical"
+            placeholder="Write a brief professional summary or overview..."
+          />
         </div>
       </div>
 

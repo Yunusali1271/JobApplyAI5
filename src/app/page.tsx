@@ -70,6 +70,8 @@ export default function Home() {
     setCurrentTemplate(current => {
       if (current === 'steve-jobs') return 'jeffrey-su';
       if (current === 'jeffrey-su') return 'elon-musk';
+      if (current === 'elon-musk') return 'ava-template';
+      if (current === 'ava-template') return 'camille-template';
       return 'steve-jobs';
     });
   };
@@ -583,7 +585,7 @@ export default function Home() {
                 <span className="mt-2 inline-block">Faster Search. More Offers.</span>
               </h2>
               <p className="text-xl text-gray-600 mt-6">
-                Automated Job Winning Resumes and Cover Letters to land your next position sooner
+                Automated Job Winning Resumes and Cover Letters with 6+ stunning professional templates to land your next position sooner
               </p>
             </div>
           </div>
@@ -630,33 +632,47 @@ export default function Home() {
               <div className="flex items-center">
                 <div className="relative max-w-full">
                   {currentTemplate === 'steve-jobs' && (
-                    <Image
-                      src="/steve-jobs.jpg"
-                      alt="Steve Jobs Resume Template"
-                      width={450}
-                      height={550}
-                      style={{ 
-                        objectFit: 'contain',
-                        backgroundColor: 'white'
-                      }}
-                      className="h-auto max-h-[550px] w-[450px] max-w-full shadow-xl transform hover:scale-[1.02] transition-transform lg:rotate-[2deg] origin-top rounded-lg object-contain bg-white"
-                      priority
-                    />
+                    <div className="relative">
+                      <Image
+                        src="/steve-jobs.jpg"
+                        alt="Steve Jobs Resume Template"
+                        width={450}
+                        height={550}
+                        style={{ 
+                          objectFit: 'contain',
+                          backgroundColor: 'white'
+                        }}
+                        className="h-auto max-h-[550px] w-[450px] max-w-full shadow-xl transform hover:scale-[1.02] transition-transform lg:rotate-[2deg] origin-top rounded-lg object-contain bg-white"
+                        priority
+                      />
+                      <div className="absolute -bottom-12 lg:-bottom-8 left-0 right-0">
+                        <p className="text-emerald-500 text-sm font-medium transform lg:rotate-[2deg] origin-top w-[450px] mx-auto max-lg:max-w-full max-lg:text-center lg:whitespace-nowrap">
+                          Browse all 6 stunning industry-specific templates to choose from!
+                        </p>
+                      </div>
+                    </div>
                   )}
                   {currentTemplate === 'jeffrey-su' && (
-                    <Image
-                      src="/JeffreySu.jpg"
-                      alt="Jeffrey Su Resume Template"
-                      width={450}
-                      height={550}
-                      style={{ 
-                        objectFit: 'contain',
-                        backgroundColor: 'white'
-                      }}
-                      className="h-auto max-h-[550px] w-[450px] max-w-full shadow-xl transform hover:scale-[1.02] transition-transform lg:rotate-[2deg] origin-top rounded-lg object-contain bg-white"
-                      priority
-                      unoptimized
-                    />
+                    <div className="relative">
+                      <Image
+                        src="/JeffreySu.jpg"
+                        alt="Jeffrey Su Resume Template"
+                        width={450}
+                        height={550}
+                        style={{ 
+                          objectFit: 'contain',
+                          backgroundColor: 'white'
+                        }}
+                        className="h-auto max-h-[550px] w-[450px] max-w-full shadow-xl transform hover:scale-[1.02] transition-transform lg:rotate-[2deg] origin-top rounded-lg object-contain bg-white"
+                        priority
+                        unoptimized
+                      />
+                      <div className="absolute -bottom-12 lg:-bottom-8 left-0 right-0">
+                        <p className="text-emerald-500 text-sm font-medium transform lg:rotate-[2deg] origin-top w-[450px] mx-auto max-lg:max-w-full max-lg:text-center lg:whitespace-nowrap">
+                          Browse all 6 stunning industry-specific templates to choose from!
+                        </p>
+                      </div>
+                    </div>
                   )}
                   {currentTemplate === 'elon-musk' && (
                     <div className="relative">
@@ -677,7 +693,51 @@ export default function Home() {
                       />
                       <div className="absolute -bottom-12 lg:-bottom-8 left-0 right-0">
                         <p className="text-emerald-500 text-sm font-medium transform lg:rotate-[2deg] origin-top w-[450px] mx-auto max-lg:max-w-full max-lg:text-center lg:whitespace-nowrap">
-                          Best Results: Industry Recommended with Highest Success Rate!
+                          Browse all 6 stunning industry-specific templates to choose from!
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  {currentTemplate === 'ava-template' && (
+                    <div className="relative">
+                      <Image
+                        src="/Ava Template.jpg"
+                        alt="Ava Resume Template"
+                        width={450}
+                        height={550}
+                        style={{ 
+                          objectFit: 'contain',
+                          backgroundColor: 'white'
+                        }}
+                        className="h-auto max-h-[550px] w-[450px] max-w-full shadow-xl transform hover:scale-[1.02] transition-transform lg:rotate-[2deg] origin-top rounded-lg object-contain bg-white"
+                        priority
+                        unoptimized
+                      />
+                      <div className="absolute -bottom-12 lg:-bottom-8 left-0 right-0">
+                        <p className="text-emerald-500 text-sm font-medium transform lg:rotate-[2deg] origin-top w-[450px] mx-auto max-lg:max-w-full max-lg:text-center lg:whitespace-nowrap">
+                          Browse all 6 stunning industry-specific templates to choose from!
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  {currentTemplate === 'camille-template' && (
+                    <div className="relative">
+                      <Image
+                        src="/Camille template.jpg"
+                        alt="Camille Resume Template"
+                        width={450}
+                        height={550}
+                        style={{ 
+                          objectFit: 'contain',
+                          backgroundColor: 'white'
+                        }}
+                        className="h-auto max-h-[550px] w-[450px] max-w-full shadow-xl transform hover:scale-[1.02] transition-transform lg:rotate-[2deg] origin-top rounded-lg object-contain bg-white"
+                        priority
+                        unoptimized
+                      />
+                      <div className="absolute -bottom-12 lg:-bottom-8 left-0 right-0">
+                        <p className="text-emerald-500 text-sm font-medium transform lg:rotate-[2deg] origin-top w-[450px] mx-auto max-lg:max-w-full max-lg:text-center lg:whitespace-nowrap">
+                          Browse all 6 stunning industry-specific templates to choose from!
                         </p>
                       </div>
                     </div>
@@ -1064,7 +1124,9 @@ export default function Home() {
             <div className="relative z-10">
               <div className="text-center mb-6">
                 <div className="flex items-center justify-center">
-                  <span className="text-gray-400 line-through text-sm mr-2">£15.99</span>
+                  <span className="text-gray-400 line-through text-sm mr-2">
+                    {pricingPlan.activeTab === "monthly" ? "£39.99" : "£15.99"}
+                  </span>
                   <span className="text-4xl font-bold text-[#363636]">{pricingPlan.price}</span>
                 </div>
                 <p className="text-sm text-gray-500 mt-1">{pricingPlan.period}</p>
@@ -1127,6 +1189,12 @@ export default function Home() {
                 </div>
                 <p className="text-sm text-gray-500 mt-2">
                   Loved by {formatNumber(262568)} users
+                </p>
+                <p className="text-sm text-gray-500 mt-3 flex items-center justify-center">
+                  <svg className="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  $0.00 due today, cancel anytime
                 </p>
               </div>
             </div>

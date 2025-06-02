@@ -6,10 +6,13 @@ import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { saveApplicationKit } from "@/lib/firebase/applicationKitUtils";
+import { getUserSubscriptionStatus } from "@/lib/firebase/firebaseUtils";
 import TemplateOne from "../components/template/TemplateOne";
 import TemplateTwo from "../components/template/TemplateTwo";
 import TemplateThree from "../components/template/TemplateThree";
+import TemplateFour from "../components/template/TemplateFour";
 import { FaArrowLeft } from "react-icons/fa";
+import { AiFillCloseCircle } from "react-icons/ai";
 import ResumeEditForm, { ResumeFormRef } from "../components/ResumeeditForm";
 
 // Custom toast hook
@@ -70,29 +73,38 @@ export default function ResultsPage({ params }: PageProps) {
   const [savingToFirebase, setSavingToFirebase] = useState(false);
   const [savedToFirebase, setSavedToFirebase] = useState(false);
   const [cameFromJobHub, setCameFromJobHub] = useState(false);
+  const [sessionId] = useState(() => Date.now().toString()); // Unique session identifier
   const coverLetterRef = useRef<HTMLDivElement>(null);
   const followUpEmailRef = useRef<HTMLDivElement>(null);
   const resumeRef = useRef<HTMLDivElement>(null);
   const resumeTwoRef = useRef<HTMLDivElement>(null);
   const resumeThreeRef = useRef<HTMLDivElement>(null);
+  const resumeFourRef = useRef<HTMLDivElement>(null);
   const resumePreviewRef = useRef<HTMLDivElement>(null);
   const [isEditingResume, setIsEditingResume] = useState(false);
   const [editedResume, setEditedResume] = useState<string | null>(null);
   const [isEditingResumeTwo, setIsEditingResumeTwo] = useState(false);
-  const [isEditingResumeThree, setIsEditingResumeThree] = useState(false);
-  const [activeTemplate, setActiveTemplate] = useState<1 | 2 | 3>(2);
+  const [activeTemplate, setActiveTemplate] = useState<1 | 2 | 3 | 4>(2);
   const [isEditingCoverLetter, setIsEditingCoverLetter] = useState(false);
   const [editedCoverLetter, setEditedCoverLetter] = useState<string | null>(null);
   const [showSummary, setShowSummary] = useState<boolean>(false);
 
+  // Subscription status states
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
+
   const [editedResumeTwo, setEditedResumeTwo] = useState<string | null>(null);
+  const [isEditingResumeThree, setIsEditingResumeThree] = useState(false);
   const [editedResumeThree, setEditedResumeThree] = useState<string | null>(null);
+  const [isEditingResumeFour, setIsEditingResumeFour] = useState(false);
+  const [editedResumeFour, setEditedResumeFour] = useState<string | null>(null);
 
   const [cvResume, setCvResume] = useState<any>(null);
 
   const resumeFormRef = useRef<ResumeFormRef>(null);
   const resumeTwoFormRef = useRef<ResumeFormRef>(null);
   const resumeThreeFormRef = useRef<ResumeFormRef>(null);
+  const resumeFourFormRef = useRef<ResumeFormRef>(null);
 
   // Default structured resume template for editing form
   const defaultStructuredResume = {
@@ -181,6 +193,25 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
     }
   }, []);
 
+  // Check subscription status
+  useEffect(() => {
+    const checkSubscriptionStatus = async () => {
+      if (user) {
+        try {
+          const { hasSubscription, subscription } = await getUserSubscriptionStatus(user.uid);
+          setHasActiveSubscription(hasSubscription && subscription?.status === 'active');
+        } catch (error) {
+          console.error("Error checking subscription status:", error);
+          setHasActiveSubscription(false);
+        }
+      } else {
+        setHasActiveSubscription(false);
+      }
+    };
+
+    checkSubscriptionStatus();
+  }, [user]);
+
   useEffect(() => {
     const storedResume = localStorage.getItem("resume");
     try {
@@ -191,6 +222,7 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
         setEditedResume(storedResume);
         setEditedResumeTwo(storedResume);
         setEditedResumeThree(storedResume);
+        setEditedResumeFour(storedResume);
       } else {
         // Set default resume if none exists
         setCvResume(defaultStructuredResume);
@@ -198,6 +230,7 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
         setEditedResume(defaultResumeStr);
         setEditedResumeTwo(defaultResumeStr);
         setEditedResumeThree(defaultResumeStr);
+        setEditedResumeFour(defaultResumeStr);
       }
     } catch (error) {
       console.error("Failed to parse resume from localStorage:", error);
@@ -207,6 +240,7 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
       setEditedResume(defaultResumeStr);
       setEditedResumeTwo(defaultResumeStr);
       setEditedResumeThree(defaultResumeStr);
+      setEditedResumeFour(defaultResumeStr);
     }
   }, []);
 
@@ -218,6 +252,7 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
         setEditedResume(resumeString);
         setEditedResumeTwo(resumeString);
         setEditedResumeThree(resumeString);
+        setEditedResumeFour(resumeString);
       } catch (e) {
         console.error("Error syncing resume data:", e);
       }
@@ -227,9 +262,8 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
   const { toast } = useToast();
 
   // Function to handle switching between templates
-  // Cycles: Template 2 -> Template 1 -> Template 2
   const handleSwitchTemplate = () => {
-    if (isEditingResume || isEditingResumeTwo) {
+    if (isEditingResume || isEditingResumeTwo || isEditingResumeThree || isEditingResumeFour) {
       toast({
         title: "Please save or cancel your changes before switching templates",
         description: "You have unsaved changes that will be lost if you switch templates now.",
@@ -239,8 +273,10 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
     }
 
     setActiveTemplate((prev) => {
-      if (prev === 2) return 1;
-      return 2;
+      if (prev === 1) return 2;
+      if (prev === 2) return 3;
+      if (prev === 3) return 4;
+      return 1; // If we're on template 4, go back to 1
     });
   };
 
@@ -273,6 +309,7 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
             setEditedResume(storedResume);
             setEditedResumeTwo(storedResume);
             setEditedResumeThree(storedResume);
+            setEditedResumeFour(storedResume);
           } catch (e) {
             console.error("Error parsing resume from localStorage:", e);
             // If JSON parsing fails, initialize with default structure
@@ -282,6 +319,7 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
             setEditedResume(defaultResumeStr);
             setEditedResumeTwo(defaultResumeStr);
             setEditedResumeThree(defaultResumeStr);
+            setEditedResumeFour(defaultResumeStr);
           }
         } else {
           // No stored resume, use default
@@ -291,6 +329,7 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
           setEditedResume(defaultResumeStr);
           setEditedResumeTwo(defaultResumeStr);
           setEditedResumeThree(defaultResumeStr);
+          setEditedResumeFour(defaultResumeStr);
         }
         if (storedJobTitle) {
           setJobTitle(storedJobTitle);
@@ -345,7 +384,7 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
     };
   }, [resultId]);
 
-  // Save to Firebase when mounted if user is logged in
+  // Save to Firebase when mounted if user is logged in - only once per session
   useEffect(() => {
     const saveToFirebase = async () => {
       if (!user || !result || savedToFirebase || savingToFirebase) {
@@ -363,6 +402,8 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
           coverLetter: result,
           resume: resume || "",
           followUpEmail: followUpEmail || "",
+          sessionId: sessionId, // Add unique session ID to prevent duplicates
+          createdAt: new Date().toISOString(),
           original: {
             cv: localStorage.getItem("cv") || "",
             jobDescription: localStorage.getItem("jobDescription") || "",
@@ -370,49 +411,28 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
           },
         };
         
-        // Add some retry logic
-        let retries = 0;
-        const maxRetries = 3;
-        let success = false;
-        
-        while (!success && retries < maxRetries) {
-          try {
-            await saveApplicationKit(user.uid, saveData);
-            success = true;
-          } catch (error) {
-            retries++;
-            console.error(`Error saving to Firebase (attempt ${retries}):`, error);
-            
-            if (retries >= maxRetries) {
-              throw error;
-            }
-            
-            // Wait a bit before retrying
-            await new Promise(resolve => setTimeout(resolve, 1000));
-          }
-        }
-        
+        // Simple single save - no retry logic to prevent duplicates
+        await saveApplicationKit(user.uid, saveData);
         setSavedToFirebase(true);
         console.log("Successfully saved to Firebase");
       } catch (error) {
-        console.error("Final error saving to Firebase:", error);
+        console.error("Error saving to Firebase:", error);
+        // Don't retry to prevent duplicates
       } finally {
         setSavingToFirebase(false);
       }
     };
 
-    // Call the function
-    saveToFirebase();
-  }, [
-    user,
-    result,
-    resume,
-    followUpEmail,
-    jobTitle,
-    company,
-    savedToFirebase,
-    savingToFirebase,
-  ]);
+    // Only save once when we have the initial data and user is authenticated
+    // Use a timeout to ensure all data has been loaded
+    const timeoutId = setTimeout(() => {
+      if (user && result && !savedToFirebase && !savingToFirebase) {
+        saveToFirebase();
+      }
+    }, 1000); // Wait 1 second after component mount to ensure all data is loaded
+
+    return () => clearTimeout(timeoutId); // Cleanup timeout
+  }, [user, result, sessionId]); // Only depend on core identifiers, not changing data
 
   const handleCopyToClipboard = () => {
     if (result) {
@@ -463,18 +483,6 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
     }
   };
 
-  const handleResumeThreeEdit = () => {
-    if (isEditingResumeThree) {
-      // If we're already editing, this acts as "Save"
-      if (resumeThreeFormRef.current) {
-        resumeThreeFormRef.current.submitForm();
-      }
-    } else {
-      // Start editing
-      setIsEditingResumeThree(true);
-    }
-  };
-
   const handleSaveResumeEdit = (updatedResume: any) => {
     // We might have already exited edit mode from the button click,
     // so we need to ensure all data updates still happen
@@ -487,6 +495,7 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
     setEditedResume(updatedResumeStr);
     setEditedResumeTwo(updatedResumeStr);
     setEditedResumeThree(updatedResumeStr);
+    setEditedResumeFour(updatedResumeStr);
     
     // Just in case edit mode is still active, turn it off
     setIsEditingResume(false);
@@ -504,24 +513,10 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
     setEditedResume(updatedResumeStr);
     setEditedResumeTwo(updatedResumeStr);
     setEditedResumeThree(updatedResumeStr);
+    setEditedResumeFour(updatedResumeStr);
     
     // Just in case edit mode is still active, turn it off
     setIsEditingResumeTwo(false);
-  };
-
-  const handleSaveResumeThreeEdit = (updatedResume: any) => {
-    try {
-      const resumeString = JSON.stringify(updatedResume);
-      setEditedResumeThree(resumeString);
-      // Also update the global resume state for consistency across templates
-      setEditedResume(resumeString);
-      setEditedResumeTwo(resumeString);
-      localStorage.setItem("resume", resumeString);
-      setCvResume(updatedResume);
-      setIsEditingResumeThree(false);
-    } catch (e) {
-      console.error("Error saving resume edit:", e);
-    }
   };
 
   const handleCancelResumeEdit = () => {
@@ -532,12 +527,13 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
     setIsEditingResumeTwo(false);
   };
 
-  const handleCancelResumeThreeEdit = () => {
-    setIsEditingResumeThree(false);
-  };
-
   const handleDownloadResumePdf = async () => {
     if (!resumeRef.current) return;
+
+    // Check download permissions for free users
+    if (!checkDownloadPermission()) {
+      return;
+    }
 
     try {
       // Add a loading state for PDF generation
@@ -548,7 +544,13 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
       document.body.appendChild(loadingToast);
 
       // Dynamically import html2pdf only on the client side
-      const html2pdf = (await import("html2pdf.js")).default;
+      let html2pdf;
+      try {
+        html2pdf = (await import("html2pdf.js")).default;
+      } catch (importError) {
+        console.error("Failed to import html2pdf.js:", importError);
+        throw new Error("PDF library not available. Please refresh the page and try again.");
+      }
 
       const element = resumeRef.current;
       
@@ -576,12 +578,26 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
       document.body.removeChild(loadingToast);
     } catch (error) {
       console.error("Error generating PDF:", error);
-      alert("There was an error generating the PDF. Please try again.");
+      
+      // Remove loading toast if it exists
+      const existingToast = document.querySelector('.fixed.bottom-4.right-4');
+      if (existingToast) {
+        document.body.removeChild(existingToast);
+      }
+      
+      // Show user-friendly error message
+      const errorMessage = error instanceof Error ? error.message : "There was an error generating the PDF. Please try again.";
+      alert(errorMessage);
     }
   };
 
   const handleDownloadResumeTwoPdf = async () => {
     if (!resumeTwoRef.current) return;
+
+    // Check download permissions for free users
+    if (!checkDownloadPermission()) {
+      return;
+    }
 
     try {
       // Add a loading state for PDF generation
@@ -626,54 +642,13 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
     }
   };
 
-  const handleDownloadResumeThreePdf = async () => {
-    if (!resumeThreeRef.current) return;
-    
-    try {
-      // Add a loading state for PDF generation
-      const loadingToast = document.createElement("div");
-      loadingToast.className =
-        "fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded shadow-lg z-50";
-      loadingToast.innerText = "Generating Resume PDF...";
-      document.body.appendChild(loadingToast);
-
-      // Dynamically import html2pdf only on the client side
-      const html2pdf = (await import("html2pdf.js")).default;
-
-      const element = resumeThreeRef.current;
-      
-      const opt = {
-        margin: [8, 8, 8, 8],
-        filename: `${JSON.parse(editedResumeThree || '{}')?.personalInformation?.name || 'resume'}_template3.pdf`,
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: { 
-          scale: 2, 
-          useCORS: true,
-          letterRendering: true,
-          logging: false
-        },
-        jsPDF: { 
-          unit: "mm", 
-          format: "a4", 
-          orientation: "portrait",
-          compress: true,
-          hotfixes: ["px_scaling"]
-        },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-      };
-
-      await html2pdf().set(opt).from(element).save();
-
-      // Remove the loading toast after PDF generation is complete
-      document.body.removeChild(loadingToast);
-    } catch (error) {
-      console.error("Error generating PDF:", error);
-      alert("There was an error generating the PDF. Please try again.");
-    }
-  };
-
   const handleDownloadAsPdf = async () => {
     if (!result) return;
+
+    // Check download permissions for free users
+    if (!checkDownloadPermission()) {
+      return;
+    }
 
     // Dynamically import html2pdf only on the client side
     const html2pdf = (await import("html2pdf.js")).default;
@@ -809,8 +784,10 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
   const handleDownloadEmailAsPdf = async () => {
     if (!followUpEmail) return;
 
-    // Dynamically import html2pdf only on the client side
-    const html2pdf = (await import("html2pdf.js")).default as any;
+    // Check download permissions for free users
+    if (!checkDownloadPermission()) {
+      return;
+    }
 
     // Create a clean PDF-specific template
     const container = document.createElement("div");
@@ -929,6 +906,183 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
 
   const navigateToJobHub = () => {
     router.push("/job-hub");
+  };
+
+  // Helper function to check download permissions
+  const checkDownloadPermission = (): boolean => {
+    if (!hasActiveSubscription) {
+      setShowSubscriptionModal(true);
+      return false;
+    }
+    return true;
+  };
+
+  const handleResumeThreeEdit = () => {
+    // If we're already in edit mode, call the save function
+    if (isEditingResumeThree) {
+      // Submit the form using the ref's submitForm method
+      if (resumeThreeFormRef.current) {
+        resumeThreeFormRef.current.submitForm();
+      }
+    } else {
+      // Otherwise, toggle edit mode
+      setIsEditingResumeThree(true);
+    }
+  };
+
+  const handleSaveResumeThreeEdit = (updatedResume: any) => {
+    // We might have already exited edit mode from the button click,
+    // so we need to ensure all data updates still happen
+    setCvResume(updatedResume);
+    const updatedResumeStr = JSON.stringify(updatedResume);
+    setResume(updatedResumeStr);
+    localStorage.setItem("resume", updatedResumeStr);
+    
+    // Update all template states with the same data
+    setEditedResume(updatedResumeStr);
+    setEditedResumeTwo(updatedResumeStr);
+    setEditedResumeThree(updatedResumeStr);
+    setEditedResumeFour(updatedResumeStr);
+    
+    // Just in case edit mode is still active, turn it off
+    setIsEditingResumeThree(false);
+  };
+
+  const handleCancelResumeThreeEdit = () => {
+    setIsEditingResumeThree(false);
+  };
+
+  const handleDownloadResumeThreePdf = async () => {
+    if (!resumeThreeRef.current) return;
+
+    // Check download permissions for free users
+    if (!checkDownloadPermission()) {
+      return;
+    }
+
+    try {
+      // Add a loading state for PDF generation
+      const loadingToast = document.createElement("div");
+      loadingToast.className =
+        "fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded shadow-lg z-50";
+      loadingToast.innerText = "Generating Resume PDF...";
+      document.body.appendChild(loadingToast);
+
+      // Dynamically import html2pdf only on the client side
+      const html2pdf = (await import("html2pdf.js")).default as any;
+
+      const element = resumeThreeRef.current;
+      
+      const opt = {
+        margin: [10, 10, 10, 10],
+        filename: "resume_template3.pdf",
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { 
+          scale: 2, 
+          useCORS: true,
+          letterRendering: true,
+          logging: false
+        },
+        jsPDF: { 
+          unit: "mm", 
+          format: "a4", 
+          orientation: "portrait",
+          compress: true 
+        },
+      };
+
+      await html2pdf().set(opt).from(element).save();
+
+      // Remove the loading toast after PDF generation is complete
+      document.body.removeChild(loadingToast);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      alert("There was an error generating the PDF. Please try again.");
+    }
+  };
+
+  const handleResumeFourEdit = () => {
+    // If we're already in edit mode, call the save function
+    if (isEditingResumeFour) {
+      // Submit the form using the ref's submitForm method
+      if (resumeFourFormRef.current) {
+        resumeFourFormRef.current.submitForm();
+      }
+    } else {
+      // Otherwise, toggle edit mode
+      setIsEditingResumeFour(true);
+    }
+  };
+
+  const handleSaveResumeFourEdit = (updatedResume: any) => {
+    // We might have already exited edit mode from the button click,
+    // so we need to ensure all data updates still happen
+    setCvResume(updatedResume);
+    const updatedResumeStr = JSON.stringify(updatedResume);
+    setResume(updatedResumeStr);
+    localStorage.setItem("resume", updatedResumeStr);
+    
+    // Update all template states with the same data
+    setEditedResume(updatedResumeStr);
+    setEditedResumeTwo(updatedResumeStr);
+    setEditedResumeThree(updatedResumeStr);
+    setEditedResumeFour(updatedResumeStr);
+    
+    // Just in case edit mode is still active, turn it off
+    setIsEditingResumeFour(false);
+  };
+
+  const handleCancelResumeFourEdit = () => {
+    setIsEditingResumeFour(false);
+  };
+
+  const handleDownloadResumeFourPdf = async () => {
+    if (!resumeFourRef.current) return;
+
+    // Check download permissions for free users
+    if (!checkDownloadPermission()) {
+      return;
+    }
+
+    try {
+      // Add a loading state for PDF generation
+      const loadingToast = document.createElement("div");
+      loadingToast.className =
+        "fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded shadow-lg z-50";
+      loadingToast.innerText = "Generating Resume PDF...";
+      document.body.appendChild(loadingToast);
+
+      // Dynamically import html2pdf only on the client side
+      const html2pdf = (await import("html2pdf.js")).default;
+
+      const element = resumeFourRef.current;
+      
+      const opt = {
+        margin: [10, 10, 10, 10],
+        filename: "resume_template4.pdf",
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { 
+          scale: 2, 
+          useCORS: true,
+          letterRendering: true,
+          logging: false
+        },
+        jsPDF: { 
+          unit: "mm", 
+          format: "a4", 
+          orientation: "portrait",
+          compress: true 
+        },
+      };
+
+      await html2pdf().set(opt).from(element).save();
+
+      // Remove the loading toast after PDF generation is complete
+      document.body.removeChild(loadingToast);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      alert("There was an error generating the PDF. Please try again.");
+    }
   };
 
   if (loading) {
@@ -1421,27 +1575,10 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
                             Next Template
                           </button>
                         </div>
-                        {!isEditingResume && (
-                          <button 
-                            onClick={handleToggleSummary}
-                            className="text-gray-500 hover:text-gray-700 flex items-center max-sm:w-1/2 max-sm:mr-auto"
-                          >
-                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                              {showSummary ? (
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                              ) : (
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                              )}
-                            </svg>
-                            <span className="text-sm">
-                              {showSummary ? "Remove Summary" : "Add Summary"}
-                            </span>
-                          </button>
-                        )}
                         <button
                           className="text-gray-500 hover:text-gray-700 flex items-center"
-                          onClick={handleCopyResumeToClipboard}
-                          title="Copy to clipboard"
+                          onClick={handleResumeEdit}
+                          title="Edit"
                         >
                           <svg
                             className="w-4 h-4 mr-1"
@@ -1454,42 +1591,10 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
                               strokeLinecap="round"
                               strokeLinejoin="round"
                               strokeWidth="2"
-                              d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
+                              d={isEditingResume ? "M5 13l4 4L19 7" : "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"}
                             ></path>
                           </svg>
-                          <span className="text-sm">Copy</span>
-                        </button>
-                        <button
-                          className="text-gray-500 hover:text-gray-700 flex items-center"
-                          onClick={handleResumeEdit}
-                          title={isEditingResume ? "Save" : "Edit"}
-                        >
-                          <svg
-                            className="w-4 h-4 mr-1"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            {isEditingResume ? (
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M5 13l4 4L19 7"
-                              ></path>
-                            ) : (
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                              ></path>
-                            )}
-                          </svg>
-                          <span className="text-sm">
-                            {isEditingResume ? "Save" : "Edit"}
-                          </span>
+                          <span className="text-sm">{isEditingResume ? "Save" : "Edit"}</span>
                         </button>
                         <button
                           className="text-gray-500 hover:text-gray-700"
@@ -1525,11 +1630,7 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
                         </div>
                       ) : (
                         <div ref={resumeRef} className="bg-white w-full h-full">
-                          {showSummary ? (
-                            <TemplateThree result={cvResume || defaultStructuredResume} />
-                          ) : (
-                            <TemplateOne result={cvResume || defaultStructuredResume} />
-                          )}
+                          <TemplateOne result={cvResume || defaultStructuredResume} />
                         </div>
                       )}
                     </div>
@@ -1567,8 +1668,8 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
                         </div>
                         <button
                           className="text-gray-500 hover:text-gray-700 flex items-center"
-                          onClick={handleCopyResumeToClipboard}
-                          title="Copy to clipboard"
+                          onClick={handleResumeTwoEdit}
+                          title="Edit"
                         >
                           <svg
                             className="w-4 h-4 mr-1"
@@ -1581,42 +1682,10 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
                               strokeLinecap="round"
                               strokeLinejoin="round"
                               strokeWidth="2"
-                              d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
+                              d={isEditingResumeTwo ? "M5 13l4 4L19 7" : "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"}
                             ></path>
                           </svg>
-                          <span className="text-sm">Copy</span>
-                        </button>
-                        <button
-                          className="text-gray-500 hover:text-gray-700 flex items-center"
-                          onClick={handleResumeTwoEdit}
-                          title={isEditingResumeTwo ? "Save" : "Edit"}
-                        >
-                          <svg
-                            className="w-4 h-4 mr-1"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            {isEditingResumeTwo ? (
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M5 13l4 4L19 7"
-                              ></path>
-                            ) : (
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                              ></path>
-                            )}
-                          </svg>
-                          <span className="text-sm">
-                            {isEditingResumeTwo ? "Save" : "Edit"}
-                          </span>
+                          <span className="text-sm">{isEditingResumeTwo ? "Save" : "Edit"}</span>
                         </button>
                         <button
                           className="text-gray-500 hover:text-gray-700"
@@ -1653,6 +1722,188 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
                       ) : (
                         <div ref={resumeTwoRef} className="bg-white w-full h-full">
                           <TemplateTwo result={cvResume || defaultStructuredResume} />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {activeTemplate === 3 && (
+                  <div className="border border-gray-200 rounded-lg p-3">
+                    <div className="flex items-center justify-center gap-2 sm:gap-0 sm:justify-between mb-4 flex-wrap">
+                      <div className="flex items-center max-sm:w-full max-sm:text-center">
+                        <div className="max-sm:ml-auto w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mr-2">
+                          <svg
+                            className="w-4 h-4 text-blue-500"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"
+                              clipRule="evenodd"
+                            ></path>
+                          </svg>
+                        </div>
+                        <span className="font-medium max-sm:mr-auto">Resume</span>
+                      </div>
+                      <div className="flex space-x-3">
+                        <div className="flex justify-end">
+                          <button
+                            className="text-gray-500 hover:text-gray-700 text-sm hover:underline"
+                            onClick={handleSwitchTemplate}
+                          >
+                            Next Template
+                          </button>
+                        </div>
+                        <button
+                          className="text-gray-500 hover:text-gray-700 flex items-center"
+                          onClick={handleResumeThreeEdit}
+                          title="Edit"
+                        >
+                          <svg
+                            className="w-4 h-4 mr-1"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d={isEditingResumeThree ? "M5 13l4 4L19 7" : "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"}
+                            ></path>
+                          </svg>
+                          <span className="text-sm">{isEditingResumeThree ? "Save" : "Edit"}</span>
+                        </button>
+                        <button
+                          className="text-gray-500 hover:text-gray-700"
+                          onClick={handleDownloadResumeThreePdf}
+                          title="Download as PDF"
+                        >
+                          <svg
+                            className="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                            ></path>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                    <div className="h-[700px] bg-white rounded relative overflow-y-auto">
+                      {isEditingResumeThree ? (
+                        <div className="p-5 bg-white border rounded h-full overflow-auto resume-edit-form">
+                          <ResumeEditForm 
+                            ref={resumeThreeFormRef}
+                            resume={editedResumeThree ? JSON.parse(editedResumeThree) : (cvResume || defaultStructuredResume)}
+                            onSave={handleSaveResumeThreeEdit}
+                            onCancel={handleCancelResumeThreeEdit}
+                          />
+                        </div>
+                      ) : (
+                        <div ref={resumeThreeRef} className="bg-white w-full h-full">
+                          <TemplateThree result={cvResume || defaultStructuredResume} />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {activeTemplate === 4 && (
+                  <div className="border border-gray-200 rounded-lg p-3">
+                    <div className="flex items-center justify-center gap-2 sm:gap-0 sm:justify-between mb-4 flex-wrap">
+                      <div className="flex items-center max-sm:w-full max-sm:text-center">
+                        <div className="max-sm:ml-auto w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mr-2">
+                          <svg
+                            className="w-4 h-4 text-blue-500"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"
+                              clipRule="evenodd"
+                            ></path>
+                          </svg>
+                        </div>
+                        <span className="font-medium max-sm:mr-auto">Resume</span>
+                      </div>
+                      <div className="flex space-x-3">
+                        <div className="flex justify-end">
+                          <button
+                            className="text-gray-500 hover:text-gray-700 text-sm hover:underline"
+                            onClick={handleSwitchTemplate}
+                          >
+                            Next Template
+                          </button>
+                        </div>
+                        <button
+                          className="text-gray-500 hover:text-gray-700 flex items-center"
+                          onClick={handleResumeFourEdit}
+                          title="Edit"
+                        >
+                          <svg
+                            className="w-4 h-4 mr-1"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d={isEditingResumeFour ? "M5 13l4 4L19 7" : "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"}
+                            ></path>
+                          </svg>
+                          <span className="text-sm">{isEditingResumeFour ? "Save" : "Edit"}</span>
+                        </button>
+                        <button
+                          className="text-gray-500 hover:text-gray-700"
+                          onClick={handleDownloadResumeFourPdf}
+                          title="Download as PDF"
+                        >
+                          <svg
+                            className="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                            ></path>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                    <div className="h-[700px] bg-white rounded relative overflow-y-auto">
+                      {isEditingResumeFour ? (
+                        <div className="p-5 bg-white border rounded h-full overflow-auto resume-edit-form">
+                          <ResumeEditForm 
+                            ref={resumeFourFormRef}
+                            resume={editedResumeFour ? JSON.parse(editedResumeFour) : (cvResume || defaultStructuredResume)}
+                            onSave={handleSaveResumeFourEdit}
+                            onCancel={handleCancelResumeFourEdit}
+                          />
+                        </div>
+                      ) : (
+                        <div ref={resumeFourRef} className="bg-white w-full h-full">
+                          <TemplateFour result={cvResume || defaultStructuredResume} />
                         </div>
                       )}
                     </div>
@@ -1702,6 +1953,71 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
           </div>
         </div>
       </div>
+      
+      {/* Subscription Modal */}
+      {showSubscriptionModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="relative bg-white rounded-lg w-full max-w-md p-6 text-center">
+            <button 
+              className="absolute top-0 right-0 bg-white rounded-full -translate-y-1/3 translate-x-1/3" 
+              onClick={() => setShowSubscriptionModal(false)}
+            >
+              <AiFillCloseCircle size={36}/>
+            </button>
+            
+            <div className="mb-6">
+              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg
+                  className="w-8 h-8 text-purple-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                  ></path>
+                </svg>
+              </div>
+              
+              <h3 className="text-xl font-bold text-gray-900 mb-2">
+                Subscribe to Download
+              </h3>
+              
+              <p className="text-gray-600 mb-4">
+                Subscribe to download and unlock all premium features, cancel anytime
+              </p>
+              
+              <div className="text-sm text-gray-500 mb-6">
+                ✨ Unlimited downloads<br/>
+                ✨ All resume templates<br/>
+                ✨ Priority support<br/>
+                ✨ Advanced features
+              </div>
+            </div>
+            
+            <div className="space-y-3">
+              <Link
+                href="/manage-subscription"
+                className="block w-full bg-purple-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-purple-700 transition-colors"
+                onClick={() => setShowSubscriptionModal(false)}
+              >
+                Subscribe Now
+              </Link>
+              
+              <button
+                onClick={() => setShowSubscriptionModal(false)}
+                className="block w-full text-gray-500 py-2 px-4 hover:text-gray-700 transition-colors"
+              >
+                Maybe Later
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </Suspense>
   );
 }
