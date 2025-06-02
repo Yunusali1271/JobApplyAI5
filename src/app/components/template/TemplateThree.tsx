@@ -73,7 +73,7 @@ function TemplateThree({ result }: { result: any }) {
               <ul className="list-disc ml-5 space-y-1">
                 <li>Use this section to highlight your strongest accomplishments right off the bat — and be sure to include numbers or metrics where you can.</li>
                 <li>You can choose bullet points or a short paragraph format, whichever feels natural.</li>
-                <li>Skip the outdated objective statement — instead, focus on showing how you'll make an impact and bring value to the company from day one.</li>
+                <li>Skip the outdated objective statement — instead, focus on showing how you&apos;ll make an impact and bring value to the company from day one.</li>
               </ul>
             )}
           </div>
@@ -126,8 +126,8 @@ function TemplateThree({ result }: { result: any }) {
                     <p className="mb-1">This opening section is a great spot to briefly summarize your role, highlight key contributions, or explain how you arrived in the position—such as through a promotion or internal transfer.</p>
                     <ul className="list-disc ml-5 space-y-1">
                       <li>List your most impressive and relevant achievements first. If you can add specific numbers or results to back them up — even better.</li>
-                      <li>Use strong action verbs like "managed," "led," or "spearheaded" instead of passive phrases like "responsible for."</li>
-                      <li>Think about how your work helped the company: Did you increase revenue, cut costs, or save time? That's what employers care about.</li>
+                      <li>Use strong action verbs like &quot;managed,&quot; &quot;led,&quot; or &quot;spearheaded&quot; instead of passive phrases like &quot;responsible for.&quot;</li>
+                      <li>Think about how your work helped the company: Did you increase revenue, cut costs, or save time? That&apos;s what employers care about.</li>
                     </ul>
                   </div>
                 )}
@@ -144,7 +144,7 @@ function TemplateThree({ result }: { result: any }) {
                 <p className="mb-1">This opening section is a great spot to briefly summarize your role, highlight key contributions, or explain how you arrived in the position.</p>
                 <ul className="list-disc ml-5 space-y-1">
                   <li>List your most impressive and relevant achievements first.</li>
-                  <li>Use strong action verbs like "managed," "led," or "spearheaded".</li>
+                  <li>Use strong action verbs like &quot;managed,&quot; &quot;led,&quot; or &quot;spearheaded&quot;.</li>
                   <li>Think about how your work helped the company.</li>
                 </ul>
               </div>

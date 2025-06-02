@@ -782,64 +782,35 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
   };
 
   const handleDownloadEmailAsPdf = async () => {
-    if (!followUpEmail) return;
+    if (!followUpEmailRef.current) return;
 
     // Check download permissions for free users
     if (!checkDownloadPermission()) {
       return;
     }
 
-    // Create a clean PDF-specific template
+    // Create a temporary container for the PDF content
     const container = document.createElement("div");
-    container.style.width = "210mm";
-    container.style.padding = "20mm";
-    container.style.backgroundColor = "white";
-    container.style.fontFamily = "Arial, sans-serif"; // Ensure Arial is used as font
+    container.style.position = "absolute";
+    container.style.left = "-9999px";
+    container.style.fontFamily = "Georgia, serif";
+    container.style.fontSize = "14px";
+    container.style.lineHeight = "1.6";
+    container.style.color = "#000000";
+    container.style.backgroundColor = "#ffffff";
+    container.style.padding = "40px";
+    container.style.maxWidth = "600px";
 
-    // Add a style element to enforce Arial font throughout the document
-    const style = document.createElement("style");
-    style.textContent = `
-      * {
-        font-family: Arial, sans-serif !important;
-      }
-      p, div, span {
-        font-family: Arial, sans-serif !important;
-      }
+    // Style the container content
+    container.innerHTML = `
+      <div style="margin-bottom: 40px;">
+        <h2 style="margin-bottom: 20px; color: #333; font-size: 18px;">Follow-up Email</h2>
+        <div style="white-space: pre-wrap; font-family: Georgia, serif; font-size: 14px; line-height: 1.6;">
+          ${followUpEmailRef.current.textContent || ""}
+        </div>
+      </div>
     `;
-    container.appendChild(style);
 
-    const content = document.createElement("div");
-    content.className = "pdf-content";
-    content.style.fontSize = "12px";
-    content.style.lineHeight = "1.5";
-    content.style.color = "#000";
-    content.style.fontFamily = "Arial, sans-serif"; // Ensure content also uses Arial
-
-    // Split by double newlines which separate paragraphs
-    const sections = followUpEmail.split("\n\n");
-
-    // Process each section
-    sections.forEach((section, sectionIndex) => {
-      // For the subject line (usually the first section)
-      if (sectionIndex === 0 && section.toLowerCase().includes("subject:")) {
-        const p = document.createElement("p");
-        p.textContent = section;
-        p.style.fontWeight = "bold";
-        p.style.marginBottom = "20px";
-        p.style.fontFamily = "Arial, sans-serif"; // Set Arial for subject line
-        content.appendChild(p);
-      }
-      // For all other sections
-      else {
-        const p = document.createElement("p");
-        p.textContent = section;
-        p.style.marginBottom = "15px";
-        p.style.fontFamily = "Arial, sans-serif"; // Set Arial for body paragraphs
-        content.appendChild(p);
-      }
-    });
-
-    container.appendChild(content);
     document.body.appendChild(container);
 
     // Add a loading state for PDF generation
@@ -857,29 +828,44 @@ Technical Applications Engineer | Nosel | 2023-07-01 - Present
       jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
     };
 
-    html2pdf()
-      .from(container)
-      .set(opt)
-      .save()
-      .then(() => {
-        // Clean up - remove the temp container
+    try {
+      // Dynamically import html2pdf only on the client side
+      const html2pdf = (await import("html2pdf.js")).default as any;
+      
+      await html2pdf()
+        .from(container)
+        .set(opt)
+        .save();
+
+      // Clean up - remove the temp container
+      document.body.removeChild(container);
+
+      // Remove the loading toast
+      document.body.removeChild(loadingToast);
+
+      // Add a success toast
+      const successToast = document.createElement("div");
+      successToast.className =
+        "fixed bottom-4 right-4 bg-green-600 text-white px-4 py-2 rounded shadow-lg z-50";
+      successToast.innerText = "PDF downloaded successfully!";
+      document.body.appendChild(successToast);
+
+      // Remove the success toast after 3 seconds
+      setTimeout(() => {
+        document.body.removeChild(successToast);
+      }, 3000);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      alert("There was an error generating the PDF. Please try again.");
+      
+      // Clean up in case of error
+      if (document.body.contains(container)) {
         document.body.removeChild(container);
-
-        // Remove the loading toast
+      }
+      if (document.body.contains(loadingToast)) {
         document.body.removeChild(loadingToast);
-
-        // Add a success toast
-        const successToast = document.createElement("div");
-        successToast.className =
-          "fixed bottom-4 right-4 bg-green-600 text-white px-4 py-2 rounded shadow-lg z-50";
-        successToast.innerText = "PDF downloaded successfully!";
-        document.body.appendChild(successToast);
-
-        // Remove the success toast after 3 seconds
-        setTimeout(() => {
-          document.body.removeChild(successToast);
-        }, 3000);
-      });
+      }
+    }
   };
 
   const handleCoverLetterEdit = () => {

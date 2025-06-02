@@ -92,7 +92,7 @@ function TemplateFour({ result }: { result: any }) {
                 Seasoned strategist with 15+ years steering growth and innovation across B2B and real estate landscapes. Known for 
                 turning complex challenges into actionable roadmaps, I forge high-impact partnerships and lead teams with clarity and 
                 conviction. My track record? Scaling brands from the ground up, navigating cutthroat markets, and aligning 
-                cross-functional forces around ambitious, long-view objectives. I don't just plan—I build momentum, and I get results.
+                cross-functional forces around ambitious, long-view objectives. I don&apos;t just plan—I build momentum, and I get results.
               </p>
             )}
           </div>
@@ -144,7 +144,7 @@ function TemplateFour({ result }: { result: any }) {
                   <div>
                     <span className="font-bold">{education?.institution || "University"}</span>
                     {education?.location && <span className="font-bold"> / {education.location}</span>}
-                    <span className="font-bold"> | {education?.degree || "Master's in Economics"}</span>
+                    <span className="font-bold"> | {education?.degree || "Master&apos;s in Economics"}</span>
                   </div>
                   <span>{education?.duration || education?.graduationDate || "Date"}</span>
                 </div>
@@ -172,7 +172,7 @@ function TemplateFour({ result }: { result: any }) {
             )
           ) : (
             <div className="flex justify-between text-sm mb-1">
-              <div>University /College | Location | Master's in Economics</div>
+              <div>University /College | Location | Master&apos;s in Economics</div>
               <span>Date</span>
             </div>
           )}
@@ -220,9 +220,9 @@ function TemplateFour({ result }: { result: any }) {
                   </ul>
                 ) : (
                   <ul className="text-sm ml-4 space-y-1">
-                    <li className="flex"><span className="mr-2">•</span><span><strong>Don't skip the Skills section — it's crucial.</strong> Including a clearly defined Skills section boosts your chances of passing through Applicant Tracking Systems (ATS), especially when applying online.</span></li>
-                    <li className="flex"><span className="mr-2">•</span><span><strong>Always read the job description carefully and check the submission format:</strong> if they request a Word document, they're almost certainly using an ATS. If there's no format specified, a PDF is usually the safest and cleanest option.</span></li>
-                    <li className="flex"><span className="mr-2">•</span><span>It is true that your resume should be 1-2 pages but if you have a lot of experience and many results, don't limit yourself; write everything down; I'm always here for you if you need tips, advice, help</span></li>
+                    <li className="flex"><span className="mr-2">•</span><span><strong>Don&apos;t skip the Skills section — it&apos;s crucial.</strong> Including a clearly defined Skills section boosts your chances of passing through Applicant Tracking Systems (ATS), especially when applying online.</span></li>
+                    <li className="flex"><span className="mr-2">•</span><span><strong>Always read the job description carefully and check the submission format:</strong> if they request a Word document, they&apos;re almost certainly using an ATS. If there&apos;s no format specified, a PDF is usually the safest and cleanest option.</span></li>
+                    <li className="flex"><span className="mr-2">•</span><span>It is true that your resume should be 1-2 pages but if you have a lot of experience and many results, don&apos;t limit yourself; write everything down; I&apos;m always here for you if you need tips, advice, help</span></li>
                   </ul>
                 )}
               </div>
@@ -236,9 +236,9 @@ function TemplateFour({ result }: { result: any }) {
                 <span>Jan 2017 - Present</span>
               </div>
               <ul className="text-sm ml-4 space-y-1">
-                <li className="flex"><span className="mr-2">•</span><span><strong>Don't skip the Skills section — it's crucial.</strong> Including a clearly defined Skills section boosts your chances of passing through Applicant Tracking Systems (ATS), especially when applying online.</span></li>
-                <li className="flex"><span className="mr-2">•</span><span><strong>Always read the job description carefully and check the submission format:</strong> if they request a Word document, they're almost certainly using an ATS. If there's no format specified, a PDF is usually the safest and cleanest option.</span></li>
-                <li className="flex"><span className="mr-2">•</span><span>It is true that your resume should be 1-2 pages but if you have a lot of experience and many results, don't limit yourself; write everything down; I'm always here for you if you need tips, advice, help</span></li>
+                <li className="flex"><span className="mr-2">•</span><span><strong>Don&apos;t skip the Skills section — it&apos;s crucial.</strong> Including a clearly defined Skills section boosts your chances of passing through Applicant Tracking Systems (ATS), especially when applying online.</span></li>
+                <li className="flex"><span className="mr-2">•</span><span><strong>Always read the job description carefully and check the submission format:</strong> if they request a Word document, they&apos;re almost certainly using an ATS. If there&apos;s no format specified, a PDF is usually the safest and cleanest option.</span></li>
+                <li className="flex"><span className="mr-2">•</span><span>It is true that your resume should be 1-2 pages but if you have a lot of experience and many results, don&apos;t limit yourself; write everything down; I&apos;m always here for you if you need tips, advice, help</span></li>
               </ul>
             </div>
           )}
